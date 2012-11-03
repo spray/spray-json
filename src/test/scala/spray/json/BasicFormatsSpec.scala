@@ -17,6 +17,7 @@
 package spray.json
 
 import org.specs2.mutable._
+import java.util.UUID
 
 class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
 
@@ -158,5 +159,13 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
       JsString("Hello").convertTo[Symbol] mustEqual 'Hello
     }
   }
-  
+
+  "The UuidJsonFormat" should {
+    "convert a UUID to a JsString" in {
+      UUID.fromString("550e8400-e29b-41d4-a716-446655440000").toJson mustEqual JsString("550e8400-e29b-41d4-a716-446655440000")
+    }
+    "convert a JsString to a UUID" in {
+      JsString("550e8400-e29b-41d4-a716-446655440000").convertTo[UUID] mustEqual UUID.fromString("550e8400-e29b-41d4-a716-446655440000")
+    }
+  }
 }
