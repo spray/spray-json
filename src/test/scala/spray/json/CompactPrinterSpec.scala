@@ -53,7 +53,7 @@ class CompactPrinterSpec extends Specification {
       CompactPrinter(JsString("\u1000")) mustEqual "\"\\u1000\""
       CompactPrinter(JsString("\u0100")) mustEqual "\"\\u0100\""
       CompactPrinter(JsString("\u0010")) mustEqual "\"\\u0010\""
-      CompactPrinter(JsString("\u0001")) mustEqual "\"\\u0001\"" // FIXME
+      CompactPrinter(JsString("\u0001")) mustEqual "\"\\u0001\""
     }
     "properly print a simple JsObject" in (
       CompactPrinter(JsObject("key" -> JsNumber(42), "key2" -> JsString("value")))

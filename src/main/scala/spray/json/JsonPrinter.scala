@@ -67,6 +67,7 @@ trait JsonPrinter extends (JsValue => String) {
           case '\n' => sb.append("\\n")
           case '\r' => sb.append("\\r")
           case '\t' => sb.append("\\t")
+          case x if x <= 0xF => sb.append("\\u000").append(Integer.toHexString(x))
           case x if x <= 0xFF => sb.append("\\u00").append(Integer.toHexString(x))
           case x if x <= 0xFFF => sb.append("\\u0").append(Integer.toHexString(x))
           case x => sb.append("\\u").append(Integer.toHexString(x))
