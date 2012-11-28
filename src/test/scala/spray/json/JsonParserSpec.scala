@@ -46,8 +46,9 @@ class JsonParserSpec extends Specification {
     "parse \"xyz\" to JsString" in {
       JsonParser("\"xyz\"") mustEqual JsString("xyz")
     }
-    "parse escapes in a  JsString" in {
-      JsonParser(""""\"\\/\b\f\n\r\t\u12Ab"""") mustEqual JsString("\"\\/\b\f\n\r\t\u12ab")
+    "parse escapes in a JsString" in {
+      JsonParser(""""\"\\/\b\f\n\r\t"""") mustEqual JsString("\"\\/\b\f\n\r\t")
+      JsonParser("\"L\\" + "u00e4nder\"") mustEqual JsString("Länder")
     }
     "properly parse a simple JsObject" in (
       JsonParser(""" { "key" :42, "key2": "value" }""") mustEqual
