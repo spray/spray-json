@@ -14,21 +14,24 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.10.0-RC5"
+scalaVersion := "2.10.0"
 
 scalacOptions <<= scalaVersion map {
-  case x if x startsWith "2.9" =>
-    Seq("-unchecked", "-deprecation", "-encoding", "utf8")
-  case x if x startsWith "2.10" =>
-    Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
+  case "2.9.2"  => Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+  case "2.10.0" => Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
 }
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies ++= Seq(
-  "org.parboiled" %% "parboiled-scala" % "1.1.4" % "compile",
-  "org.specs2" %% "specs2" % "1.12.3" % "test"
-)
+libraryDependencies <++= scalaVersion { sv =>
+  Seq(
+    "org.parboiled" %% "parboiled-scala" % "1.1.4" % "compile",
+    sv match {
+      case "2.9.2"  => "org.specs2" %% "specs2" % "1.12.3" % "test"
+      case "2.10.0" => "org.specs2" %% "specs2" % "1.13" % "test"
+    }
+  )
+}
 
 scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
 
@@ -37,7 +40,7 @@ scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + 
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.9.2", "2.10.0-RC5")
+crossScalaVersions := Seq("2.9.2", "2.10.0")
 
 scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
 
@@ -58,7 +61,6 @@ publishTo <<= version { version =>
 ///////////////
 // ls-sbt
 ///////////////
-
 
 seq(lsSettings:_*)
 
