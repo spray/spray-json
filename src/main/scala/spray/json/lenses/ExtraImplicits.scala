@@ -11,7 +11,7 @@ trait ExtraImplicits {
       lens ! Operations.set(pValue) apply value
 
     // This can't be simplified because we don't want the type constructor
-    // for Lens[M] to appear in the type paramater list.
+    // for Lens[M] to appear in the type parameter list.
     def extract[T: Reader](p: Lens[Id]): T =
       p.get[T](value)
 
