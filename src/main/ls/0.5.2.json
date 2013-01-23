@@ -1,0 +1,25 @@
+{
+  "organization" : "net.virtual-void",
+  "name" : "json-lenses",
+  "version" : "0.5.2",
+  "description" : "json-lenses",
+  "site" : "http://github.com/jrudolph/json-lenses",
+  "tags" : [ ],
+  "docs" : "",
+  "resolvers" : [ "https://oss.sonatype.org/content/repositories/releases" ],
+  "dependencies" : [ {
+    "organization" : "io.spray",
+    "name" : "spray-json",
+    "version" : "1.2.3"
+  }, {
+    "organization" : "org.parboiled",
+    "name" : "parboiled-scala",
+    "version" : "1.1.4"
+  } ],
+  "scalas" : [ "2.10.0" ],
+  "licenses" : [ {
+    "name" : "Apache 2",
+    "url" : "http://www.apache.org/licenses/LICENSE-2.0.txt"
+  } ],
+  "sbt" : false
+}
