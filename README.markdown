@@ -30,6 +30,7 @@ _spray-json_ is really easy to use.
 Just bring all relevant elements in scope with 
 
     import spray.json._
+    import DefaultJsonProtocol._
 
 and do one or more of the following:
 
