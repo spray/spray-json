@@ -16,6 +16,8 @@
 
 package spray.json
 
+import java.lang.reflect.Modifier
+
 /**
  * Provides the helpers for constructing custom JsonFormat implementations for types implementing the Product trait
  * (especially case classes)
@@ -499,7 +501,7 @@ trait ProductFormats {
       // that lexical sorting of ...8(), ...9(), ...10() is not correct, so we extract N and sort by N.toInt
       val copyDefaultMethods = clazz.getMethods.filter(_.getName.startsWith("copy$default$")).sortBy(
         _.getName.drop("copy$default$".length).takeWhile(_ != '(').toInt)
-      val fields = clazz.getDeclaredFields.filterNot(_.getName.startsWith("$"))
+      val fields = clazz.getDeclaredFields.filterNot(f => f.getName.startsWith("$") || Modifier.isTransient(f.getModifiers))
       if (copyDefaultMethods.length != fields.length)
         sys.error("Case class " + clazz.getName + " declares additional fields")
       if (fields.zip(copyDefaultMethods).exists { case (f, m) => f.getType != m.getReturnType })
