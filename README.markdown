@@ -15,6 +15,8 @@ The latest release is `1.2.3` and is built against Scala 2.9.2 as well as Scala 
 
 If you use SBT you can include _spray-json_ in your project with
 
+    resolvers += "spray" at "http://repo.spray.io/"
+
     "io.spray" %%  "spray-json" % "1.2.3" cross CrossVersion.full
 
 (the trailing "cross CrossVersion.full" modifier is only required when using SBT 0.12.x with Scala < 2.10)
@@ -30,7 +32,7 @@ _spray-json_ is really easy to use.
 Just bring all relevant elements in scope with 
 
     import spray.json._
-    import DefaultJsonProtocol._
+    import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won't work
 
 and do one or more of the following:
 
