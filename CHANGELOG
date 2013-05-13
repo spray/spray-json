@@ -1,3 +1,19 @@
+Version 1.2.4 (2013-05-13)
+--------------------------
+- Upgraded to 2.10.1 and parboiled 1.1.5
+- Added RootJsonFormats for JsObject and JsArray
+- Added a jsonFormat0 with support for 0-ary case classes, thx to Connor Doyle
+- Fixed automatic field name extraction with ignoring of transient fields
+- Slightly improved JSON rendering performance
+- Upgraded to SBT 0.12.3
+
+
+Version 1.2.3 (2012-11-28)
+--------------------------
+- Upgraded to 2.10.0-RC3 and parboiled 1.1.4
+- Fixed rendering problem for certain unicode escapes
+
+
 Version 1.2.2 (2012-10-16)
 --------------------------
 - Upgraded to parboiled 1.1.3

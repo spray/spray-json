@@ -11,7 +11,7 @@ It sports the following features:
 ### Installation
 
 _spray-json_ is available from the [repo.spray.io] repository.
-The latest release is `1.2.3` and is built against Scala 2.9.2 as well as Scala 2.10.0.
+The latest release is `1.2.4` and is built against Scala 2.9.3 as well as Scala 2.10.1.
 
 If you use SBT you can include _spray-json_ in your project with
 
