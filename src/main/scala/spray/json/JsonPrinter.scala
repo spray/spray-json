@@ -55,28 +55,35 @@ trait JsonPrinter extends (JsValue => String) {
   }
 
   protected def printString(s: String, sb: StringBuilder) {
-    @tailrec
-    def printEscaped(s: String, ix: Int) {
-      if (ix < s.length) {
-        s.charAt(ix) match {
-          case '"' => sb.append("\\\"")
-          case '\\' => sb.append("\\\\")
-          case x if 0x20 <= x && x < 0x7F => sb.append(x)
-          case '\b' => sb.append("\\b")
-          case '\f' => sb.append("\\f")
-          case '\n' => sb.append("\\n")
-          case '\r' => sb.append("\\r")
-          case '\t' => sb.append("\\t")
-          case x if x <= 0xF => sb.append("\\u000").append(Integer.toHexString(x))
-          case x if x <= 0xFF => sb.append("\\u00").append(Integer.toHexString(x))
-          case x if x <= 0xFFF => sb.append("\\u0").append(Integer.toHexString(x))
-          case x => sb.append("\\u").append(Integer.toHexString(x))
-        }
-        printEscaped(s, ix + 1)
-      }
-    }
+    import JsonPrinter._
+    @tailrec def firstToBeEncoded(ix: Int = 0): Int =
+      if (ix == s.length) -1 else if (requiresEncoding(s.charAt(ix))) ix else firstToBeEncoded(ix + 1)
+
     sb.append('"')
-    printEscaped(s, 0)
+    firstToBeEncoded() match {
+      case -1 ⇒ sb.append(s)
+      case first ⇒
+        sb.append(s, 0, first)
+        @tailrec def append(ix: Int): Unit =
+          if (ix < s.length) {
+            s.charAt(ix) match {
+              case c if !requiresEncoding(c) => sb.append(c)
+              case '"' => sb.append("\\\"")
+              case '\\' => sb.append("\\\\")
+              case '\b' => sb.append("\\b")
+              case '\f' => sb.append("\\f")
+              case '\n' => sb.append("\\n")
+              case '\r' => sb.append("\\r")
+              case '\t' => sb.append("\\t")
+              case x if x <= 0xF => sb.append("\\u000").append(Integer.toHexString(x))
+              case x if x <= 0xFF => sb.append("\\u00").append(Integer.toHexString(x))
+              case x if x <= 0xFFF => sb.append("\\u0").append(Integer.toHexString(x))
+              case x => sb.append("\\u").append(Integer.toHexString(x))
+            }
+            append(ix + 1)
+          }
+        append(first)
+    }
     sb.append('"')
   }
   
@@ -87,4 +94,24 @@ trait JsonPrinter extends (JsValue => String) {
       f(a)
     }
   }
-} 
+}
+
+object JsonPrinter {
+  private[this] val mask = new Array[Int](4)
+  private[this] def ascii(c: Char): Int = c & ((c - 127) >> 31) // branchless for `if (c <= 127) c else 0`
+  private[this] def mark(c: Char): Unit = {
+    val b = ascii(c)
+    mask(b >> 5) |= 1 << (b & 0x1F)
+  }
+  private[this] def mark(range: scala.collection.immutable.NumericRange[Char]): Unit = range foreach (mark)
+
+  mark('\u0000' to '\u0019')
+  mark('\u007f')
+  mark('"')
+  mark('\\')
+
+  def requiresEncoding(c: Char): Boolean = {
+    val b = ascii(c)
+    (mask(b >> 5) & (1 << (b & 0x1F))) != 0
+  }
+}
