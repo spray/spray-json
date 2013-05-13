@@ -22,11 +22,15 @@ class ProductFormatsSpec extends Specification {
 
   case class Test2(a: Int, b: Option[Double])
   case class Test3[A, B](as: List[A], bs: List[B])
+  case class TestTransient(a: Int, b: Option[Double]) {
+    @transient var c = false
+  }
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
+    implicit def testTransientFormat = jsonFormat2(TestTransient)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -92,6 +96,18 @@ class ProductFormatsSpec extends Specification {
       }
       import BoxProtocol._
       Box(42).toJson === JsObject(Map("a" -> JsNumber(42)))
+    }
+  }
+
+  "A JsonFormat for a case class with transient fields and created with `jsonFormat`" should {
+    import TestProtocol1._
+    val obj = TestTransient(42, Some(4.2))
+    val json = JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2))
+    "convert to a respective JsObject" in {
+      obj.toJson mustEqual json
+    }
+    "convert a JsObject to the respective case class instance" in {
+      json.convertTo[TestTransient] mustEqual obj
     }
   }
 
