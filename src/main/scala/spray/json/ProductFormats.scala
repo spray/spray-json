@@ -25,6 +25,14 @@ import java.lang.reflect.Modifier
 trait ProductFormats {
   this: StandardFormats =>
 
+  def jsonFormat0[T <: Product :ClassManifest](construct: () => T): RootJsonFormat[T] = {
+    jsonFormat(construct)
+  }
+  def jsonFormat[T <: Product](construct: () => T): RootJsonFormat[T] = new RootJsonFormat[T]{
+    def write(p: T) = JsObject()
+    def read(value: JsValue) = construct()
+  }
+
   def jsonFormat1[A :JF, T <: Product :ClassManifest](construct: A => T): RootJsonFormat[T] = {
     val Array(a) = extractFieldNames(classManifest[T])
     jsonFormat(construct, a)
