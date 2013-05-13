@@ -27,6 +27,19 @@ trait AdditionalFormats {
     def read(value: JsValue) = value
   }
 
+  implicit object RootJsObjectFormat extends RootJsonFormat[JsObject] {
+    def write(value: JsObject) = value
+    def read(value: JsValue) = value.asJsObject
+  }
+
+  implicit object RootJsArrayFormat extends RootJsonFormat[JsArray] {
+    def write(value: JsArray) = value
+    def read(value: JsValue) = value match {
+      case x: JsArray => x
+      case _ => deserializationError("JSON array expected")
+    }
+  }
+
   /**
    * Constructs a JsonFormat from its two parts, JsonReader and JsonWriter.
    */
