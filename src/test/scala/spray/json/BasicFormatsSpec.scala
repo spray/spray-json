@@ -31,10 +31,10 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
   
   "The LongJsonFormat" should {
     "convert a Long to a JsNumber" in {
-      42L.toJson mustEqual JsNumber(42L)
+      7563661897011259335L.toJson mustEqual JsNumber(7563661897011259335L)
     }
     "convert a JsNumber to a Long" in {
-      JsNumber(42L).convertTo[Long] mustEqual 42L
+      JsNumber(7563661897011259335L).convertTo[Long] mustEqual 7563661897011259335L
     }
   }
   
