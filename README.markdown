@@ -17,7 +17,7 @@ If you use SBT you can include _spray-json_ in your project with
 
     resolvers += "spray" at "http://repo.spray.io/"
 
-    "io.spray" %%  "spray-json" % "1.2.3" cross CrossVersion.full
+    "io.spray" %%  "spray-json" % "1.2.4" cross CrossVersion.full
 
 (the trailing "cross CrossVersion.full" modifier is only required when using SBT 0.12.x with Scala < 2.10)
 
