@@ -18,6 +18,9 @@ package spray.json
 
 import org.specs2.mutable._
 
+
+case class TestDefault(a: Int = 123, b: String)
+
 class ProductFormatsSpec extends Specification {
 
   case class Test2(a: Int, b: Option[Double])
@@ -31,6 +34,7 @@ class ProductFormatsSpec extends Specification {
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def testTransientFormat = jsonFormat2(TestTransient)
+    implicit def testDefaultFormat = jsonFormat2(TestDefault, true)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -111,4 +115,16 @@ class ProductFormatsSpec extends Specification {
     }
   }
 
+  "A JsonFormat for a case class with fields with default values" should {
+    import TestProtocol1._
+    val obj = TestDefault(b = "b")
+    
+    "evaluate the default argument expression when field is missing" in {
+      TestDefault(123, "b") === """{ "b":"b" }""".asJson.convertTo[TestDefault]
+    }
+    
+    "ignore the default argument when field is specified" in {
+      TestDefault(888, "b") === """{ "a" : 888, "b":"b" }""".asJson.convertTo[TestDefault]
+    }
+  }
 }
