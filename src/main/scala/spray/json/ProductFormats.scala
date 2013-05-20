@@ -26,8 +26,8 @@ trait ProductFormats {
   this: StandardFormats =>
 
   case class Field(name: String, getDefault: Option[() => Any])
-  implicit def toFieldAndDefArg(s : String) = Field(s, None)
-  implicit def toFieldAndDefArg(s : (String, () => Any)) = Field(s._1, Some(s._2))
+  implicit def toField(s : String) = Field(s, None)
+  implicit def toField(s : (String, () => Any)) = Field(s._1, Some(s._2))
     
   def jsonFormat0[T <: Product :ClassManifest](construct: () => T): RootJsonFormat[T] = {
     jsonFormat(construct)
