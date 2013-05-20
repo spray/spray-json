@@ -478,6 +478,356 @@ trait ProductFormats {
     )
   }
 
+    def jsonFormat16[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, T <: Product: scala.reflect.ClassManifest](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) = extractFieldNames(classManifest[T], allowOptionalFields)
+    jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)
+  }
+  def jsonFormat[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, T <: Product](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) => T, a: Field, b: Field, c: Field, d: Field,
+    e: Field, f: Field, g: Field, h: Field, i: Field, j: Field, k: Field, l: Field, m: Field, n: Field,
+    o: Field, p: Field): RootJsonFormat[T] = new RootJsonFormat[T] {
+    def write(pw: T) = JsObject(
+      productElement2Field[A](a.name, pw, 0,
+        productElement2Field[B](b.name, pw, 1,
+          productElement2Field[C](c.name, pw, 2,
+            productElement2Field[D](d.name, pw, 3,
+              productElement2Field[E](e.name, pw, 4,
+                productElement2Field[F](f.name, pw, 5,
+                  productElement2Field[G](g.name, pw, 6,
+                    productElement2Field[H](h.name, pw, 7,
+                      productElement2Field[I](i.name, pw, 8,
+                        productElement2Field[J](j.name, pw, 9,
+                          productElement2Field[K](k.name, pw, 10,
+                            productElement2Field[L](l.name, pw, 11,
+                              productElement2Field[M](m.name, pw, 12,
+                                productElement2Field[N](n.name, pw, 13,
+                                  productElement2Field[O](o.name, pw, 14,
+                                    productElement2Field[P](p.name, pw, 15)))))))))))))))))
+    def read(value: JsValue) = construct(
+      fromField[A](value, a),
+      fromField[B](value, b),
+      fromField[C](value, c),
+      fromField[D](value, d),
+      fromField[E](value, e),
+      fromField[F](value, f),
+      fromField[G](value, g),
+      fromField[H](value, h),
+      fromField[I](value, i),
+      fromField[J](value, j),
+      fromField[K](value, k),
+      fromField[L](value, l),
+      fromField[M](value, m),
+      fromField[N](value, n),
+      fromField[O](value, o),
+      fromField[P](value, p))
+  }
+
+  def jsonFormat17[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, T <: Product: scala.reflect.ClassManifest](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) = extractFieldNames(classManifest[T], allowOptionalFields)
+    jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q)
+  }
+  def jsonFormat[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, T <: Product](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q) => T, a: Field, b: Field, c: Field, d: Field,
+    e: Field, f: Field, g: Field, h: Field, i: Field, j: Field, k: Field, l: Field, m: Field, n: Field,
+    o: Field, p: Field, q: Field): RootJsonFormat[T] = new RootJsonFormat[T] {
+    def write(pw: T) = JsObject(
+      productElement2Field[A](a.name, pw, 0,
+        productElement2Field[B](b.name, pw, 1,
+          productElement2Field[C](c.name, pw, 2,
+            productElement2Field[D](d.name, pw, 3,
+              productElement2Field[E](e.name, pw, 4,
+                productElement2Field[F](f.name, pw, 5,
+                  productElement2Field[G](g.name, pw, 6,
+                    productElement2Field[H](h.name, pw, 7,
+                      productElement2Field[I](i.name, pw, 8,
+                        productElement2Field[J](j.name, pw, 9,
+                          productElement2Field[K](k.name, pw, 10,
+                            productElement2Field[L](l.name, pw, 11,
+                              productElement2Field[M](m.name, pw, 12,
+                                productElement2Field[N](n.name, pw, 13,
+                                  productElement2Field[O](o.name, pw, 14,
+                                    productElement2Field[P](p.name, pw, 15,
+                                      productElement2Field[Q](q.name, pw, 16))))))))))))))))))
+
+    def read(value: JsValue) = construct(
+      fromField[A](value, a),
+      fromField[B](value, b),
+      fromField[C](value, c),
+      fromField[D](value, d),
+      fromField[E](value, e),
+      fromField[F](value, f),
+      fromField[G](value, g),
+      fromField[H](value, h),
+      fromField[I](value, i),
+      fromField[J](value, j),
+      fromField[K](value, k),
+      fromField[L](value, l),
+      fromField[M](value, m),
+      fromField[N](value, n),
+      fromField[O](value, o),
+      fromField[P](value, p),
+      fromField[Q](value, q))
+  }
+  
+  
+  def jsonFormat18[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, T <: Product: scala.reflect.ClassManifest](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) = extractFieldNames(classManifest[T], allowOptionalFields)
+    jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r)
+  }
+  def jsonFormat[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, T <: Product](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R) => T, a: Field, b: Field, c: Field, d: Field,
+    e: Field, f: Field, g: Field, h: Field, i: Field, j: Field, k: Field, l: Field, m: Field, n: Field,
+    o: Field, p: Field, q: Field, r: Field): RootJsonFormat[T] = new RootJsonFormat[T] {
+    def write(pw: T) = JsObject(
+      productElement2Field[A](a.name, pw, 0,
+        productElement2Field[B](b.name, pw, 1,
+          productElement2Field[C](c.name, pw, 2,
+            productElement2Field[D](d.name, pw, 3,
+              productElement2Field[E](e.name, pw, 4,
+                productElement2Field[F](f.name, pw, 5,
+                  productElement2Field[G](g.name, pw, 6,
+                    productElement2Field[H](h.name, pw, 7,
+                      productElement2Field[I](i.name, pw, 8,
+                        productElement2Field[J](j.name, pw, 9,
+                          productElement2Field[K](k.name, pw, 10,
+                            productElement2Field[L](l.name, pw, 11,
+                              productElement2Field[M](m.name, pw, 12,
+                                productElement2Field[N](n.name, pw, 13,
+                                  productElement2Field[O](o.name, pw, 14,
+                                    productElement2Field[P](p.name, pw, 15,
+                                      productElement2Field[Q](q.name, pw, 16,
+                                        productElement2Field[R](r.name, pw, 17)))))))))))))))))))
+
+    def read(value: JsValue) = construct(
+      fromField[A](value, a),
+      fromField[B](value, b),
+      fromField[C](value, c),
+      fromField[D](value, d),
+      fromField[E](value, e),
+      fromField[F](value, f),
+      fromField[G](value, g),
+      fromField[H](value, h),
+      fromField[I](value, i),
+      fromField[J](value, j),
+      fromField[K](value, k),
+      fromField[L](value, l),
+      fromField[M](value, m),
+      fromField[N](value, n),
+      fromField[O](value, o),
+      fromField[P](value, p),
+      fromField[Q](value, q),
+      fromField[R](value, r))
+  }
+
+  def jsonFormat19[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, T <: Product: scala.reflect.ClassManifest](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) = extractFieldNames(classManifest[T], allowOptionalFields)
+    jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)
+  }
+
+  def jsonFormat[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, T <: Product](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S) => T, a: Field, b: Field, c: Field, d: Field,
+    e: Field, f: Field, g: Field, h: Field, i: Field, j: Field, k: Field, l: Field, m: Field, n: Field,
+    o: Field, p: Field, q: Field, r: Field, s: Field): RootJsonFormat[T] = new RootJsonFormat[T] {
+    def write(pw: T) = JsObject(
+      productElement2Field[A](a.name, pw, 0,
+        productElement2Field[B](b.name, pw, 1,
+          productElement2Field[C](c.name, pw, 2,
+            productElement2Field[D](d.name, pw, 3,
+              productElement2Field[E](e.name, pw, 4,
+                productElement2Field[F](f.name, pw, 5,
+                  productElement2Field[G](g.name, pw, 6,
+                    productElement2Field[H](h.name, pw, 7,
+                      productElement2Field[I](i.name, pw, 8,
+                        productElement2Field[J](j.name, pw, 9,
+                          productElement2Field[K](k.name, pw, 10,
+                            productElement2Field[L](l.name, pw, 11,
+                              productElement2Field[M](m.name, pw, 12,
+                                productElement2Field[N](n.name, pw, 13,
+                                  productElement2Field[O](o.name, pw, 14,
+                                    productElement2Field[P](p.name, pw, 15,
+                                      productElement2Field[Q](q.name, pw, 16,
+                                        productElement2Field[R](r.name, pw, 17,
+                                          productElement2Field[S](s.name, pw, 18))))))))))))))))))))
+    def read(value: JsValue) = construct(
+      fromField[A](value, a),
+      fromField[B](value, b),
+      fromField[C](value, c),
+      fromField[D](value, d),
+      fromField[E](value, e),
+      fromField[F](value, f),
+      fromField[G](value, g),
+      fromField[H](value, h),
+      fromField[I](value, i),
+      fromField[J](value, j),
+      fromField[K](value, k),
+      fromField[L](value, l),
+      fromField[M](value, m),
+      fromField[N](value, n),
+      fromField[O](value, o),
+      fromField[P](value, p),
+      fromField[Q](value, q),
+      fromField[R](value, r),
+      fromField[S](value, s))
+  }
+
+  def jsonFormat20[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, U: JF, T <: Product: scala.reflect.ClassManifest](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, U) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, u) = extractFieldNames(classManifest[T], allowOptionalFields)
+    jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, u)
+  }
+
+  def jsonFormat[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, U: JF, T <: Product](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, U) => T, a: Field, b: Field, c: Field, d: Field,
+    e: Field, f: Field, g: Field, h: Field, i: Field, j: Field, k: Field, l: Field, m: Field, n: Field,
+    o: Field, p: Field, q: Field, r: Field, s: Field, u: Field): RootJsonFormat[T] = new RootJsonFormat[T] {
+    def write(pw: T) = JsObject(
+      productElement2Field[A](a.name, pw, 0,
+        productElement2Field[B](b.name, pw, 1,
+          productElement2Field[C](c.name, pw, 2,
+            productElement2Field[D](d.name, pw, 3,
+              productElement2Field[E](e.name, pw, 4,
+                productElement2Field[F](f.name, pw, 5,
+                  productElement2Field[G](g.name, pw, 6,
+                    productElement2Field[H](h.name, pw, 7,
+                      productElement2Field[I](i.name, pw, 8,
+                        productElement2Field[J](j.name, pw, 9,
+                          productElement2Field[K](k.name, pw, 10,
+                            productElement2Field[L](l.name, pw, 11,
+                              productElement2Field[M](m.name, pw, 12,
+                                productElement2Field[N](n.name, pw, 13,
+                                  productElement2Field[O](o.name, pw, 14,
+                                    productElement2Field[P](p.name, pw, 15,
+                                      productElement2Field[Q](q.name, pw, 16,
+                                        productElement2Field[R](r.name, pw, 17,
+                                          productElement2Field[S](s.name, pw, 18,
+                                            productElement2Field[U](u.name, pw, 19)))))))))))))))))))))
+    def read(value: JsValue) = construct(
+      fromField[A](value, a),
+      fromField[B](value, b),
+      fromField[C](value, c),
+      fromField[D](value, d),
+      fromField[E](value, e),
+      fromField[F](value, f),
+      fromField[G](value, g),
+      fromField[H](value, h),
+      fromField[I](value, i),
+      fromField[J](value, j),
+      fromField[K](value, k),
+      fromField[L](value, l),
+      fromField[M](value, m),
+      fromField[N](value, n),
+      fromField[O](value, o),
+      fromField[P](value, p),
+      fromField[Q](value, q),
+      fromField[R](value, r),
+      fromField[S](value, s),
+      fromField[U](value, u))
+  }
+  
+  def jsonFormat21[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, U: JF, V: JF, T <: Product: scala.reflect.ClassManifest](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, U, V) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, u, v) = extractFieldNames(classManifest[T], allowOptionalFields)
+    jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, u, v)
+  }
+
+  def jsonFormat[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, U: JF, V: JF, T <: Product](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, U, V) => T, a: Field, b: Field, c: Field, d: Field,
+    e: Field, f: Field, g: Field, h: Field, i: Field, j: Field, k: Field, l: Field, m: Field, n: Field,
+    o: Field, p: Field, q: Field, r: Field, s: Field, u: Field, v: Field): RootJsonFormat[T] = new RootJsonFormat[T] {
+    def write(pw: T) = JsObject(
+      productElement2Field[A](a.name, pw, 0,
+        productElement2Field[B](b.name, pw, 1,
+          productElement2Field[C](c.name, pw, 2,
+            productElement2Field[D](d.name, pw, 3,
+              productElement2Field[E](e.name, pw, 4,
+                productElement2Field[F](f.name, pw, 5,
+                  productElement2Field[G](g.name, pw, 6,
+                    productElement2Field[H](h.name, pw, 7,
+                      productElement2Field[I](i.name, pw, 8,
+                        productElement2Field[J](j.name, pw, 9,
+                          productElement2Field[K](k.name, pw, 10,
+                            productElement2Field[L](l.name, pw, 11,
+                              productElement2Field[M](m.name, pw, 12,
+                                productElement2Field[N](n.name, pw, 13,
+                                  productElement2Field[O](o.name, pw, 14,
+                                    productElement2Field[P](p.name, pw, 15,
+                                      productElement2Field[Q](q.name, pw, 16,
+                                        productElement2Field[R](r.name, pw, 17,
+                                          productElement2Field[S](s.name, pw, 18,
+                                            productElement2Field[U](u.name, pw, 19,
+                                              productElement2Field[V](v.name, pw, 20))))))))))))))))))))))
+    def read(value: JsValue) = construct(
+      fromField[A](value, a),
+      fromField[B](value, b),
+      fromField[C](value, c),
+      fromField[D](value, d),
+      fromField[E](value, e),
+      fromField[F](value, f),
+      fromField[G](value, g),
+      fromField[H](value, h),
+      fromField[I](value, i),
+      fromField[J](value, j),
+      fromField[K](value, k),
+      fromField[L](value, l),
+      fromField[M](value, m),
+      fromField[N](value, n),
+      fromField[O](value, o),
+      fromField[P](value, p),
+      fromField[Q](value, q),
+      fromField[R](value, r),
+      fromField[S](value, s),
+      fromField[U](value, u),
+      fromField[V](value, v))
+  }
+    
+  def jsonFormat22[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, U: JF, V: JF, W: JF, T <: Product: scala.reflect.ClassManifest](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, U, V, W) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, u, v, w) = extractFieldNames(classManifest[T], allowOptionalFields)
+    jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, u, v, w)
+  }
+
+  def jsonFormat[A: JF, B: JF, C: JF, D: JF, E: JF, F: JF, G: JF, H: JF, I: JF, J: JF, K: JF, L: JF, M: JF, N: JF, O: JF, P: JF, Q: JF, R: JF, S: JF, U: JF, V: JF, W: JF, T <: Product](construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, U, V, W) => T, a: Field, b: Field, c: Field, d: Field,
+    e: Field, f: Field, g: Field, h: Field, i: Field, j: Field, k: Field, l: Field, m: Field, n: Field,
+    o: Field, p: Field, q: Field, r: Field, s: Field, u: Field, v: Field, w: Field): RootJsonFormat[T] = new RootJsonFormat[T] {
+    def write(pw: T) = JsObject(
+      productElement2Field[A](a.name, pw, 0,
+        productElement2Field[B](b.name, pw, 1,
+          productElement2Field[C](c.name, pw, 2,
+            productElement2Field[D](d.name, pw, 3,
+              productElement2Field[E](e.name, pw, 4,
+                productElement2Field[F](f.name, pw, 5,
+                  productElement2Field[G](g.name, pw, 6,
+                    productElement2Field[H](h.name, pw, 7,
+                      productElement2Field[I](i.name, pw, 8,
+                        productElement2Field[J](j.name, pw, 9,
+                          productElement2Field[K](k.name, pw, 10,
+                            productElement2Field[L](l.name, pw, 11,
+                              productElement2Field[M](m.name, pw, 12,
+                                productElement2Field[N](n.name, pw, 13,
+                                  productElement2Field[O](o.name, pw, 14,
+                                    productElement2Field[P](p.name, pw, 15,
+                                      productElement2Field[Q](q.name, pw, 16,
+                                        productElement2Field[R](r.name, pw, 17,
+                                          productElement2Field[S](s.name, pw, 18,
+                                            productElement2Field[U](u.name, pw, 19,
+                                                productElement2Field[V](v.name, pw, 20,
+                                              productElement2Field[W](w.name, pw, 21)))))))))))))))))))))))
+    def read(value: JsValue) = construct(
+      fromField[A](value, a),
+      fromField[B](value, b),
+      fromField[C](value, c),
+      fromField[D](value, d),
+      fromField[E](value, e),
+      fromField[F](value, f),
+      fromField[G](value, g),
+      fromField[H](value, h),
+      fromField[I](value, i),
+      fromField[J](value, j),
+      fromField[K](value, k),
+      fromField[L](value, l),
+      fromField[M](value, m),
+      fromField[N](value, n),
+      fromField[O](value, o),
+      fromField[P](value, p),
+      fromField[Q](value, q),
+      fromField[R](value, r),
+      fromField[S](value, s),
+      fromField[U](value, u),
+      fromField[V](value, v),
+      fromField[W](value, w))
+  }
+  
   // helpers
   
   protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField] = Nil)
