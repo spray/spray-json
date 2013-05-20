@@ -34,7 +34,7 @@ class ProductFormatsSpec extends Specification {
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def testTransientFormat = jsonFormat2(TestTransient)
-    implicit def testDefaultFormat = jsonFormat2(TestDefault)
+    implicit def testDefaultFormat = jsonFormat2(TestDefault, true)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions

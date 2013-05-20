@@ -29,16 +29,16 @@ trait ProductFormats {
   implicit def toField(s : String) = Field(s, None)
   implicit def toField(s : (String, () => Any)) = Field(s._1, Some(s._2))
     
-  def jsonFormat0[T <: Product :ClassManifest](construct: () => T): RootJsonFormat[T] = {
+  def jsonFormat0[T <: Product :ClassManifest](construct: () => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
     jsonFormat(construct)
   }
-  def jsonFormat[T <: Product](construct: () => T): RootJsonFormat[T] = new RootJsonFormat[T]{
+  def jsonFormat[T <: Product](construct: () => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = new RootJsonFormat[T]{
     def write(p: T) = JsObject()
     def read(value: JsValue) = construct()
   }
 
-  def jsonFormat1[A :JF, T <: Product :ClassManifest](construct: A => T): RootJsonFormat[T] = {
-    val Array(a) = extractFieldNames(classManifest[T])
+  def jsonFormat1[A :JF, T <: Product :ClassManifest](construct: A => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a)
   }
   def jsonFormat[A :JF, T <: Product](construct: A => T, a : Field): RootJsonFormat[T] = new RootJsonFormat[T]{
@@ -50,8 +50,8 @@ trait ProductFormats {
     )
   }
 
-  def jsonFormat2[A :JF, B :JF, T <: Product :ClassManifest](construct: (A, B) => T): RootJsonFormat[T] = {
-    val Array(a, b) = extractFieldNames(classManifest[T])
+  def jsonFormat2[A :JF, B :JF, T <: Product :ClassManifest](construct: (A, B) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b)
   }
   
@@ -66,8 +66,8 @@ trait ProductFormats {
     )
   }
 
-  def jsonFormat3[A :JF, B :JF, C :JF, T <: Product :ClassManifest](construct: (A, B, C) => T): RootJsonFormat[T] = {
-    val Array(a, b, c) = extractFieldNames(classManifest[T])
+  def jsonFormat3[A :JF, B :JF, C :JF, T <: Product :ClassManifest](construct: (A, B, C) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c)
   }
   def jsonFormat[A :JF, B :JF, C :JF, T <: Product](construct: (A, B, C) => T,
@@ -85,8 +85,8 @@ trait ProductFormats {
   }
 
   def jsonFormat4[A :JF, B :JF, C :JF, D :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, T <: Product](construct: (A, B, C, D) => T,
@@ -106,8 +106,8 @@ trait ProductFormats {
   }
 
   def jsonFormat5[A :JF, B :JF, C :JF, D :JF, E :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, T <: Product](construct: (A, B, C, D, E) => T,
@@ -129,8 +129,8 @@ trait ProductFormats {
   }
 
   def jsonFormat6[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, T <: Product](construct: (A, B, C, D, E, F) => T,
@@ -154,8 +154,8 @@ trait ProductFormats {
   }
 
   def jsonFormat7[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, T <: Product](construct: (A, B, C, D, E, F, G) => T,
@@ -181,8 +181,8 @@ trait ProductFormats {
   }
 
   def jsonFormat8[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, T <: Product]
@@ -211,8 +211,8 @@ trait ProductFormats {
   }
 
   def jsonFormat9[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H, I) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h, i) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H, I) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h, i)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, T <: Product]
@@ -243,8 +243,8 @@ trait ProductFormats {
   }
 
   def jsonFormat10[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H, I, J) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h, i, j) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H, I, J) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h, i, j)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, T <: Product]
@@ -277,8 +277,8 @@ trait ProductFormats {
   }
 
   def jsonFormat11[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H, I, J, K) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h, i, j, k) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H, I, J, K) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, T <: Product]
@@ -313,8 +313,8 @@ trait ProductFormats {
   }
 
   def jsonFormat12[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L: JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H, I, J, K, L) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h, i, j, k, l) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H, I, J, K, L) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L :JF, T <: Product]
@@ -351,8 +351,8 @@ trait ProductFormats {
   }
 
   def jsonFormat13[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L: JF, M :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H, I, J, K, L, M) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H, I, J, K, L, M) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L :JF, M :JF, T <: Product]
@@ -391,8 +391,8 @@ trait ProductFormats {
   }
 
   def jsonFormat14[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L: JF, M :JF, N :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L :JF, M :JF, N :JF, T <: Product]
@@ -434,8 +434,8 @@ trait ProductFormats {
   }
 
   def jsonFormat15[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L: JF, M :JF, N :JF, O :JF, T <: Product :ClassManifest]
-    (construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) => T): RootJsonFormat[T] = {
-    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o) = extractFieldNames(classManifest[T])
+    (construct: (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) => T, allowOptionalFields: Boolean = false): RootJsonFormat[T] = {
+    val Array(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o) = extractFieldNames(classManifest[T], allowOptionalFields)
     jsonFormat(construct, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o)
   }
   def jsonFormat[A :JF, B :JF, C :JF, D :JF, E :JF, F :JF, G :JF, H :JF, I :JF, J :JF, K :JF, L :JF, M :JF, N :JF, O :JF, T <: Product]
@@ -507,7 +507,7 @@ trait ProductFormats {
     }
   }
 
-  protected def extractFieldNames(classManifest: ClassManifest[_]): Array[Field] = {
+  protected def extractFieldNames(classManifest: ClassManifest[_], allowOptionalFields: Boolean): Array[Field] = {
     val clazz = classManifest.erasure
     try {
       // Need companion class for default arguments.
@@ -523,7 +523,7 @@ trait ProductFormats {
       val fields = clazz.getDeclaredFields.filterNot(f => f.getName.startsWith("$") || Modifier.isTransient(f.getModifiers))
       if (copyDefaultMethods.length != fields.length)
         sys.error("Case class " + clazz.getName + " declares additional fields")
-      val applyDefaultMethods = copyDefaultMethods.map { method => 
+      lazy val applyDefaultMethods = copyDefaultMethods.map { method => 
         try { 
           val defmeth = companionClass.getMethod("apply" + method.getName.drop("copy".size))
           Some(() => defmeth.invoke(companionObj))}
@@ -531,7 +531,11 @@ trait ProductFormats {
       }
       if (fields.zip(copyDefaultMethods).exists { case (f, m) => f.getType != m.getReturnType })
         sys.error("Cannot determine field order of case class " + clazz.getName)
-      fields.zip(applyDefaultMethods).map { case (f, m) => Field(f.getName, m) }
+      if (allowOptionalFields) {
+        fields.zip(applyDefaultMethods).map { case (f, m) => Field(f.getName, m) }
+      } else {
+        fields.map { f => Field(f.getName, None) }
+      }
     } catch {
       case ex : Throwable => throw new RuntimeException("Cannot automatically determine case class field names and order " +
         "for '" + clazz.getName + "', please use the 'jsonFormat' overload with explicit field name specification", ex)
