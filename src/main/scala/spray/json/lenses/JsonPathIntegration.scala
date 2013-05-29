@@ -1,7 +1,7 @@
 package spray.json
 package lenses
 
-trait JsonPathIntegration { self: ScalarLenses with SeqLenses =>
+trait JsonPathIntegration { self: ScalarLenses with SeqLenses with OptionLenses =>
   /**
    * Create a Lens from a json-path expression.
    */
@@ -15,7 +15,7 @@ trait JsonPathIntegration { self: ScalarLenses with SeqLenses =>
     }
     def convertLens(proj: JsonPath.Projection): Lens[Seq] =
       proj match {
-        case JsonPath.ByField(name) => field(name).toSeq
+        case JsonPath.ByField(name) => optionalField(name).toSeq
         case JsonPath.ByIndex(i) => element(i).toSeq
         case JsonPath.AllElements => elements
         case JsonPath.ByPredicate(pred) => filter(convertPredicate(pred))
@@ -31,7 +31,7 @@ trait JsonPathIntegration { self: ScalarLenses with SeqLenses =>
         }
 
       case JsonPath.Exists(path) =>
-        js => convertPath(path).retr(js).isRight
+        js => convertPath(path).retr(js).exists(_.nonEmpty)
     }
     def convertExpr(expr: JsonPath.Expr): JsValue => Validated[Seq[JsValue]] = expr match {
       case JsonPath.PathExpr(path) => js => convertPath(path).retr(js)

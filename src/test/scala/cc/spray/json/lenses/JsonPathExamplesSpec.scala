@@ -55,6 +55,9 @@ class JsonPathExamplesSpec extends Specification with SpecHelpers {
       "All books that have isbn" in {
         json.extract[String](("store" / "book" / filter("isbn".is[JsValue](_ => true)) / "title")) must be_==(Seq("Sword of Honour"))
       }
+      "Isbn of books that have isbn" in {
+        json.extract[String](("store" / "book" / * / "isbn".?)) must be_==(Seq("0-553-21311-3"))
+      }
       "All prices" in todo
     }
     "With Json-Path syntax" in {
@@ -74,6 +77,14 @@ class JsonPathExamplesSpec extends Specification with SpecHelpers {
       }
       "All books that have isbn" in {
         json.extract[String](fromPath("$.store.book[?(@.isbn)].title")) must be_==(Seq("Sword of Honour"))
+      }
+      "Isbn of books that have isbn" in {
+        val lens = fromPath("$.store.book[*].isbn")
+        json.extract[String](lens) must be_==(Seq("0-553-21311-3"))
+
+        val expected =
+          JsonParser("""{"store":{"bicycle":{"color":"red","price":19.95},"book":[{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95},{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99,"isbn":"0-553-21311-3?"}]}}""")
+        json.update(lens ! modify[String](_ + "?")) must be_==(expected)
       }
       "All prices" in todo
     }

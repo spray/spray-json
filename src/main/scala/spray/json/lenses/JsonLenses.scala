@@ -13,8 +13,14 @@ object JsonLenses extends
   JsonPathIntegration with
   ExtraImplicits {
 
+  class OptionalFieldBuilder(fieldName: String) {
+    def `?`: OptLens = optionalField(fieldName)
+  }
+
   implicit def strToField(name: String): ScalarLens = field(name)
   implicit def symbolToField(sym: Symbol): ScalarLens = field(sym.name)
+  implicit def strToPossiblyOptionalField(name: String): OptionalFieldBuilder = new OptionalFieldBuilder(name)
+  implicit def strToPossiblyOptionalField(sym: Symbol): OptionalFieldBuilder = new OptionalFieldBuilder(sym.name)
 
   /**
    * The lens which combines an outer lens with an inner.

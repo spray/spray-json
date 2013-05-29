@@ -25,6 +25,9 @@ class JsonLensesSpec extends Specification with SpecHelpers {
           """{"n": 2}""".extract[String]('n) must throwA[DeserializationException]("Expected String as JsString, but got 2")
         }
       }
+      "optional field" in {
+        """[{"b": 4}, {"c": 5}]""".extract[Int](* / 'b.?) must be_==(Seq(4))
+      }
       "field of member" in {
         """{"n": {"b": 4}}""".extract[Int]("n" / "b") must be_==(4)
       }
@@ -112,6 +115,14 @@ class JsonLensesSpec extends Specification with SpecHelpers {
         }
         "missing" in {
           """{"n": 12}""" update (field("z") ! modify[Int](_ + 1)) must throwAn[Exception]( """Expected field 'z' in '{"n":12}'""")
+        }
+      }
+      "optional field" in {
+        "modify" in {
+          """[{"b": 4}, {"c": 5}]""".update((* / 'b.?) ! modify[Int](_ + 12)) must be_json("""[{"b": 16}, {"c": 5}]""")
+        }
+        "create" in {
+          """[{"b": 4}, {"c": 5}]""".update((* / 'b.?) ! set(38)) must be_json("""[{"b": 38}, {"c": 5, "b": 38}]""")
         }
       }
       "set field of member" in {

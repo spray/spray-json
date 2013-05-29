@@ -67,6 +67,19 @@ val newJson1 = json.update(allAuthors ! set[String]("John Doe"))
 val newJson2 = json.update(allAuthors ! modify[String]("Ms or Mr " + _))
 ```
 
+Here are other interesting queries on the example data:
+
+```scala
+// The author of the first book in the store
+val firstAuthor = "store" / "book" / element(0) / "author"
+
+// The titles of books more expensive than $ 10
+val expensiveBookTitles = "store" / "book" / filter("price".is[Double](_ >= 10)) / "title"
+
+// ISBN of all books that have one
+val allIsbn = 'store / 'book / * / 'isbn.? // not all books have ISBNs, so the selection must be optional
+```
+
 ## Documentation
 
 ### The concept
@@ -153,6 +166,10 @@ from the following list.
  * `field(name: String)`: This lens assumes that the target value is a json object and selects the field
    with the specified name. Because this is the most common lens there are shortcut implicit conversions defined
    from `String` and `Symbol` values.
+
+ * `optionalField(name: String)`: This lens assumes a JsObject and tries to select the field of the given name. If the
+   field is missing it just isn't selected. `field.?` is a shortcut for this lens (where `field` should be
+   an expression of type Symbol or String).
 
 ##### Element access
 
