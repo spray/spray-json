@@ -21,7 +21,7 @@ package object lenses {
   case class GetOrThrow[B](e: Either[Throwable, B]) {
     def getOrThrow: B = e match {
       case Right(b) => b
-      case Left(e) => throw e
+      case Left(e) => throw new RuntimeException(e)
     }
   }
 

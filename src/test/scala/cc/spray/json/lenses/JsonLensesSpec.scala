@@ -111,7 +111,7 @@ class JsonLensesSpec extends Specification with SpecHelpers {
           """{"n": 12}""" update (n ! modify[Int](_ + 1)) must be_json( """{"n": 13}""")
         }
         "wrong type" in {
-          """{"n": 12}""" update (n ! modify[String](_ + "test")) must throwA[DeserializationException]("Expected String as JsString, but got 12")
+          """{"n": 12}""" update (n ! modify[String](_ + "test")) must throwA[RuntimeException]("spray.json.DeserializationException: Expected String as JsString, but got 12")
         }
         "missing" in {
           """{"n": 12}""" update (field("z") ! modify[Int](_ + 1)) must throwAn[Exception]( """Expected field 'z' in '{"n":12}'""")
