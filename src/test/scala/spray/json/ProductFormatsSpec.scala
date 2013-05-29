@@ -87,6 +87,42 @@ class ProductFormatsSpec extends Specification {
       json.convertTo[Test3[Int, String]] mustEqual obj
     }
   }
+  "A JsonFormat for a case class with 18 parameters and created with `jsonFormat`" should {
+    object Test18Protocol extends DefaultJsonProtocol {
+      implicit val test18Format = jsonFormat18(Test18)
+    }
+    case class Test18(
+      a1: String,
+      a2: String,
+      a3: String,
+      a4: String,
+      a5: Int,
+      a6: String,
+      a7: String,
+      a8: String,
+      a9: String,
+      a10: String,
+      a11: String,
+      a12: Double,
+      a13: String,
+      a14: String,
+      a15: String,
+      a16: String,
+      a17: String,
+      a18: String)
+
+    import Test18Protocol._
+    val obj = Test18("a1", "a2", "a3", "a4", 5, "a6", "a7", "a8", "a9",
+                     "a10", "a11", 12d, "a13", "a14", "a15", "a16", "a17", "a18")
+
+    val json = JsonParser("""{"a1":"a1","a2":"a2","a3":"a3","a4":"a4","a5":5,"a6":"a6","a7":"a7","a8":"a8","a9":"a9","a10":"a10","a11":"a11","a12":12.0,"a13":"a13","a14":"a14","a15":"a15","a16":"a16","a17":"a17","a18":"a18"}""")
+    "convert to a respective JsObject" in {
+      obj.toJson mustEqual json
+    }
+    "convert a JsObject to the respective case class instance" in {
+      json.convertTo[Test18] mustEqual obj
+    }
+  }
 
   "A JsonFormat for a generic case class with an explicitly provided type parameter" should {
     "support the jsonFormat1 syntax" in {
