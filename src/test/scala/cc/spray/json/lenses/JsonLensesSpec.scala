@@ -124,6 +124,19 @@ class JsonLensesSpec extends Specification with SpecHelpers {
         "create" in {
           """[{"b": 4}, {"c": 5}]""".update((* / 'b.?) ! set(38)) must be_json("""[{"b": 38}, {"c": 5, "b": 38}]""")
         }
+        "create nested (current behavior)" in {
+          // One could think that nested `optionalField`s and `set` would create intermediate
+          // objects as well. However, this is currently not possible, since
+          //  1. the signature of UpdateLens.updated doesn't allow to operate on
+          //     missing parents, which would be necessary to let child lenses
+          //     control the creation of parents.
+          //  2. the combine lens would then have to support it
+          //
+          // This test remains here as witness to the current behavior.
+
+          """[{"b": {}}, {"c": 5}]""".update((* / 'b.? / 'd.?) ! set(38)) must be_json(
+            """[{"b":{"d":38}},{"c":5}]""")
+        }
         "delete some" in {
           def f(i: Int): Option[Int] =
             Some(i).filter(_ % 2 == 0)
