@@ -13,7 +13,7 @@ It has the following features
 
 If you use SBT you can include _json-lenses_ in your project with
 
-    "net.virtual-void" %%  "json-lenses" % "0.5.2"
+    "net.virtual-void" %%  "json-lenses" % "0.5.3"
 
 ## Example
 
