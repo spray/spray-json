@@ -202,6 +202,8 @@ Currently, there are these update operations defined:
  * `modifyOrDeleteField[T: JsonFormat](f: T => Option[T])` can be used in conjunction with the `optionalField` lens. It
    applies an update function to an existing value. If the function returns `Some(newValue)` the field value will be
    updated to the new value. If the function returns `None` the field will be deleted.
+ * `setOrModifyField[T: JsonFormat](default: => T)(f: T => T)` can be used in conjunction with the `optionalField` lens.
+   It allows to decide which value to set an maybe previously missing value to based on the previous state of the field.
 
 #### Using lenses to extract or update json data
 
