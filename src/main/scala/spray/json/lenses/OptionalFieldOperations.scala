@@ -7,12 +7,6 @@ trait OptionalFieldOperations {
   /**
    * The `setOrUpdateField` operation sets or updates an optionalField.
    */
-  def setOrUpdateField[T: Reader : JsonWriter](f: Option[T] => T): Operation =
-    updateOptionalField[T](f andThen Some.apply)
-
-  /**
-   * The `setOrUpdateField` operation sets or updates an optionalField.
-   */
   def setOrUpdateField[T: Reader : JsonWriter](default: => T)(f: T => T): Operation =
     updateOptionalField[T](_.map(f).orElse(Some(default)))
 

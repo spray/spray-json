@@ -127,9 +127,6 @@ class JsonLensesSpec extends Specification with SpecHelpers {
         "set or update with default" in {
           """[{"b": 4}, {"c": 5}]""".update((* / 'b.?) ! setOrUpdateField(38)(1 + )) must be_json("""[{"b": 5}, {"c": 5, "b": 38}]""")
         }
-        "set or update with function" in {
-          """[{"b": 4}, {"c": 5}]""".update((* / 'b.?) ! setOrUpdateField[Int]((_: Option[Int]).map(1+).getOrElse(38))) must be_json("""[{"b": 5}, {"c": 5, "b": 38}]""")
-        }
 
         "create nested (current behavior)" in {
           // One could think that nested `optionalField`s and `set` would create intermediate
