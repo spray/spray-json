@@ -124,6 +124,11 @@ class JsonLensesSpec extends Specification with SpecHelpers {
         "create" in {
           """[{"b": 4}, {"c": 5}]""".update((* / 'b.?) ! set(38)) must be_json("""[{"b": 38}, {"c": 5, "b": 38}]""")
         }
+        "delete some" in {
+          def f(i: Int): Option[Int] =
+            Some(i).filter(_ % 2 == 0)
+          """[{"b": 4}, {"b": 3}]""".update((* / 'b.?) ! modifyOrDeleteField(f)) must be_json("""[{"b": 4}, {}]""")
+        }
       }
       "set field of member" in {
         """{"n": {"b": 4}}""" update ("n" / "b" ! set(23)) must be_json( """{"n": {"b": 23}}""")

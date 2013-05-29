@@ -199,6 +199,9 @@ Currently, there are these update operations defined:
  * `set[T: JsonWriter](t: => T)` uses the `JsonWriter` to set the value to a constant value.
  * `modify[T: JsonFormat](f: T => T)` applies an update function to an existing value. The value has to be
    serializable from and to `T`.
+ * `modifyOrDeleteField[T: JsonFormat](f: T => Option[T])` can be used in conjunction with the `optionalField` lens. It
+   applies an update function to an existing value. If the function returns `Some(newValue)` the field value will be
+   updated to the new value. If the function returns `None` the field will be deleted.
 
 #### Using lenses to extract or update json data
 

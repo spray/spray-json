@@ -25,16 +25,15 @@ trait OptionLenses {
     }
   }
 
-  val FieldMissing = unexpected("Field missing")
-
   /**
    * Accesses a maybe missing field of a JsObject.
    */
   def optionalField(name: String): OptLens = new LensImpl[Option] {
+    import OptionLenses._
     def updated(f: SafeJsValue => SafeJsValue)(parent: JsValue): SafeJsValue =
       retr(parent).flatMap { oldValueO =>
         f(oldValueO.map(Right(_)).getOrElse(FieldMissing)) match {
-          case FieldMissing => Right(parent)
+          case FieldMissing => Right(JsObject(fields = parent.asJsObject.fields - name))
           case x => x.map(newVal => JsObject(fields = parent.asJsObject.fields + (name -> newVal)))
         }
       }
@@ -46,4 +45,6 @@ trait OptionLenses {
   }
 }
 
-object OptionLenses extends OptionLenses
+object OptionLenses extends OptionLenses {
+  val FieldMissing = unexpected("Field missing")
+}
