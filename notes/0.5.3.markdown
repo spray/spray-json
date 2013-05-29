@@ -1,8 +1,9 @@
 New features in this version:
-  * support for optional field access via 'field.?
-    This allows to optionally extract / modify a field of a json object independent of its former
-    existence. The new lens can be used in conjunction with those operations:
-      * `set` will create a previously missing field
-      * `modifyOrDeleteField` can modify or remove field based on the previous field value
-      * `setOrModifyField` can create a new or modify a previous field value
-  * JsonPathSupport now generally translates field access to the optional field lens.
+
+  - support for optional field access via `'field.?`. This allows to optionally extract / modify
+    a field of a json object independent of its former existence. The new lens can be used in
+    conjunction with those operations:
+      - `set` will create a previously missing field
+      - `modifyOrDeleteField` can modify or remove a field based on its previous value
+      - `setOrUpdateField` can create a new or modify a previous field value
+  - JsonPathSupport now generally translates field access to the optional field lens.
