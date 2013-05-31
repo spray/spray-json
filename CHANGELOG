@@ -1,3 +1,8 @@
+Version 1.2.5 (2013-05-31)
+--------------------------
+- Extended `jsonFormat` support for case classes w/ > 15 parameters, closed #48
+
+
 Version 1.2.4 (2013-05-13)
 --------------------------
 - Upgraded to 2.10.1 and parboiled 1.1.5

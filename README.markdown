@@ -11,13 +11,13 @@ It sports the following features:
 ### Installation
 
 _spray-json_ is available from the [repo.spray.io] repository.
-The latest release is `1.2.4` and is built against Scala 2.9.3 as well as Scala 2.10.1.
+The latest release is `1.2.5` and is built against Scala 2.9.3 as well as Scala 2.10.1.
 
 If you use SBT you can include _spray-json_ in your project with
 
     resolvers += "spray" at "http://repo.spray.io/"
 
-    "io.spray" %%  "spray-json" % "1.2.4" cross CrossVersion.full
+    "io.spray" %%  "spray-json" % "1.2.5" cross CrossVersion.full
 
 (the trailing "cross CrossVersion.full" modifier is only required when using SBT 0.12.x with Scala < 2.10)
 

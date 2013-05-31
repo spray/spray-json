@@ -1,6 +1,6 @@
 name := "spray-json"
 
-version := "1.2.4"
+version := "1.2.5"
 
 organization := "io.spray"
 
