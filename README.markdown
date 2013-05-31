@@ -231,12 +231,6 @@ Otherwise your code will either not compile (no explicit type annotation) or thr
 wrapper).
 
 
-### API Documentation
-
-You can find the documentation for the _spray-json_ API here:
-<http://spray.github.com/spray/api/spray-json/>
-
-
 ### Credits
 
 Most of type-class (de)serialization code is nothing but a polished copy of what **Debasish Ghosh** made available
