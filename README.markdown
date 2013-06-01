@@ -15,9 +15,11 @@ The latest release is `1.2.5` and is built against Scala 2.9.3 as well as Scala 
 
 If you use SBT you can include _spray-json_ in your project with
 
-    resolvers += "spray" at "http://repo.spray.io/"
+```scala
+resolvers += "spray" at "http://repo.spray.io/"
 
-    "io.spray" %%  "spray-json" % "1.2.5" cross CrossVersion.full
+"io.spray" %%  "spray-json" % "1.2.5" cross CrossVersion.full
+```
 
 (the trailing "cross CrossVersion.full" modifier is only required when using SBT 0.12.x with Scala < 2.10)
 
@@ -31,27 +33,37 @@ suite you are not incurring any additional dependency).
 _spray-json_ is really easy to use.  
 Just bring all relevant elements in scope with 
 
-    import spray.json._
-    import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won't work
+```scala
+import spray.json._
+import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won't work
+```
 
 and do one or more of the following:
 
 1. Parse a JSON string into its Abstract Syntax Tree (AST) representation
 
-        val source = """{ "some": "JSON source" }"""
-        val jsonAst = source.asJson // or JsonParser(source)
+```scala
+val source = """{ "some": "JSON source" }"""
+val jsonAst = source.asJson // or JsonParser(source)
+```
 
 2. Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
 
-        val json = jsonAst.prettyPrint // or .compactPrint
+```scala  
+val json = jsonAst.prettyPrint // or .compactPrint
+```
 
 3. Convert any Scala object to a JSON AST using the pimped `toJson` method 
         
-        val jsonAst = List(1, 2, 3).toJson 
+```scala
+val jsonAst = List(1, 2, 3).toJson 
+```
 
 4. Convert a JSON AST to a Scala object with the `convertTo` method
 
-        val myObject = jsonAst.convertTo[MyObjectType]
+```scala
+val myObject = jsonAst.convertTo[MyObjectType]
+```
 
 In order to make steps 3 and 4 work for an object of type `T` you need to bring implicit values in scope that
 provide `JsonFormat[T]` instances for `T` and all types used by `T` (directly or indirectly).
@@ -96,17 +108,19 @@ need to provide `JsonFormat[T]`s for your custom types. This is not hard at all.
 
 If your custom type `T` is a case class then augmenting the `DefaultJsonProtocol` with a `JsonFormat[T]` is really easy:
 
-    case class Color(name: String, red: Int, green: Int, blue: Int)
+```scala
+case class Color(name: String, red: Int, green: Int, blue: Int)
 
-    object MyJsonProtocol extends DefaultJsonProtocol {
-      implicit val colorFormat = jsonFormat4(Color)
-    }
+object MyJsonProtocol extends DefaultJsonProtocol {
+  implicit val colorFormat = jsonFormat4(Color)
+}
     
-    import MyJsonProtocol._
+import MyJsonProtocol._
     
-    val json = Color("CadetBlue", 95, 158, 160).toJson
-    val color = json.convertTo[Color]
-    
+val json = Color("CadetBlue", 95, 158, 160).toJson
+val color = json.convertTo[Color]
+```
+
 The `jsonFormatX` methods reduce the boilerplate to a minimum, just pass the right one the companion object of your
 case class and it will return a ready-to-use `JsonFormat` for your type (the right one is the one matching the number
 of arguments to your case class constructor, e.g. if your case class has 13 fields you need to use the `jsonFormat13`
@@ -118,22 +132,26 @@ field names or if your JSON objects use member names that differ from the case c
 There is one additional quirk: If you explicitly declare the companion object for your case class the notation above will
 stop working. You'll have to explicitly refer to the companion objects `apply` method to fix this:
 
-    case class Color(name: String, red: Int, green: Int, blue: Int)
-    object Color
+```scala
+case class Color(name: String, red: Int, green: Int, blue: Int)
+object Color
 
-    object MyJsonProtocol extends DefaultJsonProtocol {
-      implicit val colorFormat = jsonFormat4(Color.apply)
-    }
+object MyJsonProtocol extends DefaultJsonProtocol {
+  implicit val colorFormat = jsonFormat4(Color.apply)
+}
+```
 
 If your case class is generic in that it takes type parameters itself the `jsonFormat` methods can also help you.
 However, there is a little more boilerplate required as you need to add context bounds for all type parameters
 and explicitly refer to the case classes `apply` method as in this example:
 
-    case class NamedList[A](name: String, items: List[A])
+```scala
+case class NamedList[A](name: String, items: List[A])
 
-    object MyJsonProtocol extends DefaultJsonProtocol {
-      implicit def namedListFormat[A :JsonFormat] = jsonFormat2(NamedList.apply[A])
-    }
+object MyJsonProtocol extends DefaultJsonProtocol {
+  implicit def namedListFormat[A :JsonFormat] = jsonFormat2(NamedList.apply[A])
+}
+```
 
 
 #### NullOptions
@@ -150,48 +168,52 @@ optional members as `None`.)
 Of course you can also supply (de)serialization logic for types that aren't case classes.  
 Here is one way to do it:
 
-    class Color(val name: String, val red: Int, val green: Int, val blue: Int)
+```scala
+class Color(val name: String, val red: Int, val green: Int, val blue: Int)
     
-    object MyJsonProtocol extends DefaultJsonProtocol {
-      implicit object ColorJsonFormat extends RootJsonFormat[Color] {
-        def write(c: Color) =
-          JsArray(JsString(c.name), JsNumber(c.red), JsNumber(c.green), JsNumber(c.blue))
+object MyJsonProtocol extends DefaultJsonProtocol {
+  implicit object ColorJsonFormat extends RootJsonFormat[Color] {
+    def write(c: Color) =
+      JsArray(JsString(c.name), JsNumber(c.red), JsNumber(c.green), JsNumber(c.blue))
 
-        def read(value: JsValue) = value match {
-          case JsArray(JsString(name) :: JsNumber(red) :: JsNumber(green) :: JsNumber(blue) :: Nil) =>
-            new Color(name, red.toInt, green.toInt, blue.toInt)
-          case _ => deserializationError("Color expected")
-        }
-      }
+    def read(value: JsValue) = value match {
+      case JsArray(JsString(name) :: JsNumber(red) :: JsNumber(green) :: JsNumber(blue) :: Nil) =>
+        new Color(name, red.toInt, green.toInt, blue.toInt)
+      case _ => deserializationError("Color expected")
     }
-    
-    import MyJsonProtocol._
-    
-    val json = Color("CadetBlue", 95, 158, 160).toJson
-    val color = json.convertTo[Color]
+  }
+}
+
+import MyJsonProtocol._
+
+val json = Color("CadetBlue", 95, 158, 160).toJson
+val color = json.convertTo[Color]
+```
 
 This serializes `Color` instances as a JSON array, which is compact but does not make the elements semantics explicit.
 You need to know that the color components are ordered "red, green, blue".
 
 Another way would be to serialize `Color`s as JSON objects:
 
-    object MyJsonProtocol extends DefaultJsonProtocol {
-      implicit object ColorJsonFormat extends RootJsonFormat[Color] {
-        def write(c: Color) = JsObject(
-          "name" -> JsString(c.name),
-          "red" -> JsNumber(c.red),
-          "green" -> JsNumber(c.green),
-          "blue" -> JsNumber(c.blue)
-        )
-        def read(value: JsValue) = {
-          value.asJsObject.getFields("name", "red", "green", "blue") match {
-            case Seq(JsString(name), JsNumber(red), JsNumber(green), JsNumber(blue)) =>
-              new Color(name, red.toInt, green.toInt, blue.toInt)
-            case _ => throw new DeserializationException("Color expected")
-          }
-        }
+```scala
+object MyJsonProtocol extends DefaultJsonProtocol {
+  implicit object ColorJsonFormat extends RootJsonFormat[Color] {
+    def write(c: Color) = JsObject(
+      "name" -> JsString(c.name),
+      "red" -> JsNumber(c.red),
+      "green" -> JsNumber(c.green),
+      "blue" -> JsNumber(c.blue)
+    )
+    def read(value: JsValue) = {
+      value.asJsObject.getFields("name", "red", "green", "blue") match {
+        case Seq(JsString(name), JsNumber(red), JsNumber(green), JsNumber(blue)) =>
+          new Color(name, red.toInt, green.toInt, blue.toInt)
+        case _ => throw new DeserializationException("Color expected")
       }
     }
+  }
+}
+```
 
 This is a bit more verbose in its definition and the resulting JSON but transports the field semantics over to the
 JSON side. Note that this is the approach _spray-json_ uses for case classes.
@@ -221,11 +243,15 @@ a "plain" `JsonFormat` and a `RootJsonFormat` accordingly.
 
 If your type is recursive such as
 
-    case class Foo(i: Int, foo: Foo)
+```scala
+case class Foo(i: Int, foo: Foo)
+```
 
 you need to wrap your format constructor with `lazyFormat` and supply an explicit type annotation:
 
-    implicit val fooFormat: JsonFormat[Foo] = lazyFormat(jsonFormat(Foo, "i", "foo"))
+```scala
+implicit val fooFormat: JsonFormat[Foo] = lazyFormat(jsonFormat(Foo, "i", "foo"))
+```
 
 Otherwise your code will either not compile (no explicit type annotation) or throw an NPE at runtime (no `lazyFormat`
 wrapper).
