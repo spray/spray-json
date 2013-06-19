@@ -38,6 +38,17 @@ scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + 
 // generate boilerplate
 Boilerplate.settings
 
+// OSGi settings
+osgiSettings
+
+OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}"""")
+
+OsgiKeys.importPackage <<= scalaVersion { sv => Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(sv)) }
+
+OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*")
+
+OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
+
 ///////////////
 // publishing
 ///////////////
