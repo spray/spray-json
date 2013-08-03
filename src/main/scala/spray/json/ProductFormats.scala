@@ -488,7 +488,7 @@ trait ProductFormats {
             if (reader.isInstanceOf[OptionFormat[_]]) None.asInstanceOf[T]
             else deserializationError("Object is missing required member '" + fieldName + "'", e)
         }
-      case _ => deserializationError("Object expected")
+      case _ => deserializationError(s"Object expected in field %s".format(fieldName))
     }
   }
 
