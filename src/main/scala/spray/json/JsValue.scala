@@ -51,6 +51,34 @@ sealed abstract class JsValue {
 case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   override def asJsObject(errorMsg: String) = this
   def getFields(fieldNames: String*): Seq[JsValue] = fieldNames.flatMap(fields.get)
+
+  def getField(fieldName: String):Option[JsValue] = fields.get(fieldName)
+
+  def getString(fieldName: String):Either[String, String] = fields.get(fieldName) match {
+    case Some(JsString(str)) => Right(str)
+    case Some(x) => Left("Expected a JsString in field %s but got %s".format(fieldName, x))
+    case None => Left("Field %s is missing".format(fieldName))
+  }
+
+  def getNumber(fieldName: String):Either[String, BigDecimal] = fields.get(fieldName) match {
+    case Some(JsNumber(num)) => Right(num)
+    case Some(x) => Left("Expected a JsNumber in field %s but got %s".format(fieldName, x))
+    case None => Left("Field %s is missing".format(fieldName))
+  }
+
+  def getInt(fieldName: String):Either[String, Int] = getNumber(fieldName).right.map(_.toInt)
+
+  def getLong(fieldName: String):Either[String, Long] = getNumber(fieldName).right.map(_.toLong)
+
+  def getFloat(fieldName: String):Either[String, Double] = getNumber(fieldName).right.map(_.toFloat)
+
+  def getDouble(fieldName: String):Either[String, Double] = getNumber(fieldName).right.map(_.toDouble)
+
+  def getBoolean(fieldName: String):Either[String, Boolean] = fields.get(fieldName) match {
+    case Some(JsBoolean(bool)) => Right(bool)
+    case Some(x) => Left("Expected a JsBoolean in field %s but got %s".format(fieldName, x))
+    case None => Left("Field %s is missing".format(fieldName))
+  }
 }
 object JsObject {
   // we use a ListMap in order to preserve the field order
