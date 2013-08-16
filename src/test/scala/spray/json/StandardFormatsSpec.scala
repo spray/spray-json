@@ -72,5 +72,50 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       json.convertTo[(Int, Double)] mustEqual (42, 4.2)
     }
   }
-  
+
+  "The tuple3Format" should {
+    val json = JsArray(JsNumber(42), JsNumber(4.2), JsNumber(3))
+    "convert (42, 4.2, 3) to a JsArray" in {
+      (42, 4.2, 3).toJson mustEqual json
+    }
+    "be able to convert a JsArray to a (Int, Double, Int)]" in {
+      json.convertTo[(Int, Double, Int)] mustEqual (42, 4.2, 3)
+    }
+  }
+  "The tuple4Format" should {
+    val json = JsArray(JsNumber(42), JsNumber(4.2), JsNumber(3), JsNumber(4))
+    "convert (42, 4.2, 3, 4) to a JsArray" in {
+      (42, 4.2, 3, 4).toJson mustEqual json
+    }
+    "be able to convert a JsArray to a (Int, Double, Int, Int)]" in {
+      json.convertTo[(Int, Double, Int, Int)] mustEqual (42, 4.2, 3, 4)
+    }
+  }
+  "The tuple5Format" should {
+    val json = JsArray(JsNumber(42), JsNumber(4.2), JsNumber(3), JsNumber(4), JsNumber(5))
+    "convert (42, 4.2, 3, 4, 5) to a JsArray" in {
+      (42, 4.2, 3, 4, 5).toJson mustEqual json
+    }
+    "be able to convert a JsArray to a (Int, Double, Int, Int, Int)]" in {
+      json.convertTo[(Int, Double, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5)
+    }
+  }
+  "The tuple6Format" should {
+    val json = JsArray(JsNumber(42), JsNumber(4.2), JsNumber(3), JsNumber(4), JsNumber(5), JsNumber(6))
+    "convert (42, 4.2, 3, 4, 5, 6) to a JsArray" in {
+      (42, 4.2, 3, 4, 5, 6).toJson mustEqual json
+    }
+    "be able to convert a JsArray to a (Int, Double, Int, Int, Int, Int)]" in {
+      json.convertTo[(Int, Double, Int, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5, 6)
+    }
+  }
+  "The tuple7Format" should {
+    val json = JsArray(JsNumber(42), JsNumber(4.2), JsNumber(3), JsNumber(4), JsNumber(5), JsNumber(6), JsNumber(7))
+    "convert (42, 4.2, 3, 4, 5, 6, 7) to a JsArray" in {
+      (42, 4.2, 3, 4, 5, 6, 7).toJson mustEqual json
+    }
+    "be able to convert a JsArray to a (Int, Double, Int, Int, Int, Int, Int)]" in {
+      json.convertTo[(Int, Double, Int, Int, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5, 6, 7)
+    }
+  }
 }
