@@ -50,7 +50,7 @@ trait ProductFormats extends ProductFormatsInstances {
             if (reader.isInstanceOf[OptionFormat[_]]) None.asInstanceOf[T]
             else deserializationError("Object is missing required member '" + fieldName + "'", e)
         }
-      case _ => deserializationError("Object expected in field " + fieldName)
+      case _ => deserializationError("Object expected in field '" + fieldName + "'")
     }
   }
 
