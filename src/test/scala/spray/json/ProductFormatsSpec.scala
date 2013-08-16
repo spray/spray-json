@@ -62,7 +62,7 @@ class ProductFormatsSpec extends Specification {
       JsObject("b" -> JsNumber(4.2), "a" -> JsNumber(42)).convertTo[Test2] mustEqual obj
     }
     "throw a DeserializationException if the JsValue is not a JsObject" in (
-      JsNull.convertTo[Test2] must throwA(new DeserializationException("Object expected"))
+      JsNull.convertTo[Test2] must throwA(new DeserializationException("Object expected in field 'a'"))
     )
   }
 
