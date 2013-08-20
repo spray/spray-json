@@ -22,7 +22,7 @@ class JsonLensesSpec extends Specification with SpecHelpers {
           """{"n": 2}""".extract[Int]('z) must throwAn[Exception]( """Expected field 'z' in '{"n":2}'""")
         }
         "wrong type" in {
-          """{"n": 2}""".extract[String]('n) must throwA[DeserializationException]("Expected String as JsString, but got 2")
+          """{"n": 2}""".extract[String]('n) must throwA[RuntimeException]("spray.json.DeserializationException: Expected String as JsString, but got 2")
         }
       }
       "optional field" in {
@@ -36,7 +36,7 @@ class JsonLensesSpec extends Specification with SpecHelpers {
           """["a", "b", 2, 5, 8, 3]""".extract[Int](element(3)) must be_==(5)
         }
         "out of bounds" in {
-          """["a", "b", 2, 5, 8, 3]""".extract[Int](element(38)) must throwAn[IndexOutOfBoundsException]("Too little elements in array: [\"a\",\"b\",2,5,8,3] size: 6 index: 38")
+          """["a", "b", 2, 5, 8, 3]""".extract[Int](element(38)) must throwAn[RuntimeException]("java.lang.IndexOutOfBoundsException: Too little elements in array: [\"a\",\"b\",2,5,8,3] size: 6 index: 38")
         }
       }
       "finding an element" in {
