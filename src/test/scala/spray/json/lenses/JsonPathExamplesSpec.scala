@@ -38,6 +38,24 @@ class JsonPathExamplesSpec extends Specification with SpecHelpers {
       |}
     """.stripMargin)
 
+  val singleElemArray = JsonParser(
+    """
+      |{ "store": {
+      |    "book":
+      |      { "category": "reference",
+      |        "author": "Nigel Rees",
+      |        "title": "Sayings of the Century",
+      |        "price": 8.95
+      |      }
+      |    ,
+      |    "bicycle": {
+      |      "color": "red",
+      |      "price": 19.95
+      |    }
+      |  }
+      |}
+    """.stripMargin)
+
   "Examples" should {
     "with Scala syntax" in {
       "All authors" in {
@@ -45,6 +63,9 @@ class JsonPathExamplesSpec extends Specification with SpecHelpers {
       }
       "Author of first book" in {
         json.extract[String](("store" / "book" / element(0) / "author")) must be_==("Nigel Rees")
+      }
+      "Author of first book no array" in {
+        singleElemArray.extract[String](("store" / "book" / arrayOrSingletonAsArray / element(0) / "author")) must be_==("Nigel Rees")
       }
       "Books with category 'reference'" in {
         json.extract[String](("store" / "book" / filter("category".is[String](_ == "reference")) / "title")) must be_==(Seq("Sayings of the Century"))

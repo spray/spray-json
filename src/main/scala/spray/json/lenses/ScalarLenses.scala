@@ -55,6 +55,20 @@ trait ScalarLenses {
 
     def retr: JsValue => SafeJsValue = x => Right(x)
   }
+
+  /**
+   * A lens which leaves JsArray as is but transforms any other kind of JsValue into
+   * a singleton JsArray with that value as single element.
+   */
+  val arrayOrSingletonAsArray: ScalarLens = new LensImpl[Id] {
+    def updated(f: SafeJsValue => SafeJsValue)(parent: JsValue): SafeJsValue =
+      retr(parent).flatMap(x => f(Right(x)))
+
+    def retr: JsValue => Validated[JsValue] = {
+      case ar: JsArray => Right(ar)
+      case x => Right(JsArray(x))
+    }
+  }
 }
 
 object ScalarLenses extends ScalarLenses

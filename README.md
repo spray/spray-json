@@ -184,6 +184,8 @@ from the following list.
    and its field `fullName` is a string starting with `"Joe"`.
  * `allMatching(next: Lens)`: A combination of `combine` and `elements`. Selects elements matching the `next` lens
    and then applies the `next` lens.
+ * `arrayOrSingletonAsArray`: Makes sure that the result is always a json array by interpreting a value that is no array
+   as an singleton array containing just that value.
 
 ##### Combination
 

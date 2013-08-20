@@ -66,6 +66,20 @@ class JsonLensesSpec extends Specification with SpecHelpers {
           }
         }
       }
+      "orSingletonArray" in {
+        "empty JsArray" in {
+          "[]".extract[Seq[Int]](arrayOrSingletonAsArray) === Nil
+        }
+        "filled JsArray" in {
+          "[1,2,3,4,5]".extract[Seq[Int]](arrayOrSingletonAsArray) === Seq(1, 2, 3, 4, 5)
+        }
+        "single int value" in {
+          "5".extract[Seq[Int]](arrayOrSingletonAsArray) === Seq(5)
+        }
+        "single object value" in {
+          """{ "a": 5 }""".extract[Seq[Map[String, Int]]](arrayOrSingletonAsArray) === Seq(Map("a" -> 5))
+        }
+      }
       "all elements of an array" in {
         "simple" in {
           """[18, 23, 2, 5, 8, 3]""".extract[Int](*) must be_==(Seq(18, 23, 2, 5, 8, 3))
@@ -88,6 +102,7 @@ class JsonLensesSpec extends Specification with SpecHelpers {
           """{"a": 5}""".extract[Int](("a" / *)) must throwAn[Exception]( """Not a json array: 5""")
         }
       }
+
       /*"filtered elements of an array" in {
 
       }*/
@@ -160,6 +175,20 @@ class JsonLensesSpec extends Specification with SpecHelpers {
       }
       "set element of array" in {
         """["a", "b", 2, 5, 8, 3]""" update (element(3) ! set(35)) must be_json( """["a", "b", 2, 35, 8, 3]""")
+      }
+      "orSingletonArray" in {
+        "empty JsArray" in {
+          "[]".update(arrayOrSingletonAsArray ! set(Seq(1, 2, 3, 4, 5))) must be_json("""[1, 2, 3, 4, 5]""")
+        }
+        "filled JsArray" in {
+          "[1,2,3,4,5]".update(arrayOrSingletonAsArray / * ! modify[Int](_ + 1)) must be_json("""[2, 3, 4, 5, 6]""")
+        }
+        "single int value" in {
+          "5".update(arrayOrSingletonAsArray / * ! modify[Int](_ + 1)) must be_json("""[6]""")
+        }
+        "single object value" in {
+          """{ "a": 5 }""".update(arrayOrSingletonAsArray / * / 'a ! modify[Int](_ + 1)) must be_json("""[{ "a" : 6 }]""")
+        }
       }
       "change a found element" in {
         "in a homogenuous array" in {
