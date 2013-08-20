@@ -69,7 +69,7 @@ object JsonPathParser extends Parser {
 
   val WhiteSpaceChars = " \n\r\t\f"
   def FieldName: Rule1[String] = rule {
-    oneOrMore(!anyOf(".[)]"+WhiteSpaceChars) ~ ANY) ~> identity
+    oneOrMore("a" - "z" | "A" - "Z" | "0" - "9" | anyOf("_-")) ~> identity
   }
 
   def SingleQuotedString: Rule1[String] =

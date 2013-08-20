@@ -24,20 +24,26 @@ class JsonPathSpecs extends Specification {
       "of field" in {
         parse("$['abc']") must be_==(Selection(Root, ByField("abc")))
       }
-      "by predicate" in {
-        "eq" in {
-          parse("$[?(@.id == 'test')]") must be_==(Selection(Root, ByPredicate(Eq(PathExpr(Selection(Root, ByField("id"))), Constant(JsString("test"))))))
-        }
-        "lt" in {
-          parse("$[?(@.id < 12)]") must be_==(Selection(Root, ByPredicate(Lt(PathExpr(Selection(Root, ByField("id"))), Constant(JsNumber(12))))))
-        }
-        "exists" in {
-          parse("$[?(@.id)]") must be_==(Selection(Root, ByPredicate(Exists(Selection(Root, ByField("id"))))))
-        }
+
+      "by predicate: eq" in {
+        parse("$[?(@.id == 'test')]") must be_==(Selection(Root, ByPredicate(Eq(PathExpr(Selection(Root, ByField("id"))), Constant(JsString("test"))))))
+      }
+
+      "by predicate: lt" in {
+        parse("$[?(@.id < 12)]") must be_==(Selection(Root, ByPredicate(Lt(PathExpr(Selection(Root, ByField("id"))), Constant(JsNumber(12))))))
+      }
+
+      "by predicate: exists" in {
+        parse("$[?(@.id)]") must be_==(Selection(Root, ByPredicate(Exists(Selection(Root, ByField("id"))))))
+      }
+
+      "by predicate: strings with spaces in conditions" in {
+        parse("$[?(@.title=='The Space Merchants')]") must be_==(
+          Selection(Root, ByPredicate(Eq(PathExpr(Selection(Root, ByField("title"))), Constant(JsString("The Space Merchants")))))
+        )
       }
     }
   }
 
-  def parse(str: String) =
-    JsonPathParser(str)
+  def parse(str: String) = JsonPathParser(str)
 }
