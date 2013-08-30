@@ -227,7 +227,7 @@ In order to distinguish, on the type-level, "regular" JsonFormats from the ones 
 arrays _spray-json_ defines the [`RootJsonFormat`][1] type, which is nothing but a marker specialization of `JsonFormat`.
 Libraries supporting _spray-json_ as a means of document serialization might choose to depend on a `RootJsonFormat[T]`
 for a custom type `T` (rather than a "plain" `JsonFormat[T]`), so as to not allow the rendering of illegal document
-roots. E.g., the `SprayJsonSupport` trait of _spray-server_ is one notable example of such a case.
+roots. E.g., the `SprayJsonSupport` trait of _spray-routing_ is one notable example of such a case.
 
 All default converters in the `DefaultJsonProtocol` producing JSON objects or arrays are actually implemented as
 `RootJsonFormat`. When "manually" implementing a `JsonFormat` for a custom type `T` (rather than relying on case class
@@ -252,7 +252,9 @@ implicit val fooFormat: JsonFormat[Foo] = lazyFormat(jsonFormat(Foo, "i", "foo")
 ```
 
 Otherwise your code will either not compile (no explicit type annotation) or throw an NPE at runtime (no `lazyFormat`
-wrapper).
+wrapper). Note, that `lazyFormat` returns a `JsonFormat` even if it was given a `RootJsonFormat` which means it isn't 
+picked up by `SprayJsonSupport`. To get back a `RootJsonFormat` just wrap the complete `lazyFormat` call with another 
+call to `rootFormat`.
 
 
 ### Credits
