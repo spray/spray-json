@@ -33,7 +33,7 @@ Just bring all relevant elements in scope with
 
 ```scala
 import spray.json._
-import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won't work
+import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won't work correctly
 ```
 
 and do one or more of the following:
