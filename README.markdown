@@ -268,6 +268,10 @@ Additionally the JSON AST model is heavily inspired by the one contributed by **
 
 _spray-json_ is licensed under [APL 2.0].
 
+### Mailing list
+
+Please use the [spray-user] mailing list if you have any questions.
+
 
 ### Patch Policy
 
@@ -283,3 +287,4 @@ _spray-json_ project under the project’s open source license.
   [SJSON]: https://github.com/debasishg/sjson
   [Databinder-Dispatch]: https://github.com/n8han/Databinder-Dispatch
   [APL 2.0]: http://www.apache.org/licenses/LICENSE-2.0
+  [spray-user]: http://groups.google.com/group/spray-user
