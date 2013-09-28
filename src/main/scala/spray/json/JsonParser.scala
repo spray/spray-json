@@ -70,7 +70,7 @@ object JsonParser extends Parser {
 
   def Digit = rule { "0" - "9" }
 
-  def HexDigit = rule { "0" - "9" | "a" - "f" | "A" - "Z" }
+  def HexDigit = rule { "0" - "9" | "a" - "f" | "A" - "F" }
 
   def Frac = rule { "." ~ Digits }
 
