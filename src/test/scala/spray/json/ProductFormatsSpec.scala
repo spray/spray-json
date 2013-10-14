@@ -25,12 +25,15 @@ class ProductFormatsSpec extends Specification {
   case class TestTransient(a: Int, b: Option[Double]) {
     @transient var c = false
   }
+  @SerialVersionUID(1L) // SerialVersionUID adds a static field to the case class
+  case class TestStatic(a: Int, b: Option[Double])
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def testTransientFormat = jsonFormat2(TestTransient)
+    implicit def testStaticFormat = jsonFormat2(TestStatic)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -144,6 +147,18 @@ class ProductFormatsSpec extends Specification {
     }
     "convert a JsObject to the respective case class instance" in {
       json.convertTo[TestTransient] mustEqual obj
+    }
+  }
+
+  "A JsonFormat for a case class with static fields and created with `jsonFormat`" should {
+    import TestProtocol1._
+    val obj = TestStatic(42, Some(4.2))
+    val json = JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2))
+    "convert to a respective JsObject" in {
+      obj.toJson mustEqual json
+    }
+    "convert a JsObject to the respective case class instance" in {
+      json.convertTo[TestStatic] mustEqual obj
     }
   }
 
