@@ -1,4 +1,4 @@
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
 resolvers += "spray" at "http://repo.spray.io"
 
@@ -6,7 +6,7 @@ libraryDependencies <++= scalaVersion { sv =>
   val specsVersion = if (sv.startsWith("2.9")) "1.12.4.1" else "2.1.1"
   Seq(
     "io.spray" %% "spray-json" % "1.2.5",
-    "org.parboiled" %% "parboiled-scala" % "1.1.4" % "compile",
+    "org.parboiled" %% "parboiled-scala" % "1.1.6" % "compile",
     "org.specs2" %% "specs2" % specsVersion % "test")
 }
 
