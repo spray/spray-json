@@ -1,7 +1,8 @@
-New features in this version:
+Version 0.5.4 is a maintainance release. Fixed issues in this version:
 
   - [#8][] added `arrayOrSingletonAsArray` which allows to reinterpret values as singleton arrays
   - [#11][] fixed a parser bug in JsonPathParser
+  - updated dependencies
 
 [#8]: https://github.com/jrudolph/json-lenses/issues/8
 [#11]: https://github.com/jrudolph/json-lenses/issues/11
