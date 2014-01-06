@@ -70,6 +70,7 @@ trait JsonPrinter extends (JsValue => String) {
               case c if !requiresEncoding(c) => sb.append(c)
               case '"' => sb.append("\\\"")
               case '\\' => sb.append("\\\\")
+              case '/' => sb.append("\\/")
               case '\b' => sb.append("\\b")
               case '\f' => sb.append("\\f")
               case '\n' => sb.append("\\n")
