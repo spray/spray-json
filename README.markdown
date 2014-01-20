@@ -1,12 +1,20 @@
 _spray-json_ is a lightweight, clean and efficient [JSON] implementation in Scala.
 
 It sports the following features:
-  
-* Simple immutable model of the JSON language elements
+
+* A simple immutable model of the JSON language elements
 * An efficient JSON PEG parser (implemented with [parboiled][])
 * Choice of either compact or pretty JSON-to-string printing
 * Type-class based (de)serialization of custom objects (no reflection, no intrusion)
 
+_spray-json_ allows you to convert between
+ * String JSON documents
+ * JSON Abstract Syntax Trees (ASTs) with base type JsValue
+ * instances of arbitrary Scala types
+
+as depicted in this diagram:
+
+![Spray-JSON conversions](images/Conversions.png "Conversions possible with Spray-JSON")
 
 ### Installation
 
@@ -25,11 +33,10 @@ _spray-json_ has only one dependency: the parsing library [parboiled][]
 (which is also a dependency of _spray-http_, so if you use _spray-json_ together with other modules of the *spray*
 suite you are not incurring any additional dependency).
 
-
 ### Usage
 
-_spray-json_ is really easy to use.  
-Just bring all relevant elements in scope with 
+_spray-json_ is really easy to use.
+Just bring all relevant elements in scope with
 
 ```scala
 import spray.json._
@@ -49,7 +56,7 @@ val jsonAst = source.asJson // or JsonParser(source)
 val json = jsonAst.prettyPrint // or .compactPrint
 ```
 
- 3. Convert any Scala object to a JSON AST using the pimped `toJson` method 
+ 3. Convert any Scala object to a JSON AST using the pimped `toJson` method
 ```scala
 val jsonAst = List(1, 2, 3).toJson
 ```
@@ -74,17 +81,17 @@ This approach has the advantage of not requiring any change (or even access) to 
 logic is attached 'from the outside'. There is no reflection involved, so the resulting conversions are fast. Scalas
 excellent type inference reduces verbosity and boilerplate to a minimum, while the Scala compiler will make sure at
 compile time that you provided all required (de)serialization logic.
-   
+
 In _spray-jsons_ terminology a 'JsonProtocol' is nothing but a bunch of implicit values of type `JsonFormat[T]`, whereby
 each `JsonFormat[T]` contains the logic of how to convert instance of `T` to and from JSON. All `JsonFormat[T]`s of a
 protocol need to be "mece" (mutually exclusive, collectively exhaustive), i.e. they are not allowed to overlap and
 together need to span all types required by the application.
-   
-This may sound more complicated than it is.  
+
+This may sound more complicated than it is.
 _spray-json_ comes with a `DefaultJsonProtocol`, which already covers all of Scalas value types as well as the most
 important reference and collection types. As long as your code uses nothing more than these you only need the
 `DefaultJsonProtocol`. Here are the types already taken care of by the `DefaultJsonProtocol`:
-  
+
 * Byte, Short, Int, Long, Float, Double, Char, Unit, Boolean
 * String, Symbol
 * BigInt, BigDecimal
@@ -96,7 +103,7 @@ important reference and collection types. As long as your code uses nothing more
 
 In most cases however you'll also want to convert types not covered by the `DefaultJsonProtocol`. In these cases you
 need to provide `JsonFormat[T]`s for your custom types. This is not hard at all.
- 
+
 
 ### Providing JsonFormats for Case Classes
 
@@ -108,9 +115,9 @@ case class Color(name: String, red: Int, green: Int, blue: Int)
 object MyJsonProtocol extends DefaultJsonProtocol {
   implicit val colorFormat = jsonFormat4(Color)
 }
-    
+
 import MyJsonProtocol._
-    
+
 val json = Color("CadetBlue", 95, 158, 160).toJson
 val color = json.convertTo[Color]
 ```
@@ -159,12 +166,12 @@ optional members as `None`.)
 
 ### Providing JsonFormats for other Types
 
-Of course you can also supply (de)serialization logic for types that aren't case classes.  
+Of course you can also supply (de)serialization logic for types that aren't case classes.
 Here is one way to do it:
 
 ```scala
 class Color(val name: String, val red: Int, val green: Int, val blue: Int)
-    
+
 object MyJsonProtocol extends DefaultJsonProtocol {
   implicit object ColorJsonFormat extends RootJsonFormat[Color] {
     def write(c: Color) =
@@ -248,8 +255,8 @@ implicit val fooFormat: JsonFormat[Foo] = lazyFormat(jsonFormat(Foo, "i", "foo")
 ```
 
 Otherwise your code will either not compile (no explicit type annotation) or throw an NPE at runtime (no `lazyFormat`
-wrapper). Note, that `lazyFormat` returns a `JsonFormat` even if it was given a `RootJsonFormat` which means it isn't 
-picked up by `SprayJsonSupport`. To get back a `RootJsonFormat` just wrap the complete `lazyFormat` call with another 
+wrapper). Note, that `lazyFormat` returns a `JsonFormat` even if it was given a `RootJsonFormat` which means it isn't
+picked up by `SprayJsonSupport`. To get back a `RootJsonFormat` just wrap the complete `lazyFormat` call with another
 call to `rootFormat`.
 
 
@@ -259,7 +266,7 @@ Most of type-class (de)serialization code is nothing but a polished copy of what
 with his [SJSON] library. These code parts therefore bear his copyright.
 Additionally the JSON AST model is heavily inspired by the one contributed by **Jorge Ortiz** to [Databinder-Dispatch].
 
-  
+
 ### License
 
 _spray-json_ is licensed under [APL 2.0].
@@ -275,7 +282,7 @@ Feedback and contributions to the project, no matter what kind, are always very 
 However, patches can only be accepted from their original author.
 Along with any patches, please state that the patch is your original work and that you license the work to the
 _spray-json_ project under the project’s open source license.
-  
+
 
   [JSON]: http://json.org
   [parboiled]: http://parboiled.org
