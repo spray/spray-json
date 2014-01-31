@@ -86,7 +86,7 @@ trait JsonPrinter extends (JsValue => String) {
     }
     sb.append('"')
   }
-  
+
   protected def printSeq[A](iterable: Iterable[A], printSeparator: => Unit)(f: A => Unit) {
     var first = true
     iterable.foreach { a =>
@@ -97,21 +97,15 @@ trait JsonPrinter extends (JsValue => String) {
 }
 
 object JsonPrinter {
-  private[this] val mask = new Array[Int](4)
-  private[this] def ascii(c: Char): Int = c & ((c - 127) >> 31) // branchless for `if (c <= 127) c else 0`
-  private[this] def mark(c: Char): Unit = {
-    val b = ascii(c)
-    mask(b >> 5) |= 1 << (b & 0x1F)
-  }
-  private[this] def mark(range: scala.collection.immutable.NumericRange[Char]): Unit = range foreach (mark)
+  import scala.collection.BitSet
+  /* 
+  RFC 4627:
+  A string begins and ends with quotation marks.  All Unicode characters may be placed within the
+  quotation marks except for the characters that must be escaped: quotation mark, reverse solidus,
+  and the control characters (U+0000 through U+001F).
+  */  
+  val disallowed = BitSet(('\u0000' to '\u001f').map( _.toInt) : _*) + '"' + '\\'
+  
+  val requiresEncoding = disallowed.contains _
 
-  mark('\u0000' to '\u0019')
-  mark('\u007f')
-  mark('"')
-  mark('\\')
-
-  def requiresEncoding(c: Char): Boolean = {
-    val b = ascii(c)
-    (mask(b >> 5) & (1 << (b & 0x1F))) != 0
-  }
 }

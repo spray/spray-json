@@ -49,11 +49,13 @@ class CompactPrinterSpec extends Specification {
       CompactPrinter(JsString("xyz")) mustEqual "\"xyz\""
     }
     "properly escape special chars in JsString" in {
-      CompactPrinter(JsString("\"\\\b\f\n\r\t\u12AB")) mustEqual """"\"\\\b\f\n\r\t""" + "\\u12ab\""
-      CompactPrinter(JsString("\u1000")) mustEqual "\"\\u1000\""
-      CompactPrinter(JsString("\u0100")) mustEqual "\"\\u0100\""
+      CompactPrinter(JsString("\"\\\b\f\n\r\t\u12AB")) mustEqual """"\"\\\b\f\n\r\t""" + "\u12ab\""
+      CompactPrinter(JsString("\u1000")) mustEqual "\"\u1000\""
+      CompactPrinter(JsString("\u0100")) mustEqual "\"\u0100\""
       CompactPrinter(JsString("\u0010")) mustEqual "\"\\u0010\""
       CompactPrinter(JsString("\u0001")) mustEqual "\"\\u0001\""
+      CompactPrinter(JsString("飞机因此受到损伤")) mustEqual "\"飞机因此受到损伤\""
+      CompactPrinter(JsString("\uD834\uDD1E")) mustEqual "\"\uD834\uDD1E\""
     }
     "properly print a simple JsObject" in (
       CompactPrinter(JsObject("key" -> JsNumber(42), "key2" -> JsString("value")))
