@@ -50,6 +50,9 @@ class JsonParserSpec extends Specification {
       JsonParser(""""\"\\/\b\f\n\r\t"""") mustEqual JsString("\"\\/\b\f\n\r\t")
       JsonParser("\"L\\" + "u00e4nder\"") mustEqual JsString("Länder")
     }
+    "parse all representations of the slash (SOLIDUS) character in a JsString" in {
+      JsonParser( "\"" + "/\\/\\u002f" + "\"") mustEqual JsString("///")
+    }
     "properly parse a simple JsObject" in (
       JsonParser(""" { "key" :42, "key2": "value" }""") mustEqual
               JsObject("key" -> JsNumber(42), "key2" -> JsString("value"))
