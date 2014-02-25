@@ -105,7 +105,7 @@ object JsonPrinter {
   }
   private[this] def mark(range: scala.collection.immutable.NumericRange[Char]): Unit = range foreach (mark)
 
-  mark('\u0000' to '\u0019')
+  mark('\u0000' to '\u001f')
   mark('\u007f')
   mark('"')
   mark('\\')
