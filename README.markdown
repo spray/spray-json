@@ -154,6 +154,25 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 }
 ```
 
+### Alternative format for Case Classes
+
+As of version 1.2.6, there is an alternative method to create formats for case classes. Instead of `jsonFormatN` use
+`formatN`. Apart from this, the new formats are a drop-in replacement for the original ones.
+
+```scala
+case class Color(name: String, red: Int, green: Int, blue: Int)
+
+object MyJsonProtocol extends DefaultJsonProtocol {
+  implicit val colorFormat = format4(Color)
+}
+
+The new method has several advantages:
+
+* Use default values defined on case-classes when fields are missing from json
+* Omit empty arrays and objects when serializing fields with default values
+* Allows property renaming
+* Override formats per field
+* Allow advanced customizations
 
 #### NullOptions
 
