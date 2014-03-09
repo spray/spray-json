@@ -23,7 +23,7 @@ import scala.util.control.NonFatal
  * Provides the helpers for constructing custom JsonFormat implementations for types implementing the Product trait
  * (especially case classes)
  */
-trait ProductFormats extends ProductFormatsInstances {
+trait ProductFormats extends ProductFormatsInstances with ProductFormats2 {
   this: StandardFormats =>
 
   def jsonFormat0[T](construct: () => T): RootJsonFormat[T] =
