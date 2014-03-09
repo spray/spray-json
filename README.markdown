@@ -164,6 +164,7 @@ case class Color(name: String, red: Int, green: Int, blue: Int)
 object MyJsonProtocol extends DefaultJsonProtocol {
   implicit val colorFormat = format4(Color)
 }
+```
 
 The new method has several advantages:
 
