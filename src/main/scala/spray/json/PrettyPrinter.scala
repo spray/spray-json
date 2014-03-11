@@ -56,12 +56,13 @@ trait PrettyPrinter extends JsonPrinter {
     sb.append(']')
   }
   
-  @tailrec
   protected def printIndent(sb: StringBuilder, indent: Int) {
-    if (indent > 0) {
-      sb.append(' ')
-      printIndent(sb, indent - 1)
-    }
+    @tailrec def rec(indent: Int): Unit =
+      if (indent > 0) {
+        sb.append(' ')
+        rec(indent - 1)
+      }
+    rec(indent)
   }
 }
 
