@@ -29,7 +29,7 @@ trait PrettyPrinter extends JsonPrinter {
     print(x, sb, 0)
   }
   
-  private def print(x: JsValue, sb: StringBuilder, indent: Int) {
+  protected def print(x: JsValue, sb: StringBuilder, indent: Int) {
     x match {
       case JsObject(x) => printObject(x, sb, indent)
       case JsArray(x)  => printArray(x, sb, indent)
@@ -37,7 +37,7 @@ trait PrettyPrinter extends JsonPrinter {
     }
   }
 
-  private def printObject(members: Map[String, JsValue], sb: StringBuilder, indent: Int) {
+  protected def printObject(members: Map[String, JsValue], sb: StringBuilder, indent: Int) {
     sb.append("{\n")    
     printSeq(members, sb.append(",\n")) { m =>
       printIndent(sb, indent + Indent)
@@ -50,14 +50,14 @@ trait PrettyPrinter extends JsonPrinter {
     sb.append("}")
   }
   
-  private def printArray(elements: List[JsValue], sb: StringBuilder, indent: Int) {
+  protected def printArray(elements: List[JsValue], sb: StringBuilder, indent: Int) {
     sb.append('[')
     printSeq(elements, sb.append(", "))(print(_, sb, indent))
     sb.append(']')
   }
   
   @tailrec
-  private def printIndent(sb: StringBuilder, indent: Int) {
+  protected def printIndent(sb: StringBuilder, indent: Int) {
     if (indent > 0) {
       sb.append(' ')
       printIndent(sb, indent - 1)
