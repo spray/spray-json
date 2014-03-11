@@ -19,6 +19,7 @@ import java.lang.reflect.{ParameterizedType, Modifier}
 import scala.reflect.ClassTag
 import scala.reflect.classTag
 import scala.collection.mutable
+import scala.collection.immutable.ListMap
 import scala.language.existentials
 
 /**
@@ -186,15 +187,15 @@ abstract private[spray] class ProductFormatImpl[P <: Product :ClassTag, F0 :Prod
     }
   }
 
-  protected def jsObject(fields: Iterable[JsField]): JsObject = {
-    JsObject(fields.toMap match {
+  protected def jsObject(fields: Seq[JsField]): JsObject = {
+    JsObject(ListMap(fields:_*) match {
       case map if map.size == fields.size => map
       case map =>
-        val builder = mutable.Map[String, JsValue]()
+        val builder = mutable.ListMap[String, JsValue]()
         for ((name, value) <- fields) {
           (builder.get(name), value) match {
-            case (Some(JsObject(oldFields)), JsObject(fields)) =>
-              builder += (name -> jsObject(oldFields ++ fields))
+            case (Some(JsObject(oldFields)), JsObject(newFields)) =>
+              builder += (name -> jsObject((oldFields ++ newFields).toSeq))
             case _ => builder += (name -> value)
           }
         }
