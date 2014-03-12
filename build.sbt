@@ -24,13 +24,19 @@ scalacOptions <<= scalaVersion map {
 resolvers += Opts.resolver.sonatypeReleases
 
 libraryDependencies <++= scalaVersion { sv =>
-  Seq(
-    "org.parboiled" %% "parboiled-scala" % "1.1.5" % "compile",
-    sv match {
-      case "2.9.3"  => "org.specs2" %% "specs2" % "1.12.4.1" % "test"
-      case x if x startsWith "2.10" => "org.specs2" %% "specs2" % "1.14" % "test"
-    }
-  )
+  Seq("org.parboiled" %% "parboiled-scala" % "1.1.5" % "compile") ++
+  (sv match {
+    case "2.9.3"  =>
+      Seq(
+        "org.specs2" %% "specs2" % "1.12.4.1" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
+      )
+    case x if x startsWith "2.10" =>
+      Seq(
+        "org.specs2" %% "specs2" % "2.3.10" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
+      )
+  })
 }
 
 scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
