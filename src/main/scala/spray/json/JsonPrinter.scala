@@ -97,21 +97,12 @@ trait JsonPrinter extends (JsValue => String) {
 }
 
 object JsonPrinter {
-  private[this] val mask = new Array[Int](4)
-  private[this] def ascii(c: Char): Int = c & ((c - 127) >> 31) // branchless for `if (c <= 127) c else 0`
-  private[this] def mark(c: Char): Unit = {
-    val b = ascii(c)
-    mask(b >> 5) |= 1 << (b & 0x1F)
-  }
-  private[this] def mark(range: scala.collection.immutable.NumericRange[Char]): Unit = range foreach (mark)
-
-  mark('\u0000' to '\u001f')
-  mark('\u007f')
-  mark('"')
-  mark('\\')
-
-  def requiresEncoding(c: Char): Boolean = {
-    val b = ascii(c)
-    (mask(b >> 5) & (1 << (b & 0x1F))) != 0
-  }
+  def requiresEncoding(c: Char): Boolean =
+    // from RFC 4627
+    // unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
+    c match {
+      case '"'  => true
+      case '\\' => true
+      case c    => c < 0x20
+    }
 }
