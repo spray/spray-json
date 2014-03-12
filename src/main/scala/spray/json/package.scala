@@ -40,6 +40,8 @@ package json {
   }
 
   private[json] class PimpedString(string: String) {
-    def asJson: JsValue = JsonParser(string)
+    @deprecated("deprecated in favor of parseJson", "1.2.6")
+    def asJson: JsValue = parseJson
+    def parseJson: JsValue = JsonParser(string)
   }
 }
