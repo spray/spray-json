@@ -73,7 +73,10 @@ trait BasicFormats {
   }
 
   implicit object BigDecimalJsonFormat extends JsonFormat[BigDecimal] {
-    def write(x: BigDecimal) = JsNumber(x)
+    def write(x: BigDecimal) = {
+      require(x ne null)
+      JsNumber(x)
+    }
     def read(value: JsValue) = value match {
       case JsNumber(x) => x
       case x => deserializationError("Expected BigDecimal as JsNumber, but got " + x)
@@ -81,7 +84,10 @@ trait BasicFormats {
   }
 
   implicit object BigIntJsonFormat extends JsonFormat[BigInt] {
-    def write(x: BigInt) = JsNumber(x)
+    def write(x: BigInt) = {
+      require(x ne null)
+      JsNumber(x)
+    }
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.toBigInt
       case x => deserializationError("Expected BigInt as JsNumber, but got " + x)
@@ -111,7 +117,10 @@ trait BasicFormats {
   }
   
   implicit object StringJsonFormat extends JsonFormat[String] {
-    def write(x: String) = JsString(x)
+    def write(x: String) = {
+      require(x ne null)
+      JsString(x)
+    }
     def read(value: JsValue) = value match {
       case JsString(x) => x
       case x => deserializationError("Expected String as JsString, but got " + x)
@@ -125,5 +134,4 @@ trait BasicFormats {
       case x => deserializationError("Expected Symbol as JsString, but got " + x)
     }
   }
-  
 }
