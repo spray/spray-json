@@ -18,20 +18,21 @@ scalaVersion := "2.10.3"
 
 scalacOptions <<= scalaVersion map {
   case "2.9.3"  => Seq("-unchecked", "-deprecation", "-encoding", "utf8")
-  case x if x startsWith "2.10" => Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
+  case _ => Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
 }
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies <++= scalaVersion { sv =>
+libraryDependencies ++= {
   Seq("org.parboiled" %% "parboiled-scala" % "1.1.5" % "compile") ++
-  (sv match {
+  (scalaVersion.value match {
     case "2.9.3"  =>
       Seq(
         "org.specs2" %% "specs2" % "1.12.4.1" % "test",
         "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
       )
-    case x if x startsWith "2.10" =>
+    // Scala 2.10 and Scala 2.11
+    case _ =>
       Seq(
         "org.specs2" %% "specs2" % "2.3.10" % "test",
         "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
@@ -39,7 +40,7 @@ libraryDependencies <++= scalaVersion { sv =>
   })
 }
 
-scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
+(scalacOptions in doc) <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
 
 // generate boilerplate
 Boilerplate.settings
