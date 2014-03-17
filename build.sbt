@@ -40,7 +40,7 @@ libraryDependencies ++= {
   })
 }
 
-scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
+(scalacOptions in doc) <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
 
 // generate boilerplate
 Boilerplate.settings
