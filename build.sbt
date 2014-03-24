@@ -14,23 +14,30 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.10.1"
+scalaVersion := "2.11.0-RC3"
 
 scalacOptions <<= scalaVersion map {
   case "2.9.3"  => Seq("-unchecked", "-deprecation", "-encoding", "utf8")
-  case "2.10.1" => Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
+  case _ => Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
 }
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies <++= scalaVersion { sv =>
-  Seq(
-    "org.parboiled" %% "parboiled-scala" % "1.1.5" % "compile",
-    sv match {
-      case "2.9.3"  => "org.specs2" %% "specs2" % "1.12.4.1" % "test"
-      case "2.10.1" => "org.specs2" %% "specs2" % "1.14" % "test"
-    }
-  )
+libraryDependencies <++= scalaVersion { version =>
+  Seq("org.parboiled" %% "parboiled-scala" % "1.1.6" % "compile") ++
+  (version match {
+    case "2.9.3"  =>
+      Seq(
+        "org.specs2" %% "specs2" % "1.12.4.1" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
+      )
+    // Scala 2.10 and Scala 2.11
+    case _ =>
+      Seq(
+        "org.specs2" %% "specs2" % "2.3.10" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
+      )
+  })
 }
 
 scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
