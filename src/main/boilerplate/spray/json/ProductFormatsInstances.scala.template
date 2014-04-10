@@ -27,7 +27,7 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
     def write(p: T) = {
       val fields = new collection.mutable.ListBuffer[(String, JsValue)]
       fields.sizeHint(1 * 2)
-      [#fields ++= productElement2Field[P1](fieldName1, p, 0)#
+      [#fields ++= productElement##2Field[P1](fieldName1, p, 0)#
       ]
       JsObject(fields: _*)
     }

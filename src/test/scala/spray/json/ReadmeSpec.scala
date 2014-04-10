@@ -25,7 +25,7 @@ class ReadmeSpec extends Specification {
       import DefaultJsonProtocol._
       
       val source = """{ "some": "JSON source" }"""
-      val jsonAst = source.asJson
+      val jsonAst = source.parseJson
       jsonAst mustEqual JsObject("some" -> JsString("JSON source"))
       
       val json2 = jsonAst.prettyPrint

@@ -58,7 +58,7 @@ class PrettyPrinterSpec extends Specification {
            |      "no": 0
            |    }, ["a", "b", null], false]
            |  }
-           |}""".stripMargin.replace("\u00f8", "\\u00f8")
+           |}""".stripMargin
       }
     }
   }

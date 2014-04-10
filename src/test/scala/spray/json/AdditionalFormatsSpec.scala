@@ -51,7 +51,7 @@ class AdditionalFormatsSpec extends Specification {
 
     "properly read a Container[Container[List[Int]]] from JSON" in {
       import ReaderProtocol._
-      """{"content":{"content":[1,2,3]}}""".asJson.convertTo[Container[Container[List[Int]]]] mustEqual obj
+      """{"content":{"content":[1,2,3]}}""".parseJson.convertTo[Container[Container[List[Int]]]] mustEqual obj
     }
   }
 

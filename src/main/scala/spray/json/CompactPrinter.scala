@@ -31,7 +31,7 @@ trait CompactPrinter extends JsonPrinter {
     }
   }
 
-  private def printObject(members: Map[String, JsValue], sb: StringBuilder) {
+  protected def printObject(members: Map[String, JsValue], sb: StringBuilder) {
     sb.append('{')
     printSeq(members, sb.append(',')) { m =>
       printString(m._1, sb)
@@ -41,7 +41,7 @@ trait CompactPrinter extends JsonPrinter {
     sb.append('}')
   }
 
-  private def printArray(elements: List[JsValue], sb: StringBuilder) {
+  protected def printArray(elements: List[JsValue], sb: StringBuilder) {
     sb.append('[')
     printSeq(elements, sb.append(','))(print(_, sb))
     sb.append(']')

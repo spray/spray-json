@@ -18,25 +18,43 @@ scalaVersion := "2.10.4"
 
 scalacOptions <<= scalaVersion map {
   case "2.9.3"  => Seq("-unchecked", "-deprecation", "-encoding", "utf8")
-  case "2.10.4" => Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
+  case _ => Seq("-feature", "-language:implicitConversions", "-unchecked", "-deprecation", "-encoding", "utf8")
 }
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies <++= scalaVersion { sv =>
-  Seq(
-    "org.parboiled" %% "parboiled-scala" % "1.1.6" % "compile",
-    sv match {
-      case "2.9.3"  => "org.specs2" %% "specs2" % "1.12.4.1" % "test"
-      case "2.10.4" => "org.specs2" %% "specs2" % "2.3.10" % "test"
-    }
-  )
+libraryDependencies ++= {
+  Seq("org.parboiled" %% "parboiled-scala" % "1.1.6" % "compile") ++
+  (scalaVersion.value match {
+    case "2.9.3"  =>
+      Seq(
+        "org.specs2" %% "specs2" % "1.12.4.1" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
+      )
+    // Scala 2.10 and Scala 2.11
+    case _ =>
+      Seq(
+        "org.specs2" %% "specs2" % "2.3.10" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
+      )
+  })
 }
 
-scaladocOptions <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
+(scalacOptions in doc) <<= (name, version).map { (n, v) => Seq("-doc-title", n + " " + v) }
 
 // generate boilerplate
 Boilerplate.settings
+
+// OSGi settings
+osgiSettings
+
+OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}"""")
+
+OsgiKeys.importPackage <<= scalaVersion { sv => Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(sv)) }
+
+OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*")
+
+OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
 
 ///////////////
 // publishing
