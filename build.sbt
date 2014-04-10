@@ -1,6 +1,6 @@
 name := "spray-json"
 
-version := "1.2.5"
+version := "1.2.6"
 
 organization := "io.spray"
 
@@ -60,7 +60,7 @@ OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.9.3", "2.10.4")
+crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.0-RC4")
 
 scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
 

@@ -1,3 +1,17 @@
+Version 1.2.6 (2014-04-10)
+--------------------------
+- Improved deserialization error message with name of malformed field  (#62)
+- Fixed broken `tuple7Format` (#66)
+- Fixed parsing problem for invalid hex digits (#75)
+- Fixed `jsonFormat` method to ignore static fields (#76)
+- Fixed `JsonPrinter` unicode escaping to strictly match spec (#83, #46)
+- Fixed `null` handling in `JsString` (#70)
+- Opened up JsonPrinter methods to overriding by marking them `protected`
+- Deprecated `asJson` method in favor of `parseJson` (#89)
+- Added OSGi metadata
+- Upgraded to Scala 2.10.4 and parboiled 1.1.6, added cross-building for Scala 2.11
+
+
 Version 1.2.5 (2013-05-31)
 --------------------------
 - Extended `jsonFormat` support for case classes w/ > 15 parameters, closed #48
