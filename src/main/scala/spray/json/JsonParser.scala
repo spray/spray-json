@@ -251,5 +251,4 @@ class JsonParser {
 /**
  * ParsingException super class added for compatibility reasons.
  */
-class JsonParseException(val s: String, val pos: Int, val msg: String)
-  extends ParsingException("Json parse exception: " + msg + " at position " + pos + ": " + s.substring(pos, Math.min(s.length, pos + 20)))
+class JsonParseException(val s: String, val pos: Int, val msg: String) extends ParsingException("Json parse exception: " + msg + " at position " + pos + ": " + s.substring(pos, Math.min(s.length, pos + 20)))
