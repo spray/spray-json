@@ -70,13 +70,13 @@ class JsonParser {
           case Some(name) =>
             whitespace()
             if (c != ':')
-              exception("Expected ':'")
+              exception("expected ':'")
             next()
             whitespace()
             val v = jsonValue()
             ab += name -> v
           case None =>
-            exception("Expected name")
+            exception("expected name")
         }
         whitespace()
         if (c == ',') next()
@@ -111,29 +111,29 @@ class JsonParser {
 
   private def jsonValue(): JsValue =
     jsonString() orElse
-      jsonNumber() orElse
-      jsonObject() orElse
-      jsonArray() orElse
-      jsonConstant() getOrElse exception("value expected")
+    jsonNumber() orElse
+    jsonObject() orElse
+    jsonArray() orElse
+    jsonConstant() getOrElse exception("expected string, number, object, array or constant")
 
   private def jsonString(): Option[JsString] =
     string().map(JsString(_))
 
   private def jsonConstant(): Option[JsValue] = {
-    if (c == 't') {
-      for (cc <- "true")
-        if (c == cc) next() else exception("expected 'true'")
-      Some(JsTrue)
+    def constExpected =
+      exception("allowed constants are 'true', 'false' or 'null'")
+
+    @inline
+    def eat(const: String, value: JsValue) = {
+      const.foreach(cc => if (c == cc) next() else constExpected)
+      Some(value)
     }
-    else if (c == 'f') {
-      for (cc <- "false")
-        if (c == cc) next() else exception("expected 'false'")
-      Some(JsFalse)
-    }
-    else if (c == 'n') {
-      for (cc <- "null")
-        if (c == cc) next() else exception("expected 'null'")
-      Some(JsNull)
+
+    if (c == 't') eat("true", JsTrue)
+    else if (c == 'f') eat("false", JsFalse)
+    else if (c == 'n') eat("null", JsNull)
+    else if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+      constExpected
     }
     else None
   }
@@ -170,7 +170,7 @@ class JsonParser {
         }
       }
       if (c != '"')
-        exception("expected '\"'")
+        exception("expected closing '\"'")
       next()
       Some(sb.toString)
     }
@@ -231,7 +231,7 @@ class JsonParser {
       next()
       m - '0'
     }
-    else exception("Hex digit expected")
+    else exception("expected hex digit")
   }
 
   @inline
