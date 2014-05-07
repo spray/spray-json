@@ -48,4 +48,10 @@ trait CompactPrinter extends JsonPrinter {
   }
 }
 
-object CompactPrinter extends CompactPrinter
+object CompactPrinter extends CompactPrinter {
+  def apply(expectedContentLength : Int) : CompactPrinter = {
+    new CompactPrinter {
+      override def expectedLength = expectedContentLength
+    }
+  }
+}

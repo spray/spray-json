@@ -71,6 +71,18 @@ class CompactPrinterSpec extends Specification {
     "properly print a JSON padding (JSONP) if requested" in {
       CompactPrinter(JsTrue, Some("customCallback")) mustEqual("customCallback(true)")
     }
+    "allow a custom length and properly escape special chars in JsString" in {
+      CompactPrinter(32)(JsString("\"\\\b\f\n\r\t")) mustEqual """"\"\\\b\f\n\r\t""""
+      CompactPrinter(64)(JsString("\u1000")) mustEqual "\"\u1000\""
+      CompactPrinter(128)(JsString("\u0100")) mustEqual "\"\u0100\""
+      CompactPrinter(256)(JsString("\u0010")) mustEqual "\"\\u0010\""
+      CompactPrinter(512)(JsString("\u0001")) mustEqual "\"\\u0001\""
+      CompactPrinter(32)(JsString("\u001e")) mustEqual "\"\\u001e\""
+      // don't escape as it isn't required by the spec
+      CompactPrinter(16)(JsString("\u007f")) mustEqual "\"\u007f\""
+      CompactPrinter(8)(JsString("飞机因此受到损伤")) mustEqual "\"飞机因此受到损伤\""
+      CompactPrinter(2)(JsString("\uD834\uDD1E")) mustEqual "\"\uD834\uDD1E\""
+    }
   }
   
 }

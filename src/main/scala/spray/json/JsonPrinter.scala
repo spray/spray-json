@@ -24,12 +24,14 @@ import java.lang.StringBuilder
  */
 trait JsonPrinter extends (JsValue => String) {
 
+  def expectedLength = 16
+
   def apply(x: JsValue): String = apply(x, None)
 
   def apply(x: JsValue, jsonpCallback: String): String = apply(x, Some(jsonpCallback))
 
   def apply(x: JsValue, jsonpCallback: Option[String]): String = {
-    val sb = new StringBuilder
+    val sb = new StringBuilder(expectedLength)
     jsonpCallback match {
       case Some(callback) => {
         sb.append(callback).append('(')
