@@ -55,7 +55,23 @@ case class JsObject(fields: Map[String, JsValue]) extends JsValue {
 object JsObject {
   // we use a ListMap in order to preserve the field order
   def apply(members: JsField*) = new JsObject(ListMap(members: _*))
+  def apply(ordered: Boolean, members: JsField*) = {
+    if(ordered) {
+      new JsObject(ListMap(members: _*))
+    }
+    else {
+      new JsObject(Map(members: _*))
+    }
+  }
   def apply(members: List[JsField]) = new JsObject(ListMap(members: _*))
+  def apply(ordered: Boolean, members: List[JsField]) = {
+    if(ordered) {
+      new JsObject(ListMap(members: _*))
+    } else {
+      new JsObject(Map(members: _*))
+    }
+  }
+
 }
 
 /**
