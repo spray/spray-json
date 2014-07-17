@@ -46,25 +46,29 @@ import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won
 and do one or more of the following:
 
  1. Parse a JSON string into its Abstract Syntax Tree (AST) representation
-```scala
-val source = """{ "some": "JSON source" }"""
-val jsonAst = source.parseJson // or JsonParser(source)
-```
+
+    ```scala
+    val source = """{ "some": "JSON source" }"""
+    val jsonAst = source.parseJson // or JsonParser(source)
+    ```
 
  2. Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
-```scala
-val json = jsonAst.prettyPrint // or .compactPrint
-```
+
+    ```scala
+    val json = jsonAst.prettyPrint // or .compactPrint
+    ```
 
  3. Convert any Scala object to a JSON AST using the pimped `toJson` method
-```scala
-val jsonAst = List(1, 2, 3).toJson
-```
+
+    ```scala
+    val jsonAst = List(1, 2, 3).toJson
+    ```
 
  4. Convert a JSON AST to a Scala object with the `convertTo` method
-```scala
-val myObject = jsonAst.convertTo[MyObjectType]
-```
+
+    ```scala
+    val myObject = jsonAst.convertTo[MyObjectType]
+    ```
 
 In order to make steps 3 and 4 work for an object of type `T` you need to bring implicit values in scope that
 provide `JsonFormat[T]` instances for `T` and all types used by `T` (directly or indirectly).
