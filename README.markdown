@@ -45,23 +45,23 @@ import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won
 
 and do one or more of the following:
 
- 1. Parse a JSON string into its Abstract Syntax Tree (AST) representation
+* Parse a JSON string into its Abstract Syntax Tree (AST) representation
 ```scala
 val source = """{ "some": "JSON source" }"""
 val jsonAst = source.parseJson // or JsonParser(source)
 ```
 
- 2. Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
+* Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
 ```scala
 val json = jsonAst.prettyPrint // or .compactPrint
 ```
 
- 3. Convert any Scala object to a JSON AST using the pimped `toJson` method
+* Convert any Scala object to a JSON AST using the pimped `toJson` method
 ```scala
 val jsonAst = List(1, 2, 3).toJson
 ```
 
- 4. Convert a JSON AST to a Scala object with the `convertTo` method
+* Convert a JSON AST to a Scala object with the `convertTo` method
 ```scala
 val myObject = jsonAst.convertTo[MyObjectType]
 ```
