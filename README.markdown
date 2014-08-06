@@ -26,7 +26,7 @@ If you use SBT you can include _spray-json_ in your project with
 ```scala
 resolvers += "spray" at "http://repo.spray.io/"
 
-libraryDependencies += "io.spray" %%  "spray-json" % "1.2.6"
+libraryDependencies += "io.spray" %%  "spray-json_<scala_version>" % "1.2.6"
 ```
 
 _spray-json_ has only one dependency: the parsing library [parboiled][]
