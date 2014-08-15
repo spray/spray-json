@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Mathias Doenitz
+ * Copyright (C) 2014 Ruud Diterwich
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,106 +16,239 @@
 
 package spray.json
 
-import org.parboiled.scala._
-import org.parboiled.errors.{ErrorUtils, ParsingException}
-import org.parboiled.Context
 import java.lang.StringBuilder
+import scala.collection.mutable.ListBuffer
+import org.parboiled.errors.ParsingException
 
 /**
- * This JSON parser is the almost direct implementation of the JSON grammar
- * presented at http://www.json.org as a parboiled PEG parser.
+ * This JSON parser is the almost direct implementation of the JSON grammar.
+ * It has been optimized for speed, and is about 17 times faster than the original scala-parsing based
+ * implementation.
  */
-object JsonParser extends Parser {
+object JsonParser {
+  def apply(s: String): JsValue =
+    (new JsonParser).parse(s)
 
-  // the root rule
-  lazy val Json = rule { WhiteSpace ~ Value ~ EOI }
+  def apply(s: Array[Char]): JsValue =
+    (new JsonParser).parse(s)
+}
 
-  def JsonObject: Rule1[JsObject] = rule {
-    "{ " ~ zeroOrMore(Pair, separator = ", ") ~ "} " ~~> (JsObject(_ :_*))
+/**
+ * One can re-use a parser instance instead of using the object's apply methods. Performance will be slightly
+ * better. This class, however, is NOT thread-safe.
+ */
+class JsonParser {
+
+  private var s: Array[Char] = Array.empty
+  private var i: Int = 0
+  private var c: Char = 0
+  private val sb = new StringBuilder
+
+  def parse(s: String): JsValue =
+    parse(s.toCharArray)
+
+  def parse(s: Array[Char]): JsValue = {
+    this.s = s
+    this.i = -1
+    next()
+    whitespace()
+    val result = jsonValue()
+    whitespace()
+    if (c != 0)
+      exception("expected end of document")
+    result
   }
 
-  def Pair = rule { JsonStringUnwrapped ~ ": " ~ Value ~~> ((_, _)) }
-
-  def Value: Rule1[JsValue] = rule {
-    JsonString | JsonNumber | JsonObject | JsonArray | JsonTrue | JsonFalse | JsonNull
+  private def jsonObject(): Option[JsObject] = {
+    if (c == '{') {
+      next()
+      val ab = new ListBuffer[(String, JsValue)]
+      whitespace()
+      while (c != '}') {
+        whitespace()
+        string() match {
+          case Some(name) =>
+            whitespace()
+            if (c != ':')
+              exception("expected ':'")
+            next()
+            whitespace()
+            val v = jsonValue()
+            ab += name -> v
+          case None =>
+            exception("expected name")
+        }
+        whitespace()
+        if (c == ',') next()
+        else if (c != '}')
+          exception("expected '}'")
+      }
+      next()
+      Some(JsObject(ab.toList))
+    }
+    else None
   }
 
-  def JsonString = rule { JsonStringUnwrapped ~~> (JsString(_)) }
-  
-  def JsonStringUnwrapped = rule { "\"" ~ Characters ~ "\" " ~~> (_.toString) }
-
-  def JsonNumber = rule { group(Integer ~ optional(Frac) ~ optional(Exp)) ~> (JsNumber(_)) ~ WhiteSpace }
-
-  def JsonArray = rule { "[ " ~ zeroOrMore(Value, separator = ", ") ~ "] " ~~> (JsArray(_)) }
-
-  def Characters = rule { push(new StringBuilder) ~ zeroOrMore("\\" ~ EscapedChar | NormalChar) }
-  
-  def EscapedChar = rule (
-       anyOf("\"\\/") ~:% withContext(appendToSb(_)(_)) 
-    | "b" ~ appendToSb('\b')
-    | "f" ~ appendToSb('\f')
-    | "n" ~ appendToSb('\n')
-    | "r" ~ appendToSb('\r')
-    | "t" ~ appendToSb('\t')
-    | Unicode ~~% withContext((code, ctx) => appendToSb(code.asInstanceOf[Char])(ctx)) 
-  )
-
-  def NormalChar = rule { !anyOf("\"\\") ~ ANY ~:% (withContext(appendToSb(_)(_))) }
-
-  def Unicode = rule { "u" ~ group(HexDigit ~ HexDigit ~ HexDigit ~ HexDigit) ~> (java.lang.Integer.parseInt(_, 16)) }
-
-  def Integer = rule { optional("-") ~ (("1" - "9") ~ Digits | Digit) }
-
-  def Digits = rule { oneOrMore(Digit) }
-
-  def Digit = rule { "0" - "9" }
-
-  def HexDigit = rule { "0" - "9" | "a" - "f" | "A" - "F" }
-
-  def Frac = rule { "." ~ Digits }
-
-  def Exp = rule { ignoreCase("e") ~ optional(anyOf("+-")) ~ Digits }
-
-  def JsonTrue = rule { "true " ~ push(JsTrue) }
-
-  def JsonFalse = rule { "false " ~ push(JsFalse) }
-
-  def JsonNull = rule { "null " ~ push(JsNull) }
-
-  def WhiteSpace: Rule0 = rule { zeroOrMore(anyOf(" \n\r\t\f")) }
-    
-  // helper method for fast string building
-  // for maximum performance we use a somewhat unorthodox parsing technique that is a bit more verbose (and somewhat
-  // less readable) but reduces object allocations during the parsing run to a minimum:
-  // the Characters rules pushes a StringBuilder object onto the stack which is then directly fed with matched
-  // and unescaped characters in the sub rules (i.e. no string allocations and value stack operation required)
-  def appendToSb(c: Char): Context[Any] => Unit = { ctx =>
-    ctx.getValueStack.peek.asInstanceOf[StringBuilder].append(c)
-    ()
+  private def jsonArray(): Option[JsArray] = {
+    if (c == '[') {
+      next()
+      val lb = new ListBuffer[JsValue]
+      whitespace()
+      while (c != ']') {
+        whitespace()
+        lb += jsonValue()
+        whitespace()
+        if (c == ',')
+          next()
+        else if (c != ']')
+          exception("expected ']'")
+      }
+      next()
+      Some(new JsArray(lb.toList))
+    }
+    else None
   }
 
-  /**
-   * We redefine the default string-to-rule conversion to also match trailing whitespace if the string ends with
-   * a blank, this keeps the rules free from most whitespace matching clutter
-   */
-  override implicit def toRule(string: String) = {
-    if (string.endsWith(" ")) str(string.trim) ~ WhiteSpace
-    else str(string)
+  private def jsonValue(): JsValue =
+    jsonString() orElse
+    jsonNumber() orElse
+    jsonObject() orElse
+    jsonArray() orElse
+    jsonConstant() getOrElse exception("expected string, number, object, array or constant")
+
+  private def jsonString(): Option[JsString] =
+    string().map(JsString(_))
+
+  private def jsonConstant(): Option[JsValue] = {
+    def constExpected =
+      exception("allowed constants are 'true', 'false' or 'null'")
+
+    @inline
+    def eat(const: String, value: JsValue) = {
+      const.foreach(cc => if (c == cc) next() else constExpected)
+      Some(value)
+    }
+
+    if (c == 't') eat("true", JsTrue)
+    else if (c == 'f') eat("false", JsFalse)
+    else if (c == 'n') eat("null", JsNull)
+    else if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+      constExpected
+    }
+    else None
   }
 
-  /**
-   * The main parsing method. Uses a ReportingParseRunner (which only reports the first error) for simplicity.
-   */
-  def apply(json: String): JsValue = apply(json.toCharArray)
-  
-  /**
-   * The main parsing method. Uses a ReportingParseRunner (which only reports the first error) for simplicity.
-   */
-  def apply(json: Array[Char]): JsValue = {
-    val parsingResult = ReportingParseRunner(Json).run(json)
-    parsingResult.result.getOrElse {
-      throw new ParsingException("Invalid JSON source:\n" + ErrorUtils.printParseErrors(parsingResult)) 
+  private def string(): Option[String] = {
+    if (c == '"') {
+      next()
+      sb.setLength(0)
+      while (c != 0 && c != '"') {
+        if (c == '\\') {
+          next()
+          c match {
+            case '"' => sb.append('"'); next()
+            case '\\' => sb.append('\\'); next()
+            case '/' => sb.append('/'); next()
+            case 'b' => sb.append('\b'); next()
+            case 'f' => sb.append('\f'); next()
+            case 'n' => sb.append('\n'); next()
+            case 'r' => sb.append('\r'); next()
+            case 't' => sb.append('\t'); next()
+            case 'u' =>
+              next()
+              val code =
+                (hexDigit() << 12) +
+                  (hexDigit() << 8) +
+                  (hexDigit() << 4) +
+                  hexDigit()
+              sb.append(code.asInstanceOf[Char])
+            case _ => exception("expected escape char")
+          }
+        } else {
+          sb.append(c)
+          next()
+        }
+      }
+      if (c != '"')
+        exception("expected closing '\"'")
+      next()
+      Some(sb.toString)
+    }
+    else None
+  }
+
+  private def jsonNumber(): Option[JsNumber] = {
+    sb.setLength(0)
+    if (c == '-') {
+      sb.append(c)
+      next()
+    }
+    while (c >= '0' && c <= '9') {
+      sb.append(c)
+      next()
+    }
+    if (c == '.') {
+      sb.append(c)
+      next()
+      while (c >= '0' && c <= '9') {
+        sb.append(c)
+        next()
+      }
+    }
+    if (c == 'e' || c == 'E') {
+      sb.append(c)
+      next()
+      if (c == '-' || c == '+') {
+        sb.append(c)
+        next()
+      }
+      while (c >= '0' && c <= '9') {
+        sb.append(c)
+        next()
+      }
+    }
+    if (sb.length != 0) Some(JsNumber(sb.toString))
+    else None
+  }
+
+  @inline
+  private def whitespace() =
+    while (Character.isWhitespace(c))
+      next()
+
+  @inline
+  private def hexDigit(): Int = {
+    val m = c
+    if (c >= 'a' && c <= 'f') {
+      next()
+      m - 'a' + 10
+    }
+    else if (c >= 'A' && c <= 'F') {
+      next()
+      m - 'A' + 10
+    }
+    else if (c >= '0' && c <= '9') {
+      next()
+      m - '0'
+    }
+    else exception("expected hex digit")
+  }
+
+  @inline
+  private def next() {
+    i += 1
+    if (i < s.length) {
+      c = s(i)
+    } else {
+      c = 0
     }
   }
 
+  def exception(message: String) =
+    throw new JsonParseException(new String(s), i, message)
 }
+
+/**
+ * ParsingException super class added for compatibility reasons.
+ */
+class JsonParseException(val s: String, val pos: Int, val msg: String) extends ParsingException("Json parse exception: " + msg + " at position " + pos + ": " + s.substring(pos, Math.min(s.length, pos + 20)))
