@@ -8,9 +8,7 @@ object JsValueGenerators {
   import Gen._
   import Arbitrary.arbitrary
 
-  // some characters have special meaning in parboiled
-  // see org.parboiled.support.Chars, we have to exclude those
-  val parseableString: Gen[String] = arbitrary[String].map(_.filterNot(_ > 0xfd00))
+  val parseableString: Gen[String] = arbitrary[String]
   val genString: Gen[JsString] = parseableString.map(JsString(_))
   val genBoolean: Gen[JsBoolean] = oneOf(JsFalse, JsTrue)
   val genLongNumber: Gen[JsNumber] = arbitrary[Long].map(JsNumber(_))

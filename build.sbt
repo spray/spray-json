@@ -21,7 +21,6 @@ scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "
 resolvers += Opts.resolver.sonatypeReleases
 
 libraryDependencies ++= Seq(
-  "org.parboiled" %% "parboiled-scala" % "1.1.6" % "compile",
   "org.specs2" %% "specs2" % "2.4.2" % "test",
   "org.scalacheck" %% "scalacheck" % "1.11.5" % "test"
 )

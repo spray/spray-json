@@ -17,55 +17,61 @@
 package spray.json
 
 import org.specs2.mutable._
-import org.parboiled.common.FileUtils
 
 class JsonParserSpec extends Specification {
 
   "The JsonParser" should {
     "parse 'null' to JsNull" in {
-      JsonParser("null") mustEqual JsNull
+      JsonParser("null") === JsNull
     }
     "parse 'true' to JsTrue" in {
-      JsonParser("true") mustEqual JsTrue
+      JsonParser("true") === JsTrue
     }
     "parse 'false' to JsFalse" in {
-      JsonParser("false") mustEqual JsFalse
+      JsonParser("false") === JsFalse
     }
     "parse '0' to JsNumber" in {
-      JsonParser("0") mustEqual JsNumber(0)
+      JsonParser("0") === JsNumber(0)
     }
     "parse '1.23' to JsNumber" in {
-      JsonParser("1.23") mustEqual JsNumber(1.23)
+      JsonParser("1.23") === JsNumber(1.23)
     }
     "parse '-1E10' to JsNumber" in {
-      JsonParser("-1E10") mustEqual JsNumber("-1E+10")
+      JsonParser("-1E10") === JsNumber("-1E+10")
     }
     "parse '12.34e-10' to JsNumber" in {
-      JsonParser("12.34e-10") mustEqual JsNumber("1.234E-9")
+      JsonParser("12.34e-10") === JsNumber("1.234E-9")
     }
     "parse \"xyz\" to JsString" in {
-      JsonParser("\"xyz\"") mustEqual JsString("xyz")
+      JsonParser("\"xyz\"") === JsString("xyz")
     }
     "parse escapes in a JsString" in {
-      JsonParser(""""\"\\/\b\f\n\r\t"""") mustEqual JsString("\"\\/\b\f\n\r\t")
-      JsonParser("\"L\\" + "u00e4nder\"") mustEqual JsString("Länder")
+      JsonParser(""""\"\\/\b\f\n\r\t"""") === JsString("\"\\/\b\f\n\r\t")
+      JsonParser("\"L\\" + "u00e4nder\"") === JsString("Länder")
     }
     "parse all representations of the slash (SOLIDUS) character in a JsString" in {
-      JsonParser( "\"" + "/\\/\\u002f" + "\"") mustEqual JsString("///")
+      JsonParser( "\"" + "/\\/\\u002f" + "\"") === JsString("///")
     }
-    "properly parse a simple JsObject" in (
-      JsonParser(""" { "key" :42, "key2": "value" }""") mustEqual
+    "parse a simple JsObject" in (
+      JsonParser(""" { "key" :42, "key2": "value" }""") ===
               JsObject("key" -> JsNumber(42), "key2" -> JsString("value"))
     )
-    "properly parse a simple JsArray" in (
-      JsonParser("""[null, 1.23 ,{"key":true } ] """) mustEqual
-              JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsBoolean(true)))
+    "parse a simple JsArray" in (
+      JsonParser("""[null, 1.23 ,{"key":true } ] """) ===
+              JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsTrue))
     )
+    "parse directly from UTF-8 encoded bytes" in {
+      val json = JsObject(
+        "7-bit" -> JsString("This is regular 7-bit ASCII text."),
+        "2-bytes" -> JsString("2-byte UTF-8 chars like £, æ or Ö"),
+        "3-bytes" -> JsString("3-byte UTF-8 chars like ﾖ, ᄅ or ᐁ."))
+      JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
+    }
     "be reentrant" in {
-      val largeJsonSource = FileUtils.readAllCharsFromResource("test.json")
+      val largeJsonSource = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/test.json")).mkString
       List.fill(20)(largeJsonSource).par.map(JsonParser(_)).toList.map {
           _.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size
-      } mustEqual List.fill(20)(100)
+      } === List.fill(20)(100)
     }
   }
 

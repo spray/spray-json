@@ -20,7 +20,6 @@ package spray.json
 
 import collection.immutable.ListMap
 
-
 /**
   * The general type of a JSON AST node.
  */
@@ -89,6 +88,7 @@ object JsNumber {
   }
   def apply(n: BigInt) = new JsNumber(BigDecimal(n))
   def apply(n: String) = new JsNumber(BigDecimal(n))
+  def apply(n: Array[Char]) = new JsNumber(BigDecimal(n))
 }
 
 /**
