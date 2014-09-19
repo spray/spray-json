@@ -41,7 +41,7 @@ trait CompactPrinter extends JsonPrinter {
     sb.append('}')
   }
 
-  protected def printArray(elements: List[JsValue], sb: StringBuilder) {
+  protected def printArray(elements: Seq[JsValue], sb: StringBuilder) {
     sb.append('[')
     printSeq(elements, sb.append(','))(print(_, sb))
     sb.append(']')

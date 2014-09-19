@@ -23,9 +23,9 @@ trait CollectionFormats {
     * Supplies the JsonFormat for Lists.
    */
   implicit def listFormat[T :JsonFormat] = new RootJsonFormat[List[T]] {
-    def write(list: List[T]) = JsArray(list.map(_.toJson))
-    def read(value: JsValue) = value match {
-      case JsArray(elements) => elements.map(_.convertTo[T])
+    def write(list: List[T]) = JsArray(list.map(_.toJson).toVector)
+    def read(value: JsValue): List[T] = value match {
+      case JsArray(elements) => elements.map(_.convertTo[T])(collection.breakOut)
       case x => deserializationError("Expected List as JsArray, but got " + x)
     }
   }
@@ -34,7 +34,7 @@ trait CollectionFormats {
     * Supplies the JsonFormat for Arrays.
    */
   implicit def arrayFormat[T :JsonFormat :ClassManifest] = new RootJsonFormat[Array[T]] {
-    def write(array: Array[T]) = JsArray(array.map(_.toJson).toList)
+    def write(array: Array[T]) = JsArray(array.map(_.toJson).toVector)
     def read(value: JsValue) = value match {
       case JsArray(elements) => elements.map(_.convertTo[T]).toArray[T]
       case x => deserializationError("Expected Array as JsArray, but got " + x)
@@ -64,31 +64,30 @@ trait CollectionFormats {
 
   import collection.{immutable => imm}
 
-  implicit def immIterableFormat[T :JsonFormat]   = viaList[imm.Iterable[T], T](list => imm.Iterable(list :_*))
-  implicit def immSeqFormat[T :JsonFormat]        = viaList[imm.Seq[T], T](list => imm.Seq(list :_*))
-  implicit def immIndexedSeqFormat[T :JsonFormat] = viaList[imm.IndexedSeq[T], T](list => imm.IndexedSeq(list :_*))
-  implicit def immLinearSeqFormat[T :JsonFormat]  = viaList[imm.LinearSeq[T], T](list => imm.LinearSeq(list :_*))
-  implicit def immSetFormat[T :JsonFormat]        = viaList[imm.Set[T], T](list => imm.Set(list :_*))
-  implicit def vectorFormat[T :JsonFormat]        = viaList[Vector[T], T](list => Vector(list :_*))
+  implicit def immIterableFormat[T :JsonFormat]   = viaSeq[imm.Iterable[T], T](seq => imm.Iterable(seq :_*))
+  implicit def immSeqFormat[T :JsonFormat]        = viaSeq[imm.Seq[T], T](seq => imm.Seq(seq :_*))
+  implicit def immIndexedSeqFormat[T :JsonFormat] = viaSeq[imm.IndexedSeq[T], T](seq => imm.IndexedSeq(seq :_*))
+  implicit def immLinearSeqFormat[T :JsonFormat]  = viaSeq[imm.LinearSeq[T], T](seq => imm.LinearSeq(seq :_*))
+  implicit def immSetFormat[T :JsonFormat]        = viaSeq[imm.Set[T], T](seq => imm.Set(seq :_*))
+  implicit def vectorFormat[T :JsonFormat]        = viaSeq[Vector[T], T](seq => Vector(seq :_*))
 
   import collection._
 
-  implicit def iterableFormat[T :JsonFormat]   = viaList[Iterable[T], T](list => Iterable(list :_*))
-  implicit def seqFormat[T :JsonFormat]        = viaList[Seq[T], T](list => Seq(list :_*))
-  implicit def indexedSeqFormat[T :JsonFormat] = viaList[IndexedSeq[T], T](list => IndexedSeq(list :_*))
-  implicit def linearSeqFormat[T :JsonFormat]  = viaList[LinearSeq[T], T](list => LinearSeq(list :_*))
-  implicit def setFormat[T :JsonFormat]        = viaList[Set[T], T](list => Set(list :_*))
+  implicit def iterableFormat[T :JsonFormat]   = viaSeq[Iterable[T], T](seq => Iterable(seq :_*))
+  implicit def seqFormat[T :JsonFormat]        = viaSeq[Seq[T], T](seq => Seq(seq :_*))
+  implicit def indexedSeqFormat[T :JsonFormat] = viaSeq[IndexedSeq[T], T](seq => IndexedSeq(seq :_*))
+  implicit def linearSeqFormat[T :JsonFormat]  = viaSeq[LinearSeq[T], T](seq => LinearSeq(seq :_*))
+  implicit def setFormat[T :JsonFormat]        = viaSeq[Set[T], T](seq => Set(seq :_*))
 
   /**
     * A JsonFormat construction helper that creates a JsonFormat for an Iterable type I from a builder function
     * List => I.
    */
-  def viaList[I <: Iterable[T], T :JsonFormat](f: List[T] => I): RootJsonFormat[I] = new RootJsonFormat[I] {
-    def write(iterable: I) = JsArray(iterable.map(_.toJson).toList)
+  def viaSeq[I <: Iterable[T], T :JsonFormat](f: imm.Seq[T] => I): RootJsonFormat[I] = new RootJsonFormat[I] {
+    def write(iterable: I) = JsArray(iterable.map(_.toJson).toVector)
     def read(value: JsValue) = value match {
       case JsArray(elements) => f(elements.map(_.convertTo[T]))
       case x => deserializationError("Expected Collection as JsArray, but got " + x)
     }
   }
-
 }

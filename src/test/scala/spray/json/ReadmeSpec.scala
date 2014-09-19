@@ -60,7 +60,7 @@ class ReadmeSpec extends Specification {
             JsArray(JsString(c.name), JsNumber(c.red), JsNumber(c.green), JsNumber(c.blue))
 
           def read(value: JsValue) = value match {
-            case JsArray(JsString(name) :: JsNumber(red) :: JsNumber(green) :: JsNumber(blue) :: Nil) =>
+            case JsArray(Seq(JsString(name), JsNumber(red), JsNumber(green), JsNumber(blue))) =>
               new Color(name, red.toInt, green.toInt, blue.toInt)
             case _ => deserializationError("Color expected")
           }

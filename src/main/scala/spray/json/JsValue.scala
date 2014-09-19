@@ -18,7 +18,7 @@
 
 package spray.json
 
-import collection.immutable.ListMap
+import collection.immutable
 
 /**
   * The general type of a JSON AST node.
@@ -49,20 +49,18 @@ sealed abstract class JsValue {
  */
 case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   override def asJsObject(errorMsg: String) = this
-  def getFields(fieldNames: String*): Seq[JsValue] = fieldNames.flatMap(fields.get)
+  def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.flatMap(fields.get)(collection.breakOut)
 }
 object JsObject {
-  // we use a ListMap in order to preserve the field order
-  def apply(members: JsField*) = new JsObject(ListMap(members: _*))
-  def apply(members: List[JsField]) = new JsObject(ListMap(members: _*))
+  def apply(members: JsField*) = new JsObject(Map(members: _*))
 }
 
 /**
   * A JSON array.
  */
-case class JsArray(elements: List[JsValue]) extends JsValue
+case class JsArray(elements: Vector[JsValue]) extends JsValue
 object JsArray {
-  def apply(elements: JsValue*) = new JsArray(elements.toList)
+  def apply(elements: JsValue*) = new JsArray(elements.toVector)
 }
 
 /**

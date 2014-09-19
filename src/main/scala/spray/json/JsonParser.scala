@@ -72,7 +72,7 @@ class JsonParser(input: ParserInput) {
   // http://tools.ietf.org/html/rfc4627#section-2.2
   private def `object`(): Unit = {
     ws()
-    var map = ListMap.empty[String, JsValue]
+    var map = Map.empty[String, JsValue]
     @tailrec def members(): Unit = {
       `string`()
       require(':')
@@ -91,7 +91,7 @@ class JsonParser(input: ParserInput) {
   // http://tools.ietf.org/html/rfc4627#section-2.3
   private def `array`(): Unit = {
     ws()
-    var list = List.newBuilder[JsValue]
+    var list = Vector.newBuilder[JsValue]
     @tailrec def values(): Unit = {
       `value`()
       list += jsValue

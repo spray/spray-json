@@ -50,7 +50,7 @@ trait PrettyPrinter extends JsonPrinter {
     sb.append("}")
   }
   
-  protected def printArray(elements: List[JsValue], sb: StringBuilder, indent: Int) {
+  protected def printArray(elements: Seq[JsValue], sb: StringBuilder, indent: Int) {
     sb.append('[')
     printSeq(elements, sb.append(", "))(print(_, sb, indent))
     sb.append(']')

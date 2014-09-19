@@ -20,7 +20,7 @@ object JsValueGenerators {
       for {
         n <- choose(0, 15)
         els <- Gen.containerOfN[List, JsValue](n, genValue(depth - 1))
-      } yield JsArray(els)
+      } yield JsArray(els.toVector)
   def genField(depth: Int): Gen[(String, JsValue)] =
     for {
       key <- parseableString
@@ -32,7 +32,7 @@ object JsValueGenerators {
       for {
         n <- choose(0, 15)
         fields <- Gen.containerOfN[List, (String, JsValue)](n, genField(depth - 1))
-      } yield JsObject(fields)
+      } yield JsObject(fields: _*)
 
   def genValue(depth: Int): Gen[JsValue] =
     oneOf(
