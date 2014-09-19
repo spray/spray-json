@@ -66,4 +66,10 @@ trait PrettyPrinter extends JsonPrinter {
   }
 }
 
-object PrettyPrinter extends PrettyPrinter
+object PrettyPrinter extends PrettyPrinter {
+  def apply(expectedContentLength : Int) : PrettyPrinter = {
+    new PrettyPrinter {
+      override def expectedLength = expectedContentLength
+    }
+  }
+}
