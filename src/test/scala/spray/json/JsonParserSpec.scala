@@ -73,6 +73,22 @@ class JsonParserSpec extends Specification {
           _.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size
       } === List.fill(20)(100)
     }
-  }
 
+    "produce proper error messages" in {
+      def errorMessage(input: String) =
+        try JsonParser(input) catch { case e: JsonParser.ParsingException => e.getMessage }
+
+      errorMessage("""[null, 1.23 {"key":true } ]""") ===
+        """Unexpected character '{' at input index 12 (line 1, position 13), expected ']':
+          |[null, 1.23 {"key":true } ]
+          |            ^
+          |""".stripMargin
+
+      errorMessage("""[null, 1.23, {  key":true } ]""") ===
+        """Unexpected character 'k' at input index 16 (line 1, position 17), expected '"':
+          |[null, 1.23, {  key":true } ]
+          |                ^
+          |""".stripMargin
+    }
+  }
 }

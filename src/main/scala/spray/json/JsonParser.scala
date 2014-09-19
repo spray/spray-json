@@ -20,7 +20,6 @@ import java.lang.{StringBuilder => JStringBuilder}
 import java.nio.{CharBuffer, ByteBuffer}
 import java.nio.charset.Charset
 import scala.annotation.{switch, tailrec}
-import scala.collection.immutable.ListMap
 
 /**
  * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
@@ -29,7 +28,7 @@ object JsonParser {
   def apply(input: ParserInput): JsValue = new JsonParser(input).parseJsValue()
 
   class ParsingException(val summary: String, val detail: String = "")
-    extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ": " + detail)
+    extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
 }
 
 class JsonParser(input: ParserInput) {
@@ -192,7 +191,7 @@ class JsonParser(input: ParserInput) {
     }
     val detail = {
       val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
-      s"\n$sanitizedText\n${" " * col}^\n"
+      s"\n$sanitizedText\n${" " * (col-1)}^\n"
     }
     throw new ParsingException(summary, detail)
   }
@@ -236,11 +235,11 @@ object ParserInput {
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
         nextUtf8Char() match {
           case '\n' if index > ix => sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
-          case '\n' | EOI => Line(lineNr, index - lineStartIx, sb.toString)
+          case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
           case c => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
         }
       val savedCursor = _cursor
-      _cursor = 0
+      _cursor = -1
       val line = rec(ix = 0, lineStartIx = 0, lineNr = 1)
       _cursor = savedCursor
       line
@@ -250,7 +249,7 @@ object ParserInput {
   private val UTF8 = Charset.forName("UTF-8")
 
   /**
-   * ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded represenation
+   * ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded representation
    * of the JSON input, without requiring a separate decoding step.
    */
   class ByteArrayBasedParserInput(bytes: Array[Byte]) extends DefaultParserInput {
