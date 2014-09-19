@@ -20,6 +20,10 @@ import org.specs2.mutable._
 
 class ProductFormatsSpec extends Specification {
 
+  case class Test3Map(a: Int, b: Option[Map[String,String]], c: Int)
+  case class Test10Map(a: Int, b: Option[Map[String,String]], c: Int,
+                       d: Int, e: Int, f: Int, g:Int,h:Int,i:Int,j:Int)
+
   case class Test2(a: Int, b: Option[Double])
   case class Test3[A, B](as: List[A], bs: List[B])
   case class TestTransient(a: Int, b: Option[Double]) {
@@ -34,6 +38,8 @@ class ProductFormatsSpec extends Specification {
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def testTransientFormat = jsonFormat2(TestTransient)
     implicit def testStaticFormat = jsonFormat2(TestStatic)
+    implicit def test3Map = jsonUnorderedFormat3(Test3Map)
+    implicit def test10Map = jsonUnorderedFormat10(Test10Map)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -75,6 +81,93 @@ class ProductFormatsSpec extends Specification {
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNull)
     }
   }
+
+  "A JsonProtocol mixing in NullOptions with unordered keys" should {
+    "render `None` members to `null`" in {
+      import TestProtocol2._
+      val jsonObject : JsValue = Test3Map(42, None, 43).toJson
+
+      jsonObject.asJsObject().getFields("a").size mustEqual 1
+      jsonObject.asJsObject().getFields("a")(0) mustEqual JsNumber(42)
+
+      jsonObject.asJsObject().getFields("b").size mustEqual 1
+      jsonObject.asJsObject().getFields("b")(0) mustEqual JsNull
+
+      jsonObject.asJsObject().getFields("c").size mustEqual 1
+      jsonObject.asJsObject().getFields("c")(0) mustEqual JsNumber(43)
+    }
+  }
+
+  "A JsonProtocol mixing in Map with unordered keys" should {
+    "render `None` members to `null`" in {
+      import TestProtocol2._
+      val jsonObject : JsValue = Test3Map(42, Some(Map("red" -> "#FF0000", "azure" -> "#F0FFFF")), 43).toJson
+
+      jsonObject.asJsObject().getFields("a").size mustEqual 1
+      jsonObject.asJsObject().getFields("a")(0) mustEqual JsNumber(42)
+
+      jsonObject.asJsObject().getFields("b").size mustEqual 1
+      jsonObject.asJsObject().getFields("b")(0) must beAnInstanceOf[JsObject]
+
+      jsonObject.asJsObject().getFields("c").size mustEqual 1
+      jsonObject.asJsObject().getFields("c")(0) mustEqual JsNumber(43)
+
+    }
+  }
+
+  "A JsonProtocol mixing in Map with unordered keys returns json string" should {
+    "render `None` members to `null`" in {
+      import TestProtocol2._
+      val jsonObject : JsValue = Test3Map(42, Some(Map("red" -> "#FF0000",
+        "azure" -> "#F0FFFF",
+        "blue" -> "#0000FF",
+        "black" -> "#000000",
+        "white" -> "#FFFFFF"
+      )), 43).toJson
+
+      val jsonObjectString = jsonObject.compactPrint
+      jsonObjectString must contain("\"a\":42")
+      jsonObjectString must contain("\"c\":43")
+      jsonObjectString must contain("\"red\":\"#FF0000\"")
+      jsonObjectString must contain("\"azure\":\"#F0FFFF\"")
+      jsonObjectString must contain("\"black\":\"#000000\"")
+      jsonObjectString must contain("\"blue\":\"#0000FF\"")
+      jsonObjectString must contain("\"white\":\"#FFFFFF\"")
+
+
+    }
+  }
+
+  "A JsonProtocol mixing in Map with unordered keys, and 10 fields, returns json string" should {
+    "render `None` members to `null`" in {
+      import TestProtocol2._
+      val jsonObject : JsValue = Test10Map(42, Some(Map("red" -> "#FF0000",
+        "azure" -> "#F0FFFF",
+        "blue" -> "#0000FF",
+        "black" -> "#000000",
+        "white" -> "#FFFFFF"
+      )), 43,44,45,46,47,48,49,50).toJson
+
+      val jsonObjectString = jsonObject.compactPrint
+      jsonObjectString must contain("\"a\":42")
+      jsonObjectString must contain("\"c\":43")
+      jsonObjectString must contain("\"d\":44")
+      jsonObjectString must contain("\"e\":45")
+      jsonObjectString must contain("\"f\":46")
+      jsonObjectString must contain("\"g\":47")
+      jsonObjectString must contain("\"h\":48")
+      jsonObjectString must contain("\"i\":49")
+      jsonObjectString must contain("\"j\":50")
+      jsonObjectString must contain("\"red\":\"#FF0000\"")
+      jsonObjectString must contain("\"azure\":\"#F0FFFF\"")
+      jsonObjectString must contain("\"black\":\"#000000\"")
+      jsonObjectString must contain("\"blue\":\"#0000FF\"")
+      jsonObjectString must contain("\"white\":\"#FFFFFF\"")
+
+
+    }
+  }
+
 
   "A JsonFormat for a generic case class and created with `jsonFormat`" should {
     import TestProtocol1._

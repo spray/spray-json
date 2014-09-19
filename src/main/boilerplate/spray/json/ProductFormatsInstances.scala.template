@@ -36,7 +36,25 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
       ]
       construct([#p1V#])
     }
-  }#
+  }
+    def jsonUnorderedFormat1[[#P1 :JF#], T <: Product :ClassManifest](construct: ([#P1#]) => T): RootJsonFormat[T] = {
+      val Array([#p1#]) = extractFieldNames(classManifest[T])
+      jsonUnorderedFormat(construct, [#p1#])
+    }
+    def jsonUnorderedFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
+      def write(p: T) = {
+        val fields = new collection.mutable.ListBuffer[(String, JsValue)]
+        fields.sizeHint(1 * 2)
+        [#fields ++= productElement##2Field[P1](fieldName1, p, 0)#
+        ]
+        JsObject(false,fields: _*)
+      }
+      def read(value: JsValue) = {
+        [#val p1V = fromField[P1](value, fieldName1)#
+        ]
+        construct([#p1V#])
+      }
+    }#
 
 
 ]
