@@ -17,7 +17,7 @@
 package spray.json
 
 import annotation.tailrec
-import java.lang.StringBuilder
+import java.lang.{StringBuilder => JStringBuilder}
 
 /**
   * A JsonPrinter serializes a JSON AST to a String.
@@ -26,24 +26,22 @@ trait JsonPrinter extends (JsValue => String) {
 
   def apply(x: JsValue): String = apply(x, None)
 
-  def apply(x: JsValue, jsonpCallback: String): String = apply(x, Some(jsonpCallback))
-
-  def apply(x: JsValue, jsonpCallback: Option[String]): String = {
-    val sb = new StringBuilder
+  def apply(x: JsValue,
+            jsonpCallback: Option[String] = None,
+            sb: JStringBuilder = new JStringBuilder(256)): String = {
     jsonpCallback match {
-      case Some(callback) => {
+      case Some(callback) =>
         sb.append(callback).append('(')
         print(x, sb)
-        sb.append(')');
-      }
+        sb.append(')')
       case None => print(x, sb)
     }
     sb.toString
   }
   
-  def print(x: JsValue, sb: StringBuilder)
+  def print(x: JsValue, sb: JStringBuilder)
   
-  protected def printLeaf(x: JsValue, sb: StringBuilder) {
+  protected def printLeaf(x: JsValue, sb: JStringBuilder) {
     x match {
       case JsNull      => sb.append("null")
       case JsTrue      => sb.append("true")
@@ -54,7 +52,7 @@ trait JsonPrinter extends (JsValue => String) {
     }
   }
 
-  protected def printString(s: String, sb: StringBuilder) {
+  protected def printString(s: String, sb: JStringBuilder) {
     import JsonPrinter._
     @tailrec def firstToBeEncoded(ix: Int = 0): Int =
       if (ix == s.length) -1 else if (requiresEncoding(s.charAt(ix))) ix else firstToBeEncoded(ix + 1)
