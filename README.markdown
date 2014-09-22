@@ -3,9 +3,10 @@ _spray-json_ is a lightweight, clean and efficient [JSON] implementation in Scal
 It sports the following features:
 
 * A simple immutable model of the JSON language elements
-* An efficient JSON PEG parser (implemented with [parboiled][])
+* An efficient JSON parser
 * Choice of either compact or pretty JSON-to-string printing
 * Type-class based (de)serialization of custom objects (no reflection, no intrusion)
+* No external dependencies
 
 _spray-json_ allows you to convert between
  * String JSON documents
@@ -19,19 +20,13 @@ as depicted in this diagram:
 ### Installation
 
 _spray-json_ is available from the [repo.spray.io] repository.
-The latest release is `1.2.6` and is built against Scala 2.9.3, Scala 2.10.4 and Scala 2.11.0-RC4.
+The latest release is `1.3.0` and is built against Scala 2.10.4 and Scala 2.11.2.
 
 If you use SBT you can include _spray-json_ in your project with
 
 ```scala
-resolvers += "spray" at "http://repo.spray.io/"
-
-libraryDependencies += "io.spray" %%  "spray-json" % "1.2.6"
+libraryDependencies += "io.spray" %%  "spray-json" % "1.3.0"
 ```
-
-_spray-json_ has only one dependency: the parsing library [parboiled][]
-(which is also a dependency of _spray-http_, so if you use _spray-json_ together with other modules of the *spray*
-suite you are not incurring any additional dependency).
 
 ### Usage
 
@@ -40,7 +35,7 @@ Just bring all relevant elements in scope with
 
 ```scala
 import spray.json._
-import DefaultJsonProtocol._ // !!! IMPORTANT, else `convertTo` and `toJson` won't work correctly
+import DefaultJsonProtocol._ // if you don't supply your own Protocol (see below)
 ```
 
 and do one or more of the following:
@@ -92,7 +87,7 @@ protocol need to be "mece" (mutually exclusive, collectively exhaustive), i.e. t
 together need to span all types required by the application.
 
 This may sound more complicated than it is.
-_spray-json_ comes with a `DefaultJsonProtocol`, which already covers all of Scalas value types as well as the most
+_spray-json_ comes with a `DefaultJsonProtocol`, which already covers all of Scala's value types as well as the most
 important reference and collection types. As long as your code uses nothing more than these you only need the
 `DefaultJsonProtocol`. Here are the types already taken care of by the `DefaultJsonProtocol`:
 
@@ -289,7 +284,6 @@ _spray-json_ project under the project’s open source license.
 
 
   [JSON]: http://json.org
-  [parboiled]: http://parboiled.org
   [repo.spray.io]: http://repo.spray.io
   [SJSON]: https://github.com/debasishg/sjson
   [Databinder-Dispatch]: https://github.com/n8han/Databinder-Dispatch
