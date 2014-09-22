@@ -26,6 +26,15 @@ import scala.util.control.NonFatal
 trait ProductFormats extends ProductFormatsInstances {
   this: StandardFormats =>
 
+  def jsonFormat0[T](construct: () => T): RootJsonFormat[T] =
+    new RootJsonFormat[T] {
+      def write(p: T) = JsObject()
+      def read(value: JsValue) = value match {
+        case JsObject(_) => construct()
+        case _ => throw new DeserializationException("Object expected")
+      }
+    }
+
   // helpers
   
   protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField] = Nil)

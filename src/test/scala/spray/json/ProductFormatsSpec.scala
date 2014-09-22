@@ -20,6 +20,7 @@ import org.specs2.mutable._
 
 class ProductFormatsSpec extends Specification {
 
+  case class Test0()
   case class Test2(a: Int, b: Option[Double])
   case class Test3[A, B](as: List[A], bs: List[B])
   case class TestTransient(a: Int, b: Option[Double]) {
@@ -30,6 +31,7 @@ class ProductFormatsSpec extends Specification {
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
+    implicit val test0Format = jsonFormat0(Test0)
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def testTransientFormat = jsonFormat2(TestTransient)
@@ -162,4 +164,21 @@ class ProductFormatsSpec extends Specification {
     }
   }
 
+  "A JsonFormat created with `jsonFormat`, for a case class with 0 elements," should {
+    import TestProtocol1._
+    val obj = Test0()
+    val json = JsObject()
+    "convert to a respective JsObject" in {
+      obj.toJson mustEqual json
+    }
+    "convert a JsObject to the respective case class instance" in {
+      json.convertTo[Test0] mustEqual obj
+    }
+    "ignore additional members during deserialization" in {
+      JsObject("a" -> JsNumber(42)).convertTo[Test0] mustEqual obj
+    }
+    "throw a DeserializationException if the JsValue is not a JsObject" in (
+      JsNull.convertTo[Test0] must throwA(new DeserializationException("Object expected"))
+    )
+  }
 }
