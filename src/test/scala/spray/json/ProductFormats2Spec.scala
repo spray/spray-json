@@ -1,6 +1,6 @@
 package spray.json
 
-import org.specs2.mutable.Specification
+import org.specs2.mutable._
 
 object ProductFormatTestsFixture {
 
@@ -20,8 +20,8 @@ class ProductFormats2Spec extends Specification {
       "be correctly serialized to json" in {
         val thing = Thing("egg", Map("color" -> "red"))
         val json = """{"name" : "egg", "properties" : {"color" : "red"}}"""
-        assert(thing.toJson === json.asJson)
-        assert(json.asJson.convertTo[Thing] === thing)
+        thing.toJson mustEqual json.parseJson
+        json.parseJson.convertTo[Thing] mustEqual thing
       }
     }
 
@@ -29,8 +29,8 @@ class ProductFormats2Spec extends Specification {
       "be correctly deserialized from json" in {
         val json = """{"name" : "egg"}"""
         val thing = Thing("egg")
-        assert(json.asJson.convertTo[Thing] === thing)
-        assert(json.asJson.convertTo[Thing].properties == Map.empty)
+        json.parseJson.convertTo[Thing] mustEqual thing
+        json.parseJson.convertTo[Thing].properties mustEqual Map.empty
       }
     }
 
@@ -38,7 +38,7 @@ class ProductFormats2Spec extends Specification {
       "not be serialized to json" in {
         val thing = Thing("egg")
         val json = """{"name" : "egg"}"""
-        assert(thing.toJson === json.asJson)
+        thing.toJson mustEqual json.parseJson
       }
     }
 
@@ -46,7 +46,7 @@ class ProductFormats2Spec extends Specification {
       "be serialized to json" in {
         val thing = Box(10, Nil)
         val json = """{"size" : 10, "things" : [] }"""
-        assert(thing.toJson === json.asJson)
+        thing.toJson mustEqual json.parseJson
       }
     }
   }
@@ -59,14 +59,14 @@ class ProductFormats2Spec extends Specification {
       "be correctly serialized to json" in {
         val thing = Thing("egg", Map("color" -> "red"))
         val json = """{"description" : "egg", "properties" : {"color" : "red"}}"""
-        assert(thing.toJson === json.asJson)
-        assert(json.asJson.convertTo[Thing] === thing)
+        thing.toJson mustEqual json.parseJson
+        json.parseJson.convertTo[Thing] mustEqual thing
       }
       "be correctly serialized in a nested object" in {
         val box = Box(10, Thing("egg", Map("color" -> "red")) :: Nil)
         val json = """{"size":10, "things":[{"description" : "egg", "properties" : {"color" : "red"}}]}"""
-        assert(box.toJson === json.asJson)
-        assert(json.asJson.convertTo[Box] === box)
+        box.toJson mustEqual json.parseJson
+        json.parseJson.convertTo[Box] mustEqual box
       }
     }
   }
@@ -79,13 +79,13 @@ class ProductFormats2Spec extends Specification {
       "not be serialized to json" in {
         val thing = Thing("egg", Map("color" -> "red"))
         val json = """{"name":"egg"}"""
-        assert(thing.toJson === json.asJson)
-        assert(json.asJson.convertTo[Thing] === Thing("egg"))
+        thing.toJson mustEqual json.parseJson
+        json.parseJson.convertTo[Thing] mustEqual Thing("egg")
       }
       "not be deserialized from json" in {
         val json = """{"name":"egg", "properties" : {"color" : "red"}}"""
         val thing = Thing("egg")
-        assert(json.asJson.convertTo[Thing] === thing)
+        json.parseJson.convertTo[Thing] mustEqual thing
       }
     }
   }
@@ -98,8 +98,8 @@ class ProductFormats2Spec extends Specification {
       "not be deserialized from json" in {
         val thing = Thing("egg", Map("color" -> "red"))
         val json = """{"properties" : {"color" : "red"}}"""
-        assert(thing.toJson === json.asJson)
-        json.asJson.convertTo[Thing] must throwA[IllegalStateException]
+        assert(thing.toJson === json.parseJson)
+        json.parseJson.convertTo[Thing] must throwA[IllegalStateException]
       }
     }
   }
@@ -113,8 +113,8 @@ class ProductFormats2Spec extends Specification {
       "not be serialized to json" in {
         val thing = Thing("ball", Map("color" -> "red"))
         val json = """{"properties" : {"color" : "red"}}"""
-        assert(thing.toJson === json.asJson)
-        assert(json.asJson.convertTo[Thing] === thing)
+        thing.toJson mustEqual json.parseJson
+        json.parseJson.convertTo[Thing] mustEqual thing
       }
     }
   }
