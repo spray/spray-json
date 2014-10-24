@@ -133,7 +133,7 @@ class JsonParser(input: ParserInput) {
 
   private def `char`() =
     cursorChar match {
-      case '"' => false
+      case '"' | EOI => false
       case '\\' => advance(); `escaped`()
       case c if cursorChar >= ' ' => appendSB(cursorChar)
       case _ => false 
