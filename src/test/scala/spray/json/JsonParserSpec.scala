@@ -73,6 +73,9 @@ class JsonParserSpec extends Specification {
           _.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size
       } === List.fill(20)(100)
     }
+    "tolerate malformed JSON" in {
+      JsonParser("\"") must throwA[JsonParser.ParsingException]
+    }
 
     "produce proper error messages" in {
       def errorMessage(input: String) =
