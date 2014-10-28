@@ -78,11 +78,36 @@ trait ProductFormats extends ProductFormatsInstances {
         sys.error("Case class " + clazz.getName + " declares additional fields")
       if (fields.zip(copyDefaultMethods).exists { case (f, m) => f.getType != m.getReturnType })
         sys.error("Cannot determine field order of case class " + clazz.getName)
-      fields.map(_.getName)
+      fields.map(f => ProductFormats.unmangle(f.getName))
     } catch {
       case NonFatal(ex) => throw new RuntimeException("Cannot automatically determine case class field names and order " +
         "for '" + clazz.getName + "', please use the 'jsonFormat' overload with explicit field name specification", ex)
     }
+  }
+
+}
+
+object ProductFormats {
+  private val operators = Map(
+    "$eq" -> "=",
+    "$greater" -> ">",
+    "$less" -> "<",
+    "$plus" -> "+",
+    "$minus" -> "-",
+    "$times" -> "*",
+    "$div" -> "/",
+    "$bang" -> "!",
+    "$at" -> "@",
+    "$hash" -> "#",
+    "$percent" -> "%",
+    "$up" -> "^",
+    "$amp" -> "&",
+    "$tilde" -> "~",
+    "$qmark" -> "?",
+    "$bar" -> "|")
+
+  private def unmangle(name: String) = operators.foldLeft(name) { case (n, (mangled, unmangled)) =>
+    if (n.indexOf(mangled) >= 0) n.replace(mangled, unmangled) else n
   }
 }
 

@@ -28,6 +28,7 @@ class ProductFormatsSpec extends Specification {
   }
   @SerialVersionUID(1L) // SerialVersionUID adds a static field to the case class
   case class TestStatic(a: Int, b: Option[Double])
+  case class TestMangled(`foo-bar!`: Int)
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
@@ -36,6 +37,7 @@ class ProductFormatsSpec extends Specification {
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def testTransientFormat = jsonFormat2(TestTransient)
     implicit def testStaticFormat = jsonFormat2(TestStatic)
+    implicit def testMangledFormat = jsonFormat1(TestMangled)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -180,5 +182,16 @@ class ProductFormatsSpec extends Specification {
     "throw a DeserializationException if the JsValue is not a JsObject" in (
       JsNull.convertTo[Test0] must throwA(new DeserializationException("Object expected"))
     )
+  }
+
+  "A JsonFormat created with `jsonFormat`, for a case class with mangled-name members," should {
+    import TestProtocol1._
+    val json = "{\"foo-bar!\":42}"
+    "produce the correct JSON" in {
+      TestMangled(42).toJson.compactPrint === json
+    }
+    "convert a JsObject to the respective case class instance" in {
+      json.parseJson.convertTo[TestMangled] === TestMangled(42)
+    }
   }
 }
