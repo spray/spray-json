@@ -8,7 +8,7 @@ object JsValueGenerators {
   import Gen._
   import Arbitrary.arbitrary
 
-  val parseableString: Gen[String] = arbitrary[String]
+  val parseableString: Gen[String] = Gen.someOf(('\u0020' to '\u007E').toVector).map(_.mkString)
   val genString: Gen[JsString] = parseableString.map(JsString(_))
   val genBoolean: Gen[JsBoolean] = oneOf(JsFalse, JsTrue)
   val genLongNumber: Gen[JsNumber] = arbitrary[Long].map(JsNumber(_))

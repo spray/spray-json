@@ -89,6 +89,12 @@ class JsonParserSpec extends Specification {
           |[null, 1.23, {  key":true } ]
           |                ^
           |""".stripMargin
+
+      errorMessage("""{"a}""") ===
+        """Unexpected end-of-input at input index 4 (line 1, position 5), expected '"':
+          |{"a}
+          |    ^
+          |""".stripMargin
     }
   }
 }

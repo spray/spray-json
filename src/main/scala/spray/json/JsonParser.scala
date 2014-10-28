@@ -132,11 +132,13 @@ class JsonParser(input: ParserInput) {
   }
 
   private def `char`() =
-    cursorChar match {
-      case '"' => false
+    // simple bloom-filter that quick-matches the most frequent case of characters that are ok to append
+    // (it doesn't match control chars, EOI, '"', '?', '\', 'b' and certain higher, non-ASCII chars)
+    if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
+    else cursorChar match {
+      case '"' | EOI => false
       case '\\' => advance(); `escaped`()
-      case c if cursorChar >= ' ' => appendSB(cursorChar)
-      case _ => false 
+      case c => (c >= ' ') && appendSB(c)
     }
 
   private def `escaped`() = {
