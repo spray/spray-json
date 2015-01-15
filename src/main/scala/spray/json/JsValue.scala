@@ -50,7 +50,17 @@ sealed abstract class JsValue {
 case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   override def asJsObject(errorMsg: String) = this
   def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.flatMap(fields.get)(collection.breakOut)
+
+  /**
+   * Merges two JsObjets together, ovewriting values on collision.
+   */
+  def mergeWith(other: JsObject) = {
+    new JsObject(this.fields ++ other.fields)
+  }
+
+  def ++(other: JsObject) = this mergeWith other
 }
+
 object JsObject {
   def apply(members: JsField*) = new JsObject(Map(members: _*))
 }
