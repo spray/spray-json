@@ -71,17 +71,17 @@ class JsonParser(input: ParserInput) {
   // http://tools.ietf.org/html/rfc4627#section-2.2
   private def `object`(): Unit = {
     ws()
-    var map = Map.empty[String, JsValue]
-    @tailrec def members(): Unit = {
+    @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
       `string`()
       require(':')
       ws()
       val key = sb.toString
       `value`()
-      map = map.updated(key, jsValue)
-      if (ws(',')) members()
+      val nextMap = map.updated(key, jsValue)
+      if (ws(',')) members(nextMap) else nextMap
     }
-    if (cursorChar != '}') members()
+    var map = Map.empty[String, JsValue]
+    if (cursorChar != '}') map = members(map)
     require('}')
     ws()
     jsValue = JsObject(map)
@@ -90,7 +90,7 @@ class JsonParser(input: ParserInput) {
   // http://tools.ietf.org/html/rfc4627#section-2.3
   private def `array`(): Unit = {
     ws()
-    var list = Vector.newBuilder[JsValue]
+    val list = Vector.newBuilder[JsValue]
     @tailrec def values(): Unit = {
       `value`()
       list += jsValue
@@ -115,7 +115,7 @@ class JsonParser(input: ParserInput) {
 
   private def `int`(): Unit = if (!ch('0')) oneOrMoreDigits()
   private def `frac`(): Unit = if (ch('.')) oneOrMoreDigits()
-  private def `exp`(): Unit = if ((ch('e') || ch('E')) && (ch('-') || ch('+') || true)) oneOrMoreDigits()
+  private def `exp`(): Unit = if (ch('e') || ch('E')) { ch('-') || ch('+'); oneOrMoreDigits() }
 
   private def oneOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits() else fail("DIGIT")
   @tailrec private def zeroOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits()
