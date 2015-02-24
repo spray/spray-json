@@ -14,16 +14,16 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-encoding", "utf8")
 
 resolvers += Opts.resolver.sonatypeReleases
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "2.4.9" % "test",
-  "org.specs2" %% "specs2-scalacheck" % "2.4.9" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.11.6" % "test"
+  "org.specs2" %% "specs2-core" % "2.4.16" % "test",
+  "org.specs2" %% "specs2-scalacheck" % "2.4.16" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
 )
 
 (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
