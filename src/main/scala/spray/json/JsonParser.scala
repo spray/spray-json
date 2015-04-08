@@ -124,7 +124,7 @@ class JsonParser(input: ParserInput) {
 
   // http://tools.ietf.org/html/rfc4627#section-2.5
   private def `string`(): Unit = {
-    require('"')
+    if (cursorChar == '"') cursorChar = input.nextUtf8Char() else fail("'\"'")
     sb.setLength(0)
     while (`char`()) cursorChar = input.nextUtf8Char()
     require('"')

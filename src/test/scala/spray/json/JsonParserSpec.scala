@@ -67,6 +67,10 @@ class JsonParserSpec extends Specification {
         "3-bytes" -> JsString("3-byte UTF-8 chars like ﾖ, ᄅ or ᐁ."))
       JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
     }
+    "parse directly from UTF-8 encoded bytes when string starts with a multi-byte character" in {
+      val json = JsString("£0.99")
+      JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
+    }
     "be reentrant" in {
       val largeJsonSource = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/test.json")).mkString
       List.fill(20)(largeJsonSource).par.map(JsonParser(_)).toList.map {
