@@ -46,22 +46,19 @@ trait ProductFormats extends ProductFormatsInstances {
     }
   }
 
-  protected def fromField[T](value: JsValue, fieldName: String)(implicit reader: JsonReader[T]) = {
-    value match {
-      case x: JsObject =>
-        var fieldFound = false
-        try {
-          val fieldValue = x.fields(fieldName)
-          fieldFound = true
-          reader.read(fieldValue)
-        }
-        catch {
-          case e: NoSuchElementException if !fieldFound =>
-            if (reader.isInstanceOf[OptionFormat[_]]) None.asInstanceOf[T]
-            else deserializationError("Object is missing required member '" + fieldName + "'", e)
-        }
-      case _ => deserializationError("Object expected in field '" + fieldName + "'")
-    }
+  protected def fromField[T](value: JsValue, fieldName: String)
+                                     (implicit reader: JsonReader[T]) = value match {
+    case x: JsObject if
+      (reader.isInstanceOf[OptionFormat[_]] &
+        !x.fields.contains(fieldName)) =>
+      None.asInstanceOf[T]
+    case x: JsObject =>
+      try reader.read(x.fields(fieldName))
+      catch {
+        case e: NoSuchElementException =>
+          deserializationError("Object is missing required member '" + fieldName + "'", e)
+      }
+    case _ => deserializationError("Object expected in field '" + fieldName + "'")
   }
 
   protected def extractFieldNames(classManifest: ClassManifest[_]): Array[String] = {
