@@ -53,14 +53,21 @@ case class JsObject(fields: Map[String, JsValue]) extends JsValue {
 }
 object JsObject {
   def apply(members: JsField*) = new JsObject(Map(members: _*))
+  @deprecated("Use JsObject(JsValue*) instead", "1.3.0")
+  def apply(members: List[JsField]) = new JsObject(Map(members: _*))
 }
 
 /**
   * A JSON array.
  */
-case class JsArray(elements: Vector[JsValue]) extends JsValue
+case class JsArray(elements: Vector[JsValue]) extends JsValue {
+  @deprecated("Use JsArray(Vector[JsValue]) instead", "1.3.0")
+  def this(elements: List[JsValue]) = this(elements.toVector)
+}
 object JsArray {
   def apply(elements: JsValue*) = new JsArray(elements.toVector)
+  @deprecated("Use JsArray(Vector[JsValue]) instead", "1.3.0")
+  def apply(elements: List[JsValue]) = new JsArray(elements.toVector)
 }
 
 /**
