@@ -27,7 +27,7 @@ trait StandardFormats {
 
   private[json] type JF[T] = JsonFormat[T] // simple alias for reduced verbosity
 
-  implicit def optionFormat[T :JF] = new OptionFormat[T]
+  implicit def optionFormat[T :JF]: JF[Option[T]] = new OptionFormat[T]
 
   class OptionFormat[T :JF] extends JF[Option[T]] {
     def write(option: Option[T]) = option match {
@@ -38,6 +38,8 @@ trait StandardFormats {
       case JsNull => None
       case x => Some(x.convertTo[T])
     }
+    // allows reading the JSON as a Some (useful in container formats)
+    def readSome(value: JsValue) = Some(value.convertTo[T])
   }
 
   implicit def eitherFormat[A :JF, B :JF] = new JF[Either[A, B]] {
