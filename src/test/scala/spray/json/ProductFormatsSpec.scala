@@ -23,6 +23,7 @@ class ProductFormatsSpec extends Specification {
   case class Test0()
   case class Test2(a: Int, b: Option[Double])
   case class Test3[A, B](as: List[A], bs: List[B])
+  case class Test4(t2: Test2)
   case class TestTransient(a: Int, b: Option[Double]) {
     @transient var c = false
   }
@@ -35,6 +36,7 @@ class ProductFormatsSpec extends Specification {
     implicit val test0Format = jsonFormat0(Test0)
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
+    implicit def test4Format = jsonFormat1(Test4)
     implicit def testTransientFormat = jsonFormat2(TestTransient)
     implicit def testStaticFormat = jsonFormat2(TestStatic)
     implicit def testMangledFormat = jsonFormat1(TestMangled)
@@ -71,6 +73,16 @@ class ProductFormatsSpec extends Specification {
     "throw a DeserializationException if the JsValue is not a JsObject" in (
       JsNull.convertTo[Test2] must throwA(new DeserializationException("Object expected in field 'a'"))
     )
+    "expose the fieldName in the DeserializationException when able" in {
+      JsNull.convertTo[Test2] must throwA[DeserializationException].like {
+        case DeserializationException(_, _, fieldNames) => fieldNames mustEqual "a" :: Nil
+      }
+    }
+    "expose all gathered fieldNames in the DeserializationException" in {
+      JsObject("t2" -> JsObject("a" -> JsString("foo"))).convertTo[Test4] must throwA[DeserializationException].like {
+        case DeserializationException(_, _, fieldNames) => fieldNames mustEqual "t2" :: "a" :: Nil
+      }
+    }
   }
 
   "A JsonProtocol mixing in NullOptions" should {
