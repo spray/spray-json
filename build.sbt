@@ -14,7 +14,7 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 
 scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -46,7 +46,7 @@ OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.4", "2.11.2")
+crossScalaVersions := Seq("2.10.5", "2.11.6")
 
 scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
 
