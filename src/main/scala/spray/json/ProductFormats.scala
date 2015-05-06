@@ -56,9 +56,11 @@ trait ProductFormats extends ProductFormatsInstances {
       try reader.read(x.fields(fieldName))
       catch {
         case e: NoSuchElementException =>
-          deserializationError("Object is missing required member '" + fieldName + "'", e)
+          deserializationError("Object is missing required member '" + fieldName + "'", e, fieldName :: Nil)
+        case DeserializationException(msg, cause, fieldNames) =>
+          deserializationError(msg, cause, fieldName :: fieldNames)
       }
-    case _ => deserializationError("Object expected in field '" + fieldName + "'")
+    case _ => deserializationError("Object expected in field '" + fieldName + "'", fieldNames = fieldName :: Nil)
   }
 
   protected def extractFieldNames(classManifest: ClassManifest[_]): Array[String] = {

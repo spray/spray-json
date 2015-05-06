@@ -20,7 +20,7 @@ package object json {
 
   type JsField = (String, JsValue)
 
-  def deserializationError(msg: String, cause: Throwable = null) = throw new DeserializationException(msg, cause)
+  def deserializationError(msg: String, cause: Throwable = null, fieldNames: List[String] = Nil) = throw new DeserializationException(msg, cause, fieldNames)
   def serializationError(msg: String) = throw new SerializationException(msg)
 
   def jsonReader[T](implicit reader: JsonReader[T]) = reader
@@ -32,7 +32,7 @@ package object json {
 
 package json {
 
-  class DeserializationException(msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
+  case class DeserializationException(msg: String, cause: Throwable = null, fieldNames: List[String] = Nil) extends RuntimeException(msg, cause)
   class SerializationException(msg: String) extends RuntimeException(msg)
 
   private[json] class PimpedAny[T](any: T) {
