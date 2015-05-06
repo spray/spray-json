@@ -20,12 +20,12 @@ as depicted in this diagram:
 ### Installation
 
 _spray-json_ is available from the [repo.spray.io] repository.
-The latest release is `1.3.1` and is built against Scala 2.10.4 and Scala 2.11.2.
+The latest release is `1.3.2` and is built against Scala 2.10.5 and Scala 2.11.6.
 
 If you use SBT you can include _spray-json_ in your project with
 
 ```scala
-libraryDependencies += "io.spray" %%  "spray-json" % "1.3.1"
+libraryDependencies += "io.spray" %%  "spray-json" % "1.3.2"
 ```
 
 ### Usage

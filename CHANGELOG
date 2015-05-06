@@ -1,3 +1,16 @@
+Version 1.3.2 (2015-05-06)
+--------------------------
+- Fixed performance bottleneck in `ProductFormats::fromField` (#132)
+- Fixed multibyte chars at ix 0 of JSON String not being parsed correctly (#148)
+- Fixed automatic field name discovery for member names with mangled prefix (#142)
+- Reinstated deprecated `JsArray` and `JsObject` List-based constructors for backwards compatibility
+- Added standard `OptionFormat` type (#151)
+- Exposed field name in deserialization errors if possible
+- Improved name unmangling in ProductFormats (#138)
+- Introduced `JsObject.empty`, `JsArray.empty`, `JsString.empty` and `JsNumber.zero` (#143)
+- Made `JsonParser` require complete consumption of parsing input (#137)
+
+
 Version 1.3.1 (2014-10-28)
 --------------------------
 - Fixed OutOfMemoryError when parsing unterminated JSON strings (#122)
