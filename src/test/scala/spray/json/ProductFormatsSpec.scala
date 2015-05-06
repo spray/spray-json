@@ -29,7 +29,7 @@ class ProductFormatsSpec extends Specification {
   }
   @SerialVersionUID(1L) // SerialVersionUID adds a static field to the case class
   case class TestStatic(a: Int, b: Option[Double])
-  case class TestMangled(`foo-bar!`: Int, `User ID`: String, `üt$bavef$u56úrógép`: Boolean)
+  case class TestMangled(`foo-bar!`: Int, `User ID`: String, `üt$bavef$u56úrógép`: Boolean, `-x-`: Int)
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
@@ -39,7 +39,7 @@ class ProductFormatsSpec extends Specification {
     implicit def test4Format = jsonFormat1(Test4)
     implicit def testTransientFormat = jsonFormat2(TestTransient)
     implicit def testStaticFormat = jsonFormat2(TestStatic)
-    implicit def testMangledFormat = jsonFormat3(TestMangled)
+    implicit def testMangledFormat = jsonFormat4(TestMangled)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -198,12 +198,12 @@ class ProductFormatsSpec extends Specification {
 
   "A JsonFormat created with `jsonFormat`, for a case class with mangled-name members," should {
     import TestProtocol1._
-    val json = """{"foo-bar!":42,"User ID":"Karl","üt$bavef$u56úrógép":true}"""
+    val json = """{"foo-bar!":42,"User ID":"Karl","üt$bavef$u56úrógép":true,"-x-":26}"""
     "produce the correct JSON" in {
-      TestMangled(42, "Karl", true).toJson.compactPrint === json
+      TestMangled(42, "Karl", true, 26).toJson.compactPrint === json
     }
     "convert a JsObject to the respective case class instance" in {
-      json.parseJson.convertTo[TestMangled] === TestMangled(42, "Karl", true)
+      json.parseJson.convertTo[TestMangled] === TestMangled(42, "Karl", true, 26)
     }
   }
 }
