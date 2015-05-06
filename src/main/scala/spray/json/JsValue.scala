@@ -52,6 +52,7 @@ case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.flatMap(fields.get)(collection.breakOut)
 }
 object JsObject {
+  val empty = JsObject(Map.empty[String, JsValue])
   def apply(members: JsField*) = new JsObject(Map(members: _*))
   @deprecated("Use JsObject(JsValue*) instead", "1.3.0")
   def apply(members: List[JsField]) = new JsObject(Map(members: _*))
@@ -65,6 +66,7 @@ case class JsArray(elements: Vector[JsValue]) extends JsValue {
   def this(elements: List[JsValue]) = this(elements.toVector)
 }
 object JsArray {
+  val empty = JsArray(Vector.empty)
   def apply(elements: JsValue*) = new JsArray(elements.toVector)
   @deprecated("Use JsArray(Vector[JsValue]) instead", "1.3.0")
   def apply(elements: List[JsValue]) = new JsArray(elements.toVector)
@@ -76,6 +78,7 @@ object JsArray {
 case class JsString(value: String) extends JsValue
 
 object JsString {
+  val empty = JsString("")
   def apply(value: Symbol) = new JsString(value.name)
 }
 
@@ -84,6 +87,7 @@ object JsString {
  */
 case class JsNumber(value: BigDecimal) extends JsValue
 object JsNumber {
+  val zero: JsNumber = apply(0)
   def apply(n: Int) = new JsNumber(BigDecimal(n))
   def apply(n: Long) = new JsNumber(BigDecimal(n))
   def apply(n: Double) = n match {

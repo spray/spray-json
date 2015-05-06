@@ -16,10 +16,10 @@
 
 package spray.json
 
+import scala.annotation.{switch, tailrec}
 import java.lang.{StringBuilder => JStringBuilder}
 import java.nio.{CharBuffer, ByteBuffer}
 import java.nio.charset.Charset
-import scala.annotation.{switch, tailrec}
 
 /**
  * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
@@ -59,7 +59,7 @@ class JsonParser(input: ParserInput) {
       case '{' => advance(); `object`()
       case '[' => advance(); `array`()
       case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
-      case '"' => `string`(); jsValue = JsString(sb.toString)
+      case '"' => `string`(); jsValue = if (sb.length == 0) JsString.empty else JsString(sb.toString)
       case _ => fail("JSON Value")
     }
   }
@@ -71,45 +71,58 @@ class JsonParser(input: ParserInput) {
   // http://tools.ietf.org/html/rfc4627#section-2.2
   private def `object`(): Unit = {
     ws()
-    @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
-      `string`()
-      require(':')
-      ws()
-      val key = sb.toString
-      `value`()
-      val nextMap = map.updated(key, jsValue)
-      if (ws(',')) members(nextMap) else nextMap
+    jsValue = if (cursorChar != '}') {
+      @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
+        `string`()
+        require(':')
+        ws()
+        val key = sb.toString
+        `value`()
+        val nextMap = map.updated(key, jsValue)
+        if (ws(',')) members(nextMap) else nextMap
+      }
+      var map = Map.empty[String, JsValue]
+      map = members(map)
+      require('}')
+      JsObject(map)
+    } else {
+      advance()
+      JsObject.empty
     }
-    var map = Map.empty[String, JsValue]
-    if (cursorChar != '}') map = members(map)
-    require('}')
     ws()
-    jsValue = JsObject(map)
   }
 
   // http://tools.ietf.org/html/rfc4627#section-2.3
   private def `array`(): Unit = {
     ws()
-    val list = Vector.newBuilder[JsValue]
-    @tailrec def values(): Unit = {
-      `value`()
-      list += jsValue
-      if (ws(',')) values()
+    jsValue = if (cursorChar != ']') {
+      val list = Vector.newBuilder[JsValue]
+      @tailrec def values(): Unit = {
+        `value`()
+        list += jsValue
+        if (ws(',')) values()
+      }
+      values()
+      require(']')
+      JsArray(list.result())
+    } else {
+      advance()
+      JsArray.empty
     }
-    if (cursorChar != ']') values()
-    require(']')
     ws()
-    jsValue = JsArray(list.result())
   }
 
   // http://tools.ietf.org/html/rfc4627#section-2.4
   private def `number`() = {
     val start = input.cursor
+    val startChar = cursorChar
     ch('-')
     `int`()
     `frac`()
     `exp`()
-    jsValue = JsNumber(input.sliceCharArray(start, input.cursor))
+    jsValue =
+      if (startChar == '0' && input.cursor - start == 1) JsNumber.zero
+      else JsNumber(input.sliceCharArray(start, input.cursor))
     ws()
   }
 
