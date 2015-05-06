@@ -99,6 +99,12 @@ class JsonParserSpec extends Specification {
           |{"a}
           |    ^
           |""".stripMargin
+
+      errorMessage("""{}x""") ===
+        """Unexpected character 'x' at input index 2 (line 1, position 3), expected end-of-input:
+          |{}x
+          |  ^
+          |""".stripMargin
     }
   }
 }

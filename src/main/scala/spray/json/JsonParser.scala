@@ -41,6 +41,7 @@ class JsonParser(input: ParserInput) {
   def parseJsValue(): JsValue = {
     ws()
     `value`()
+    require(EOI)
     jsValue
   }
 
@@ -202,7 +203,8 @@ class JsonParser(input: ParserInput) {
           val c = if (Character.isISOControl(errorChar)) "\\u%04x" format errorChar.toInt else errorChar.toString
           s"character '$c'"
         } else "end-of-input"
-      s"Unexpected $unexpected at input index $cursor (line $lineNr, position $col), expected $target"
+      val expected = if (target != "'\uFFFF'") target else "end-of-input"
+      s"Unexpected $unexpected at input index $cursor (line $lineNr, position $col), expected $expected"
     }
     val detail = {
       val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
