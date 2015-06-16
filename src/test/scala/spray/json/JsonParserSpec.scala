@@ -64,7 +64,8 @@ class JsonParserSpec extends Specification {
       val json = JsObject(
         "7-bit" -> JsString("This is regular 7-bit ASCII text."),
         "2-bytes" -> JsString("2-byte UTF-8 chars like £, æ or Ö"),
-        "3-bytes" -> JsString("3-byte UTF-8 chars like ﾖ, ᄅ or ᐁ."))
+        "3-bytes" -> JsString("3-byte UTF-8 chars like ﾖ, ᄅ or ᐁ."),
+        "4-bytes" -> JsString("4-byte UTF-8 chars like \uD801\uDC37, \uD852\uDF62 or \uD83D\uDE01."))
       JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
     }
     "parse directly from UTF-8 encoded bytes when string starts with a multi-byte character" in {

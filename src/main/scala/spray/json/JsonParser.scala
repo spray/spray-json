@@ -271,7 +271,7 @@ object ParserInput {
    */
   class ByteArrayBasedParserInput(bytes: Array[Byte]) extends DefaultParserInput {
     private val byteBuffer = ByteBuffer.allocate(4)
-    private val charBuffer = CharBuffer.allocate(1) // we currently don't support surrogate pairs!
+    private val charBuffer = CharBuffer.allocate(2)
     private val decoder = UTF8.newDecoder()
     def nextChar() = {
       _cursor += 1
@@ -289,20 +289,26 @@ object ParserInput {
           charBuffer.flip()
           val result = if (coderResult.isUnderflow & charBuffer.hasRemaining) charBuffer.get() else ErrorChar
           byteBuffer.clear()
-          charBuffer.clear()
+          if (!charBuffer.hasRemaining) charBuffer.clear()
           result
         }
       }
 
-      _cursor += 1
-      if (_cursor < bytes.length) {
-        val byte = bytes(_cursor)
-        if (byte >= 0) byte.toChar // 7-Bit ASCII
-        else if ((byte & 0xE0) == 0xC0) decode(byte, 1) // 2-byte UTF-8 sequence
-        else if ((byte & 0xF0) == 0xE0) decode(byte, 2) // 3-byte UTF-8 sequence
-        else if ((byte & 0xF8) == 0xF0) decode(byte, 3) // 4-byte UTF-8 sequence, will probably produce an (unsupported) surrogate pair
-        else ErrorChar
-      } else EOI
+      if (charBuffer.position() > 0) {
+        val result = charBuffer.get()
+        charBuffer.clear()
+        result
+      } else {
+        _cursor += 1
+        if (_cursor < bytes.length) {
+          val byte = bytes(_cursor)
+          if (byte >= 0) byte.toChar // 7-Bit ASCII
+          else if ((byte & 0xE0) == 0xC0) decode(byte, 1) // 2-byte UTF-8 sequence
+          else if ((byte & 0xF0) == 0xE0) decode(byte, 2) // 3-byte UTF-8 sequence
+          else if ((byte & 0xF8) == 0xF0) decode(byte, 3) // 4-byte UTF-8 sequence
+          else ErrorChar
+        } else EOI
+      }
     }
     def length = bytes.length
     def sliceString(start: Int, end: Int) = new String(bytes, start, end - start, UTF8)
