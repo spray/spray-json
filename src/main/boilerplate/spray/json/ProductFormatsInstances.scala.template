@@ -27,6 +27,10 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
     jsonFormat(construct, [#p1#])
   }
   def jsonFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
+    val knownFields = HashSet[String]()
+    [# knownFields.add(fieldName1)#
+    ]
+
     def write(p: T) = {
       val fields = new collection.mutable.ListBuffer[(String, JsValue)]
       fields.sizeHint(1 * 2)
@@ -40,9 +44,6 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
       if (!allowExtraKeys) {
         val jsObject = value.asJsObject()
         val keySet = jsObject.fields.keys.toSet
-        val knownFields = HashSet[String]()
-        [# knownFields.add(fieldName1)#
-        ]
         val keySetDiff = keySet.diff(knownFields)
         if (!keySetDiff.isEmpty) {
           throw new DeserializationException(s"${keySetDiff.head} is not a known key", null, keySetDiff.toList)
