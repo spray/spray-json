@@ -37,7 +37,7 @@ trait ProductFormats extends ProductFormatsInstances {
     }
 
   // helpers
-  
+
   protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField] = Nil)
                                        (implicit writer: JsonWriter[T]): List[JsField] = {
     val value = p.productElement(ix).asInstanceOf[T]
@@ -151,4 +151,15 @@ trait NullOptions extends ProductFormats {
     val value = p.productElement(ix).asInstanceOf[T]
     (fieldName, writer.write(value)) :: rest
   }
+}
+
+/**
+ * This trait changes the behavior for reading JSON values.
+ * If you mix in this trait into your custom JsonProtocol, JSON deserialization
+ * will throw an error if the input contains keys that are not a field of the
+ * target case class.
+ */
+trait ExtraKeysOptions extends ProductFormats {
+  this: StandardFormats =>
+  override def allowExtraKeys = false
 }

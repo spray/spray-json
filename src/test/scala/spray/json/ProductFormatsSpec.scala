@@ -44,6 +44,8 @@ class ProductFormatsSpec extends Specification {
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
 
+  object TestProtocol3 extends DefaultJsonProtocol with TestProtocol with ExtraKeysOptions
+
   "A JsonFormat created with `jsonFormat`, for a case class with 2 elements," should {
     import TestProtocol1._
     val obj = Test2(42, Some(4.2))
@@ -60,6 +62,9 @@ class ProductFormatsSpec extends Specification {
     )
     "not require the presence of optional fields for deserialization" in {
       JsObject("a" -> JsNumber(42)).convertTo[Test2] mustEqual Test2(42, None)
+    }
+    "allow extra fields during deserialization" in {
+      JsObject("a" -> JsNumber(42), "extra_key" -> JsNumber(43)).convertTo[Test2] mustEqual Test2(42, None)
     }
     "not render `None` members during serialization" in {
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42))
@@ -89,6 +94,15 @@ class ProductFormatsSpec extends Specification {
     "render `None` members to `null`" in {
       import TestProtocol2._
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNull)
+    }
+  }
+
+  "A JsonProtocol mixing in ExtraKeysOptions" should {
+    "not allow extra keys to be read" in {
+      import TestProtocol3._
+      JsObject("a" -> JsNumber(42), "extra_key" -> JsNumber(43)).convertTo[Test2] must throwA[DeserializationException].like {
+        case DeserializationException(_, _, fieldNames) => fieldNames mustEqual "extra_key" :: Nil
+      }
     }
   }
 
