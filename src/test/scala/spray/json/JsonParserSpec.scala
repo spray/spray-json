@@ -107,5 +107,11 @@ class JsonParserSpec extends Specification {
           |  ^
           |""".stripMargin
     }
+
+    "parse multiple values when requireEndOfInput is false" in {
+      val parser = new JsonParser("""{"key":1}{"key":2}""")
+      parser.parseJsValue(false) === JsObject("key" -> JsNumber(1))
+      parser.parseJsValue(false) === JsObject("key" -> JsNumber(2))
+    }
   }
 }
