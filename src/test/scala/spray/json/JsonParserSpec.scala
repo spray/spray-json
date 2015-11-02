@@ -108,10 +108,17 @@ class JsonParserSpec extends Specification {
           |""".stripMargin
     }
 
-    "parse multiple values when requireEndOfInput is false" in {
+    "parse multiple values when allowTrailingInput" in {
       val parser = new JsonParser("""{"key":1}{"key":2}""")
-      parser.parseJsValue(false) === JsObject("key" -> JsNumber(1))
-      parser.parseJsValue(false) === JsObject("key" -> JsNumber(2))
+      parser.parseJsValue(true) === JsObject("key" -> JsNumber(1))
+      parser.parseJsValue(true) === JsObject("key" -> JsNumber(2))
     }
+    "reject trailing input when !allowTrailingInput" in {
+      def parser = JsonParser("""{"key":1}x""")
+      parser must throwA[JsonParser.ParsingException].like {
+        case e: JsonParser.ParsingException => e.getMessage must contain("expected end-of-input")
+      }
+    }
+
   }
 }
