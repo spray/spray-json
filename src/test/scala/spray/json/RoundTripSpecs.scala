@@ -2,7 +2,7 @@ package spray.json
 
 import org.specs2.mutable.Specification
 import org.scalacheck._
-import org.specs2.matcher.ScalaCheckMatchers
+import org.specs2.ScalaCheck
 
 object JsValueGenerators {
   import Gen._
@@ -47,7 +47,7 @@ object JsValueGenerators {
   implicit val arbitraryValue: Arbitrary[JsValue] = Arbitrary(genValue(5))
 }
 
-class RoundTripSpecs extends Specification with ScalaCheckMatchers {
+class RoundTripSpecs extends Specification with ScalaCheck {
   import JsValueGenerators.arbitraryValue
 
   "Parsing / Printing round-trip" should {
