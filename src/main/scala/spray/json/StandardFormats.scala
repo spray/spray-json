@@ -42,6 +42,23 @@ trait StandardFormats {
     def readSome(value: JsValue) = Some(value.convertTo[T])
   }
 
+  implicit def triptionFormat[T :JF]: JF[Tription[T]] = new TriptionFormat[T]
+
+  class TriptionFormat[T :JF] extends JF[Tription[T]] {
+    def write(tription: Tription[T]) = tription match {
+      case Value(x) => x.toJson
+      case Null => JsNull
+      case Undefined => JsUndefined
+    }
+    def read(value: JsValue) = value match {
+      case JsUndefined => Undefined
+      case JsNull => Null
+      case x => Value(x.convertTo[T])
+    }
+    // allows reading the JSON as a Value (useful in container formats)
+    def readSome(value: JsValue) = Value(value.convertTo[T])
+  }
+
   implicit def eitherFormat[A :JF, B :JF] = new JF[Either[A, B]] {
     def write(either: Either[A, B]) = either match {
       case Right(a) => a.toJson

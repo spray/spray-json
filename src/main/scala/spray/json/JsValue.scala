@@ -120,5 +120,8 @@ case object JsFalse extends JsBoolean {
 
 /**
   * The representation for JSON null.
- */
+  */
 case object JsNull extends JsValue
+
+/** The representation for JSON undefined. **/
+case object JsUndefined extends JsValue
