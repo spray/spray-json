@@ -60,6 +60,7 @@ class JsonParser(input: ParserInput) {
     (cursorChar: @switch) match {
       case 'f' => simpleValue(`false`(), JsFalse)
       case 'n' => simpleValue(`null`(), JsNull)
+      case 'u' => simpleValue(`undefined`(), JsUndefined)
       case 't' => simpleValue(`true`(), JsTrue)
       case '{' => advance(); `object`()
       case '[' => advance(); `array`()
@@ -71,6 +72,7 @@ class JsonParser(input: ParserInput) {
 
   private def `false`() = advance() && ch('a') && ch('l') && ch('s') && ws('e')
   private def `null`() = advance() && ch('u') && ch('l') && ws('l')
+  private def `undefined`() = advance() && ch('n') && ch('d') && ch('e') && ch('f') && ch('i') && ch('n') && ch('e') && ws('d')
   private def `true`() = advance() && ch('r') && ch('u') && ws('e')
 
   // http://tools.ietf.org/html/rfc4627#section-2.2

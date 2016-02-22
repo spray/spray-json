@@ -24,6 +24,9 @@ class JsonParserSpec extends Specification {
     "parse 'null' to JsNull" in {
       JsonParser("null") === JsNull
     }
+    "parse 'undefined' to JsUndefined" in {
+      JsonParser("undefined") === JsUndefined
+    }
     "parse 'true' to JsTrue" in {
       JsonParser("true") === JsTrue
     }
@@ -57,8 +60,8 @@ class JsonParserSpec extends Specification {
               JsObject("key" -> JsNumber(42), "key2" -> JsString("value"))
     )
     "parse a simple JsArray" in (
-      JsonParser("""[null, 1.23 ,{"key":true } ] """) ===
-              JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsTrue))
+      JsonParser("""[null, undefined, 1.23 ,{"key":true } ] """) ===
+              JsArray(JsNull, JsUndefined, JsNumber(1.23), JsObject("key" -> JsTrue))
     )
     "parse directly from UTF-8 encoded bytes" in {
       val json = JsObject(

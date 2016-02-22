@@ -24,6 +24,9 @@ class CompactPrinterSpec extends Specification {
     "print JsNull to 'null'" in {
       CompactPrinter(JsNull) mustEqual "null"
     }
+    "print JsUndefined to 'undefined'" in {
+      CompactPrinter(JsUndefined) mustEqual "undefined"
+    }
     "print JsTrue to 'true'" in {
       CompactPrinter(JsTrue) mustEqual "true"
     }
@@ -65,8 +68,8 @@ class CompactPrinterSpec extends Specification {
               mustEqual """{"key":42,"key2":"value"}"""
     )
     "properly print a simple JsArray" in (
-      CompactPrinter(JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsBoolean(true))))
-              mustEqual """[null,1.23,{"key":true}]"""
+      CompactPrinter(JsArray(JsNull, JsUndefined, JsNumber(1.23), JsObject("key" -> JsBoolean(true))))
+              mustEqual """[null,undefined,1.23,{"key":true}]"""
     )
     "properly print a JSON padding (JSONP) if requested" in {
       CompactPrinter(JsTrue, Some("customCallback")) mustEqual("customCallback(true)")
