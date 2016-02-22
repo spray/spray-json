@@ -24,6 +24,7 @@ class ProductFormatsSpec extends Specification {
   case class Test2(a: Int, b: Option[Double])
   case class Test3[A, B](as: List[A], bs: List[B])
   case class Test4(t2: Test2)
+  case class Test5(a: Int, b: Tription[Double])
   case class TestTransient(a: Int, b: Option[Double]) {
     @transient var c = false
   }
@@ -37,6 +38,7 @@ class ProductFormatsSpec extends Specification {
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def test4Format = jsonFormat1(Test4)
+    implicit val test5Format = jsonFormat2(Test5)
     implicit def testTransientFormat = jsonFormat2(TestTransient)
     implicit def testStaticFormat = jsonFormat2(TestStatic)
     implicit def testMangledFormat = jsonFormat5(TestMangled)
@@ -58,12 +60,27 @@ class ProductFormatsSpec extends Specification {
       JsObject("b" -> JsNumber(4.2)).convertTo[Test2] must
               throwA(new DeserializationException("Object is missing required member 'a'"))
     )
-    "not require the presence of optional fields for deserialization" in {
+    "not require the presence of Option fields for deserialization" in {
       JsObject("a" -> JsNumber(42)).convertTo[Test2] mustEqual Test2(42, None)
+    }
+    "not require the presence of Tription fields for deserialization" in {
+      JsObject("a" -> JsNumber(42)).convertTo[Test5] mustEqual Test5(42, Undefined)
+    }
+    "deserialize null to Tription `Null`" in {
+      JsObject("a" -> JsNumber(42), "b" -> JsNull).convertTo[Test5] mustEqual Test5(42, Null)
+    }
+    "deserialize undefined to Tription `Undefined`" in {
+      JsObject("a" -> JsNumber(42), "b" -> JsUndefined).convertTo[Test5] mustEqual Test5(42, Undefined)
     }
     "not render `None` members during serialization" in {
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42))
     }
+//    "render `Null` members during serialization" in {
+//      Test5(42, Null).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNull)
+//    }
+//    "not render `Undefined` members during serialization" in {
+//      Test5(42, Undefined).toJson mustEqual JsObject("a" -> JsNumber(42))
+//    }
     "ignore additional members during deserialization" in {
       JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2), "c" -> JsString('no)).convertTo[Test2] mustEqual obj
     }
