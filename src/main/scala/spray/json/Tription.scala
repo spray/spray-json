@@ -20,7 +20,7 @@ package spray.json
   *
   * Created by bathalh on 2/19/16.
   */
-abstract class Tription[+T]
+sealed abstract class Tription[+T] extends Product
 {
     def isDefined: Boolean
     def isNull: Boolean
@@ -42,6 +42,10 @@ abstract class Tription[+T]
 
     final def foreach[U](f: T => U): Unit =
         if( hasValue ) f( this.get )
+
+    // not sure whether to return Null or Undefined if the filter criteria are not met
+//    final def filter(p: T => Boolean): Tription[T] =
+//        if (!hasValue || p(this.get)) this else (Undefined/Null)
 }
 
 case class Value[+T](x: T) extends Tription[T] {
