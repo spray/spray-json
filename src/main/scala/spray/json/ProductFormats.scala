@@ -43,6 +43,7 @@ trait ProductFormats extends ProductFormatsInstances {
     val value = p.productElement(ix).asInstanceOf[T]
     writer match {
       case _: OptionFormat[_] if (value == None) => rest
+      case _: TriptionFormat[_] if (value == Undefined) => rest
       case _ => (fieldName, writer.write(value)) :: rest
     }
   }
