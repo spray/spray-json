@@ -2,7 +2,6 @@ package spray.json
 
 import java.util.NoSuchElementException
 
-import org.apache.commons.lang3.RandomStringUtils._
 import org.specs2.mutable._
 
 import scala.util.Random._
@@ -12,7 +11,7 @@ import scala.util.Random._
   */
 class TriptionSpec extends Specification
 {
-    def nextString = randomAlphanumeric( nextInt( 16 ) + 1 )
+    def nextString = new String( (alphanumeric take (nextInt( 16 ) + 1)).toArray )
 
     "Basic monadic and helper function should work work:" should
     {

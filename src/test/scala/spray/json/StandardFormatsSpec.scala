@@ -16,14 +16,12 @@
 
 package spray.json
 
-import org.apache.commons.lang3.RandomStringUtils._
 import org.specs2.mutable._
-import scala.Right
 import scala.util.Random._
 
 class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
 
-  def nextString = randomAlphanumeric( nextInt( 16 ) + 1 )
+  def nextString = new String( (alphanumeric take (nextInt( 16 ) + 1)).toArray )
 
   "The optionFormat" should {
     "convert None to JsNull" in {
