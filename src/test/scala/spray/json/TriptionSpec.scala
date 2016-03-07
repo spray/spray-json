@@ -76,6 +76,19 @@ class TriptionSpec extends Specification
             Null.flatMap( mapFunction ) mustEqual Null
             Value(value).flatMap( mapFunction ) mustEqual Value(value + append)
         }
+        "filter returns itself for Null and Undefined" in {
+            Undefined filter { _ => false } mustEqual Undefined
+            Null filter { _ => false } mustEqual Null
+            Undefined filter { _ => true } mustEqual Undefined
+            Null filter { _ => true } mustEqual Null
+        }
+        "filter returns Null if value does not match criteria" in {
+            Value(nextString) filter { _ => false } mustEqual Null
+        }
+        "filter returns itself if value matches criteria" in {
+            val value = nextString
+            Value(value) filter { _ => true } mustEqual Value(value)
+        }
         "foreach executes for value in a Value and does nothing otherwise" in {
             val sb = new StringBuilder
             def foreachFunction( x: Any ) = sb.append( x.toString )

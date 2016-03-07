@@ -25,12 +25,12 @@ sealed abstract class Tription[+T] extends Product
         else if( isNull ) Null
         else f( get )
 
+    /** return `Null` (not `Undefined`) if filter criteria don't match **/
+    final def filter(p: T => Boolean): Tription[T] =
+        if (!hasValue || p(this.get)) this else Null
+
     final def foreach[U](f: T => U): Unit =
         if( hasValue ) f( this.get )
-
-    // not sure whether to return Null or Undefined if the filter criteria are not met
-//    final def filter(p: T => Boolean): Tription[T] =
-//        if (!hasValue || p(this.get)) this else (Undefined/Null)
 }
 
 case class Value[+T](x: T) extends Tription[T] {
