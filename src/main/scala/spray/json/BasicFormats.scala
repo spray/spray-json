@@ -79,6 +79,7 @@ trait BasicFormats {
     }
     def read(value: JsValue) = value match {
       case JsNumber(x) => x
+      case JsString(x) => BigDecimal(x)
       case x => deserializationError("Expected BigDecimal as JsNumber, but got " + x)
     }
   }
@@ -90,6 +91,7 @@ trait BasicFormats {
     }
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.toBigInt
+      case JsString(x) => BigInt(x)
       case x => deserializationError("Expected BigInt as JsNumber, but got " + x)
     }
   }
