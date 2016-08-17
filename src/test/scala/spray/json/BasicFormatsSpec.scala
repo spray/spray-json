@@ -16,9 +16,15 @@
 
 package spray.json
 
+import java.io.{NotSerializableException, ObjectOutputStream}
+
 import org.specs2.mutable._
+import org.specs2.reporter.NullOutputStream
 
 class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
+
+  def verifySerialization[T: JsonFormat]() =
+    new ObjectOutputStream(NullOutputStream).writeObject(implicitly[JsonFormat[T]]) must not(throwA[NotSerializableException])
 
   "The IntJsonFormat" should {
     "convert an Int to a JsNumber" in {
@@ -26,6 +32,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert a JsNumber to an Int" in {
       JsNumber(42).convertTo[Int] mustEqual 42
+    }
+    "be serializable" in {
+      verifySerialization[Int]()
     }
   }
   
@@ -35,6 +44,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert a JsNumber to a Long" in {
       JsNumber(7563661897011259335L).convertTo[Long] mustEqual 7563661897011259335L
+    }
+    "be serializable" in {
+      verifySerialization[Long]()
     }
   }
   
@@ -57,6 +69,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNull to a Float" in {
       JsNull.convertTo[Float].isNaN mustEqual Float.NaN.isNaN
     }
+    "be serializable" in {
+      verifySerialization[Float]()
+    }
   }
   
   "The DoubleJsonFormat" should {
@@ -78,6 +93,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNull to a Double" in {
       JsNull.convertTo[Double].isNaN mustEqual Double.NaN.isNaN
     }
+    "be serializable" in {
+      verifySerialization[Double]()
+    }
   }
   
   "The ByteJsonFormat" should {
@@ -87,6 +105,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNumber to a Byte" in {
       JsNumber(42).convertTo[Byte] mustEqual 42
     }
+    "be serializable" in {
+      verifySerialization[Byte]()
+    }
   }
   
   "The ShortJsonFormat" should {
@@ -95,6 +116,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert a JsNumber to a Short" in {
       JsNumber(42).convertTo[Short] mustEqual 42
+    }
+    "be serializable" in {
+      verifySerialization[Short]()
     }
   }
   
@@ -108,6 +132,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     """convert a JsString to a BigDecimal (to allow the quoted-large-numbers pattern)""" in {
       JsString("9223372036854775809").convertTo[BigDecimal] mustEqual BigDecimal("9223372036854775809")
     }
+    "be serializable" in {
+      verifySerialization[BigDecimal]()
+    }
   }
   
   "The BigIntJsonFormat" should {
@@ -120,6 +147,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     """convert a JsString to a BigInt (to allow the quoted-large-numbers pattern)""" in {
       JsString("9223372036854775809").convertTo[BigInt] mustEqual BigInt("9223372036854775809")
     }
+    "be serializable" in {
+      verifySerialization[BigInt]()
+    }
   }
   
   "The UnitJsonFormat" should {
@@ -129,6 +159,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNumber to Unit" in {
       JsNumber(1).convertTo[Unit] mustEqual ()
     }
+    "be serializable" in {
+      verifySerialization[Unit]()
+    }
   }
   
   "The BooleanJsonFormat" should {
@@ -136,6 +169,7 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert false to a JsFalse" in { false.toJson mustEqual JsFalse }
     "convert a JsTrue to true" in { JsTrue.convertTo[Boolean] mustEqual true }
     "convert a JsFalse to false" in { JsFalse.convertTo[Boolean] mustEqual false }
+    "be serializable" in { verifySerialization[Boolean]() }
   }
   
   "The CharJsonFormat" should {
@@ -144,6 +178,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert a JsString to a Char" in {
       JsString("c").convertTo[Char] mustEqual 'c'
+    }
+    "be serializable" in {
+      verifySerialization[Char]()
     }
   }
   
@@ -154,6 +191,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsString to a String" in {
       JsString("Hello").convertTo[String] mustEqual "Hello"
     }
+    "be serializable" in {
+      verifySerialization[String]()
+    }
   }
   
   "The SymbolJsonFormat" should {
@@ -163,6 +203,8 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsString to a Symbol" in {
       JsString("Hello").convertTo[Symbol] mustEqual 'Hello
     }
+    "be serializable" in {
+      verifySerialization[Symbol]()
+    }
   }
-  
 }

@@ -22,7 +22,7 @@ import scala.{Left, Right}
 /**
   * Provides the JsonFormats for the non-collection standard types.
  */
-trait StandardFormats {
+trait StandardFormats extends Serializable {
   this: AdditionalFormats =>
 
   private[json] type JF[T] = JsonFormat[T] // simple alias for reduced verbosity

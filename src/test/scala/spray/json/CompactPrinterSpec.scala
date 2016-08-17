@@ -72,5 +72,4 @@ class CompactPrinterSpec extends Specification {
       CompactPrinter(JsTrue, Some("customCallback")) mustEqual("customCallback(true)")
     }
   }
-  
 }

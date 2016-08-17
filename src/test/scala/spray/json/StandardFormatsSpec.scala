@@ -16,10 +16,16 @@
 
 package spray.json
 
+import java.io.{NotSerializableException, ObjectOutputStream}
+
 import org.specs2.mutable._
+import org.specs2.reporter.NullOutputStream
 import scala.Right
 
 class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
+
+  def verifySerialization[T: JsonFormat]() =
+    new ObjectOutputStream(NullOutputStream).writeObject(implicitly[JsonFormat[T]]) must not(throwA[NotSerializableException])
 
   "The optionFormat" should {
     "convert None to JsNull" in {
@@ -33,7 +39,10 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert JsString(Hello) to Some(Hello)" in {
       JsString("Hello").convertTo[Option[String]] mustEqual Some("Hello")
-    } 
+    }
+    "be serializable" in {
+      verifySerialization[Option[Int]]()
+    }
   }
 
   "The eitherFormat" should {
@@ -52,8 +61,10 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert the right side of an Either value from Json" in {
       JsString("Hello").convertTo[Either[Int, String]] mustEqual Right("Hello")
     }
+    "be serializable" in {
+      verifySerialization[Either[Int, String]]()
+    }
   }
-  
   "The tuple1Format" should {
     "convert (42) to a JsNumber" in {
       Tuple1(42).toJson mustEqual JsNumber(42)
@@ -62,7 +73,6 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       JsNumber(42).convertTo[Tuple1[Int]] mustEqual Tuple1(42)
     }
   }
-  
   "The tuple2Format" should {
     val json = JsArray(JsNumber(42), JsNumber(4.2))
     "convert (42, 4.2) to a JsArray" in {
@@ -71,8 +81,10 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     "be able to convert a JsArray to a (Int, Double)]" in {
       json.convertTo[(Int, Double)] mustEqual (42, 4.2)
     }
+    "be serializable" in {
+      verifySerialization[(Int, Double)]()
+    }
   }
-
   "The tuple3Format" should {
     val json = JsArray(JsNumber(42), JsNumber(4.2), JsNumber(3))
     "convert (42, 4.2, 3) to a JsArray" in {
@@ -80,6 +92,9 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "be able to convert a JsArray to a (Int, Double, Int)]" in {
       json.convertTo[(Int, Double, Int)] mustEqual (42, 4.2, 3)
+    }
+    "be serializable" in {
+      verifySerialization[(Int, Double, Int)]()
     }
   }
   "The tuple4Format" should {
@@ -89,6 +104,9 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "be able to convert a JsArray to a (Int, Double, Int, Int)]" in {
       json.convertTo[(Int, Double, Int, Int)] mustEqual (42, 4.2, 3, 4)
+    }
+    "be serializable" in {
+      verifySerialization[(Int, Double, Int, Int)]()
     }
   }
   "The tuple5Format" should {
@@ -108,6 +126,9 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     "be able to convert a JsArray to a (Int, Double, Int, Int, Int, Int)]" in {
       json.convertTo[(Int, Double, Int, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5, 6)
     }
+    "be serializable" in {
+      verifySerialization[(Int, Double, Int, Int, Int)]()
+    }
   }
   "The tuple7Format" should {
     val json = JsArray(JsNumber(42), JsNumber(4.2), JsNumber(3), JsNumber(4), JsNumber(5), JsNumber(6), JsNumber(7))
@@ -116,6 +137,9 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "be able to convert a JsArray to a (Int, Double, Int, Int, Int, Int, Int)]" in {
       json.convertTo[(Int, Double, Int, Int, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5, 6, 7)
+    }
+    "be serializable" in {
+      verifySerialization[(Int, Double, Int, Int, Int, Int)]()
     }
   }
 }

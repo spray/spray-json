@@ -16,9 +16,12 @@
 
 package spray.json
 
-import org.specs2.mutable._
+import java.io.{NotSerializableException, ObjectOutputStream}
 
-class AdditionalFormatsSpec extends Specification {
+import org.specs2.mutable._
+import org.specs2.reporter.NullOutputStream
+
+class AdditionalFormatsSpec extends Specification with Serializable {
 
   case class Container[A](inner: Option[A])
 
@@ -41,17 +44,32 @@ class AdditionalFormatsSpec extends Specification {
     }
   }
 
+  def verifySerialization[T](obj: T) =
+    new ObjectOutputStream(NullOutputStream).writeObject(obj) must not(throwA[NotSerializableException])
+
   "The liftJsonWriter" should {
+    import WriterProtocol._
     val obj = Container(Some(Container(Some(List(1, 2, 3)))))
 
     "properly write a Container[Container[List[Int]]] to JSON" in {
-      import WriterProtocol._
       obj.toJson.toString mustEqual """{"content":{"content":[1,2,3]}}"""
     }
 
+    "be serializable" in {
+      verifySerialization(implicitly[JsonFormat[Container[Int]]])
+    }
+  }
+
+  "The liftJsonReader" should {
+    import ReaderProtocol._
+    val obj = Container(Some(Container(Some(List(1, 2, 3)))))
+
     "properly read a Container[Container[List[Int]]] from JSON" in {
-      import ReaderProtocol._
       """{"content":{"content":[1,2,3]}}""".parseJson.convertTo[Container[Container[List[Int]]]] mustEqual obj
+    }
+
+    "be serializable" in {
+      verifySerialization(implicitly[JsonFormat[Container[Int]]])
     }
   }
 
@@ -62,10 +80,13 @@ class AdditionalFormatsSpec extends Specification {
   }
 
   "The lazyFormat wrapper" should {
+    import FooProtocol._
     "enable recursive format definitions" in {
-      import FooProtocol._
       Foo(1, "a", Some(Foo(2, "b", Some(Foo(3, "c") :: Nil)) :: Foo(4, "d") :: Nil)).toJson.toString mustEqual
         """{"id":1,"name":"a","foos":[{"id":2,"name":"b","foos":[{"id":3,"name":"c"}]},{"id":4,"name":"d"}]}"""
+    }
+    "be serializable" in {
+      verifySerialization(fooProtocol)
     }
   }
 }

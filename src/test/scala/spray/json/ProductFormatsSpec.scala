@@ -16,9 +16,12 @@
 
 package spray.json
 
-import org.specs2.mutable._
+import java.io.{NotSerializableException, ObjectOutputStream}
 
-class ProductFormatsSpec extends Specification {
+import org.specs2.mutable._
+import org.specs2.reporter.NullOutputStream
+
+class ProductFormatsSpec extends Specification with Serializable {
 
   case class Test0()
   case class Test2(a: Int, b: Option[Double])
@@ -43,6 +46,9 @@ class ProductFormatsSpec extends Specification {
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
+
+  def verifySerialization[T](obj: T) =
+    new ObjectOutputStream(NullOutputStream).writeObject(obj) must not(throwA[NotSerializableException])
 
   "A JsonFormat created with `jsonFormat`, for a case class with 2 elements," should {
     import TestProtocol1._
@@ -83,12 +89,18 @@ class ProductFormatsSpec extends Specification {
         case DeserializationException(_, _, fieldNames) => fieldNames mustEqual "t2" :: "a" :: Nil
       }
     }
+    "be serializable" in {
+      verifySerialization(test2Format)
+    }
   }
 
   "A JsonProtocol mixing in NullOptions" should {
     "render `None` members to `null`" in {
       import TestProtocol2._
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNull)
+    }
+    "be serializable" in {
+      verifySerialization(TestProtocol2)
     }
   }
 
@@ -104,6 +116,9 @@ class ProductFormatsSpec extends Specification {
     }
     "convert a JsObject to the respective case class instance" in {
       json.convertTo[Test3[Int, String]] mustEqual obj
+    }
+    "be serializable" in {
+      verifySerialization(implicitly[JsonFormat[Test3[Int, String]]])
     }
   }
   "A JsonFormat for a case class with 18 parameters and created with `jsonFormat`" should {
@@ -141,16 +156,22 @@ class ProductFormatsSpec extends Specification {
     "convert a JsObject to the respective case class instance" in {
       json.convertTo[Test18] mustEqual obj
     }
+    "be serializable" in {
+      verifySerialization(test18Format)
+    }
   }
 
   "A JsonFormat for a generic case class with an explicitly provided type parameter" should {
+    case class Box[A](a: A)
+    object BoxProtocol extends DefaultJsonProtocol {
+      implicit val boxFormat = jsonFormat1(Box[Int])
+    }
+    import BoxProtocol._
     "support the jsonFormat1 syntax" in {
-      case class Box[A](a: A)
-      object BoxProtocol extends DefaultJsonProtocol {
-        implicit val boxFormat = jsonFormat1(Box[Int])
-      }
-      import BoxProtocol._
       Box(42).toJson === JsObject(Map("a" -> JsNumber(42)))
+    }
+    "be serializable" in {
+      verifySerialization(boxFormat)
     }
   }
 
@@ -164,6 +185,9 @@ class ProductFormatsSpec extends Specification {
     "convert a JsObject to the respective case class instance" in {
       json.convertTo[TestTransient] mustEqual obj
     }
+    "be serializable" in {
+      verifySerialization(testTransientFormat)
+    }
   }
 
   "A JsonFormat for a case class with static fields and created with `jsonFormat`" should {
@@ -175,6 +199,9 @@ class ProductFormatsSpec extends Specification {
     }
     "convert a JsObject to the respective case class instance" in {
       json.convertTo[TestStatic] mustEqual obj
+    }
+    "be serializable" in {
+      verifySerialization(testStaticFormat)
     }
   }
 
@@ -194,6 +221,9 @@ class ProductFormatsSpec extends Specification {
     "throw a DeserializationException if the JsValue is not a JsObject" in (
       JsNull.convertTo[Test0] must throwA(new DeserializationException("Object expected"))
     )
+    "be serializable" in {
+      verifySerialization(test0Format)
+    }
   }
 
   "A JsonFormat created with `jsonFormat`, for a case class with mangled-name members," should {
@@ -204,6 +234,9 @@ class ProductFormatsSpec extends Specification {
     }
     "convert a JsObject to the respective case class instance" in {
       json.parseJson.convertTo[TestMangled] === TestMangled(42, "Karl", true, 26, 1.0f)
+    }
+    "be serializable" in {
+      verifySerialization(testMangledFormat)
     }
   }
 }
