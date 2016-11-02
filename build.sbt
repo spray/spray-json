@@ -21,9 +21,9 @@ scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "
 resolvers += Opts.resolver.sonatypeReleases
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "3.8.5.1" % "test",
-  "org.specs2" %% "specs2-scalacheck" % "3.8.5.1" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.3" % "test"
+  "org.specs2" %% "specs2-core" % "3.8.6" % "test",
+  "org.specs2" %% "specs2-scalacheck" % "3.8.6" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
 )
 
 (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
@@ -46,7 +46,7 @@ OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0-RC2")
+crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0")
 
 scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
 
