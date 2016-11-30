@@ -27,6 +27,12 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNumber to an Int" in {
       JsNumber(42).convertTo[Int] mustEqual 42
     }
+    "respect Int upper bound" in {
+      JsNumber(1000000000000L).convertTo[Int] must throwA[DeserializationException]
+    }
+    "respect Int lower bound" in {
+      JsNumber(-1000000000000L).convertTo[Int] must throwA[DeserializationException]
+    }
   }
   
   "The LongJsonFormat" should {
@@ -35,6 +41,12 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert a JsNumber to a Long" in {
       JsNumber(7563661897011259335L).convertTo[Long] mustEqual 7563661897011259335L
+    }
+    "respect Long upper bound" in {
+      JsNumber(BigDecimal("1000000000000000000000000")).convertTo[Long] must throwA[DeserializationException]
+    }
+    "respect Long lower bound" in {
+      JsNumber(BigDecimal("-1000000000000000000000000")).convertTo[Long] must throwA[DeserializationException]
     }
   }
   
@@ -87,6 +99,12 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNumber to a Byte" in {
       JsNumber(42).convertTo[Byte] mustEqual 42
     }
+    "respect Byte upper bound" in {
+      JsNumber(1000).convertTo[Byte] must throwA[DeserializationException]
+    }
+    "respect Byte lower bound" in {
+      JsNumber(-1000).convertTo[Byte] must throwA[DeserializationException]
+    }
   }
   
   "The ShortJsonFormat" should {
@@ -95,6 +113,12 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert a JsNumber to a Short" in {
       JsNumber(42).convertTo[Short] mustEqual 42
+    }
+    "respect Short upper bound" in {
+      JsNumber(100000).convertTo[Short] must throwA[DeserializationException]
+    }
+    "respect Short lower bound" in {
+      JsNumber(-100000).convertTo[Short] must throwA[DeserializationException]
     }
   }
   
