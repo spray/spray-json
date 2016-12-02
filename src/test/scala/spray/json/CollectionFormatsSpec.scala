@@ -52,8 +52,21 @@ class CollectionFormatsSpec extends Specification with DefaultJsonProtocol {
     "be able to convert a JsObject to a Map[String, Long]" in {
       json.convertTo[Map[String, Long]] mustEqual map
     }
-    "throw an Exception when trying to serialize a map whose key are not serialized to JsStrings" in {
-      Map(1 -> "a").toJson must throwA(new SerializationException("Map key must be formatted as JsString, not '1'"))
+    "convert a Map[Int, String] to a JsObject" in {
+      Map(1 -> "a").toJson mustEqual JsObject("1" -> JsString("a"))
+    }
+    "be able to convert a JsObject to a Map[Long, Int]" in {
+      val jsn = JsObject("1" -> JsNumber(1), "2" -> JsNumber(2), "3" -> JsNumber(3))
+      val mp: Map[Long, Int] = Map(1L -> 1, 2L -> 2, 3L -> 3)
+
+      jsn.convertTo[Map[Long, Int]] mustEqual Map(1L -> 1, 2L -> 2, 3L -> 3)
+      jsn.convertTo[Map[Int, Long]] mustEqual Map(1 -> 1L, 2 -> 2L, 3 -> 3L)
+    }
+    "throw an Exception when trying to deserialize a map whose key are not deserialized to JsNumber" in {
+      JsObject("a" -> JsString("1")).convertTo[Map[Int, String]] must throwA(new DeserializationException("Expected Map key to be deserializable to JsNumber, but got 'a'"))
+    }
+    "throw an Exception when trying to serialize a map whose key are not serialized to JsNumber" in {
+      Map(1.5 -> "a").toJson must throwA(new SerializationException("Map key must be convertible to JsNumber, not '1.5'"))
     }
   }
   
