@@ -266,23 +266,25 @@ object ParserInput {
   private val UTF8 = Charset.forName("UTF-8")
 
   /**
-   * ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded representation
-   * of the JSON input, without requiring a separate decoding step.
+   * ParserInput that allows to create a ParserInput from any randomly accessible indexed byte storage.
    */
-  class ByteArrayBasedParserInput(bytes: Array[Byte]) extends DefaultParserInput {
+  abstract class IndexedBytesParserInput extends DefaultParserInput {
+    def length: Int
+    protected def byteAt(offset: Int): Byte
+
     private val byteBuffer = ByteBuffer.allocate(4)
     private val charBuffer = CharBuffer.allocate(2)
     private val decoder = UTF8.newDecoder()
     def nextChar() = {
       _cursor += 1
-      if (_cursor < bytes.length) (bytes(_cursor) & 0xFF).toChar else EOI
+      if (_cursor < length) (byteAt(_cursor) & 0xFF).toChar else EOI
     }
     def nextUtf8Char() = {
       @tailrec def decode(byte: Byte, remainingBytes: Int): Char = {
         byteBuffer.put(byte)
         if (remainingBytes > 0) {
           _cursor += 1
-          if (_cursor < bytes.length) decode(bytes(_cursor), remainingBytes - 1) else ErrorChar
+          if (_cursor < length) decode(byteAt(_cursor), remainingBytes - 1) else ErrorChar
         } else {
           byteBuffer.flip()
           val coderResult = decoder.decode(byteBuffer, charBuffer, false)
@@ -300,8 +302,8 @@ object ParserInput {
         result
       } else {
         _cursor += 1
-        if (_cursor < bytes.length) {
-          val byte = bytes(_cursor)
+        if (_cursor < length) {
+          val byte = byteAt(_cursor)
           if (byte >= 0) byte.toChar // 7-Bit ASCII
           else if ((byte & 0xE0) == 0xC0) decode(byte, 1) // 2-byte UTF-8 sequence
           else if ((byte & 0xF0) == 0xE0) decode(byte, 2) // 3-byte UTF-8 sequence
@@ -310,7 +312,16 @@ object ParserInput {
         } else EOI
       }
     }
-    def length = bytes.length
+  }
+
+  /**
+   * ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded representation
+   * of the JSON input, without requiring a separate decoding step.
+   */
+  class ByteArrayBasedParserInput(bytes: Array[Byte]) extends IndexedBytesParserInput {
+    protected def byteAt(offset: Int): Byte = bytes(offset)
+    def length: Int = bytes.length
+
     def sliceString(start: Int, end: Int) = new String(bytes, start, end - start, UTF8)
     def sliceCharArray(start: Int, end: Int) =
       UTF8.decode(ByteBuffer.wrap(java.util.Arrays.copyOfRange(bytes, start, end))).array()
