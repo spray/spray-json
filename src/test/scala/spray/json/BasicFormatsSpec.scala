@@ -127,7 +127,7 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
       ().toJson mustEqual JsNumber(1)
     }
     "convert a JsNumber to Unit" in {
-      JsNumber(1).convertTo[Unit] mustEqual ()
+      JsNumber(1).convertTo[Unit] mustEqual (())
     }
   }
   
