@@ -16,7 +16,7 @@ licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.
 
 scalaVersion := "2.11.8"
 
-scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-encoding", "utf8")
+scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8")
 
 resolvers += Opts.resolver.sonatypeReleases
 
@@ -46,7 +46,7 @@ OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0")
+crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1")
 
 scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
 

@@ -69,7 +69,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       (42, 4.2).toJson mustEqual json
     }
     "be able to convert a JsArray to a (Int, Double)]" in {
-      json.convertTo[(Int, Double)] mustEqual (42, 4.2)
+      json.convertTo[(Int, Double)] mustEqual Tuple2(42, 4.2)
     }
   }
 
@@ -79,7 +79,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       (42, 4.2, 3).toJson mustEqual json
     }
     "be able to convert a JsArray to a (Int, Double, Int)]" in {
-      json.convertTo[(Int, Double, Int)] mustEqual (42, 4.2, 3)
+      json.convertTo[(Int, Double, Int)] mustEqual Tuple3(42, 4.2, 3)
     }
   }
   "The tuple4Format" should {
@@ -88,7 +88,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       (42, 4.2, 3, 4).toJson mustEqual json
     }
     "be able to convert a JsArray to a (Int, Double, Int, Int)]" in {
-      json.convertTo[(Int, Double, Int, Int)] mustEqual (42, 4.2, 3, 4)
+      json.convertTo[(Int, Double, Int, Int)] mustEqual Tuple4(42, 4.2, 3, 4)
     }
   }
   "The tuple5Format" should {
@@ -97,7 +97,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       (42, 4.2, 3, 4, 5).toJson mustEqual json
     }
     "be able to convert a JsArray to a (Int, Double, Int, Int, Int)]" in {
-      json.convertTo[(Int, Double, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5)
+      json.convertTo[(Int, Double, Int, Int, Int)] mustEqual Tuple5(42, 4.2, 3, 4, 5)
     }
   }
   "The tuple6Format" should {
@@ -106,7 +106,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       (42, 4.2, 3, 4, 5, 6).toJson mustEqual json
     }
     "be able to convert a JsArray to a (Int, Double, Int, Int, Int, Int)]" in {
-      json.convertTo[(Int, Double, Int, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5, 6)
+      json.convertTo[(Int, Double, Int, Int, Int, Int)] mustEqual Tuple6(42, 4.2, 3, 4, 5, 6)
     }
   }
   "The tuple7Format" should {
@@ -115,7 +115,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       (42, 4.2, 3, 4, 5, 6, 7).toJson mustEqual json
     }
     "be able to convert a JsArray to a (Int, Double, Int, Int, Int, Int, Int)]" in {
-      json.convertTo[(Int, Double, Int, Int, Int, Int, Int)] mustEqual (42, 4.2, 3, 4, 5, 6, 7)
+      json.convertTo[(Int, Double, Int, Int, Int, Int, Int)] mustEqual Tuple7(42, 4.2, 3, 4, 5, 6, 7)
     }
   }
 }
