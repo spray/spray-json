@@ -1,6 +1,6 @@
 _spray-json_ is a lightweight, clean and efficient [JSON] implementation in Scala.
 
-It sports the following features:
+It supports the following features:
 
 * A simple immutable model of the JSON language elements
 * An efficient JSON parser
