@@ -61,9 +61,19 @@ class JsonParser(input: ParserInput) {
       case '[' => advance(); `array`()
       case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
       case '"' => `string`(); jsValue = if (sb.length == 0) JsString.empty else JsString(sb.toString)
-      case _ => fail("JSON Value")
+      case _ =>
+        val inputIterator = new Iterator[Char]{
+          override def hasNext: Boolean = cursorChar != EOI
+          override def next(): Char = {
+            advance()
+            cursorChar
+          }
+        }
+        jsValue = valueExtension(inputIterator)
     }
   }
+
+  protected def valueExtension(input: Iterator[Char]): JsValue = fail("JSON Value")
 
   private def `false`() = advance() && ch('a') && ch('l') && ch('s') && ws('e')
   private def `null`() = advance() && ch('u') && ch('l') && ws('l')
@@ -195,7 +205,7 @@ class JsonParser(input: ParserInput) {
   private def appendSB(c: Char): Boolean = { sb.append(c); true }
   private def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
 
-  private def fail(target: String, cursor: Int = input.cursor, errorChar: Char = cursorChar): Nothing = {
+  protected final def fail(target: String, cursor: Int = input.cursor, errorChar: Char = cursorChar): Nothing = {
     val ParserInput.Line(lineNr, col, text) = input.getLine(cursor)
     val summary = {
       val unexpected =
