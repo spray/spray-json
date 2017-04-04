@@ -26,6 +26,14 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
 )
 
+libraryDependencies ++=
+  (CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, n)) if n >= 13 =>
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.1")
+    case _ =>
+      Seq()
+  })
+
 (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
 
 // generate boilerplate
