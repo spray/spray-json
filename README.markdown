@@ -110,7 +110,7 @@ need to provide `JsonFormat[T]`s for your custom types. This is not hard at all.
 `Tription`s are "triple options": values that can either exist, be null, or be undefined.
 
 JavaScript (and JSON), unlike Java/Scala, allow `undefined` values, which are distinct from `null` values.
-For example, a PUT request may have a payload like this:
+For example, a PATCH request may have a payload like this:
 ```json
     { "id":"234565434567898789098765",
       "field1": "new value",
