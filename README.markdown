@@ -287,6 +287,6 @@ _spray-json_ project under the project’s open source license.
   [JSON]: http://json.org
   [repo.spray.io]: http://repo.spray.io
   [SJSON]: https://github.com/debasishg/sjson
-  [Databinder-Dispatch]: https://github.com/n8han/Databinder-Dispatch
+  [Databinder-Dispatch]: https://github.com/dispatch/classic
   [APL 2.0]: http://www.apache.org/licenses/LICENSE-2.0
   [spray-user]: http://groups.google.com/group/spray-user
