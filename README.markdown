@@ -238,7 +238,7 @@ val bal = Money("USD", 100)
 can be handled as above with `jsonFormatX`, etc.
 It may be preferable, however, to serialize such instances without object boxing:
 as `"USD 100"` instead of `{"currency":"USD","amount":100}`.
-This requires 
+This requires explicit (de)serialization logic:
 
 ```scala
 implicit object MoneyFormat extends JsonFormat[Money] {
