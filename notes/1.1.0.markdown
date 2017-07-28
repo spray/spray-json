@@ -4,7 +4,7 @@ and will have group id `cc.spray` rather than `cc.spray.json` as before.
 Changes since the last release (1.0.1):
 
 - Added automatic case class field name extraction via new `jsonFormatX` overloads
-- Added `asJson` pimp to Strings
+- Added `asJson` extension method to Strings
 - Added `RootJsonFormat` (`JsonFormat` for types corresponding to JSON document roots)
 - Fixed problem of JSON object deserialization not being member-order independent
   (removed `JsField`, turned `JsObject(List[JsField])` into `JsObject(Map[String, JsValue])`)

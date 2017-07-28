@@ -53,7 +53,7 @@ and do one or more of the following:
     val json = jsonAst.prettyPrint // or .compactPrint
     ```
     
-* Convert any Scala object to a JSON AST using the pimped `toJson` method
+* Convert any Scala object to a JSON AST using the `toJson` extension method
     
     ```scala
     val jsonAst = List(1, 2, 3).toJson
