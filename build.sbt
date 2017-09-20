@@ -1,6 +1,6 @@
 name := "spray-json"
 
-version := "1.3.3"
+version := "1.3.4-SNAPSHOT"
 
 organization := "io.spray"
 
@@ -14,7 +14,7 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.11"
 
 scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8")
 
@@ -44,28 +44,39 @@ osgiSettings
 
 OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}"""")
 
-OsgiKeys.importPackage <<= scalaVersion { sv => Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(sv)) }
+OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value))
 
 OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*")
 
 OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
 
+// Migration Manager
+mimaPreviousArtifacts := Set("io.spray" %% "spray-json" % "1.3.3")
+
 ///////////////
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1")
+crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.3")
 
-scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
+scalaBinaryVersion := {
+  val sV = scalaVersion.value
+  if (CrossVersion.isScalaApiCompatible(sV))
+    CrossVersion.binaryScalaVersion(sV)
+  else
+    sV
+}
 
 publishMavenStyle := true
 
 useGpg := true
 
-publishTo <<= version { v: String =>
+publishTo := {
   val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "content/repositories/snapshots")
-  else                             Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  if (version.value.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
 }
 
 pomIncludeRepository := { _ => false }
