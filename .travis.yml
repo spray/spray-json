@@ -1,6 +1,11 @@
 language: scala
+scala:
+  - 2.10.6
+  - 2.11.11
+  - 2.12.3
+  - 2.13.0-M2
 script:
-  - sbt "+ test" "+ mimaReportBinaryIssues"
+  - sbt ++$TRAVIS_SCALA_VERSION test mimaReportBinaryIssues
 jdk:
   - oraclejdk8
 notifications:
