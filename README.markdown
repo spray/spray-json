@@ -20,7 +20,8 @@ as depicted in this diagram:
 ### Installation
 
 _spray-json_ is available from maven central.
-The latest release is `1.3.3` and is built against Scala 2.10.x, 2.11.x, and 2.12.x.
+
+Latest release: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.spray/spray-json_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.spray/spray-json_2.12)
 
 If you use SBT you can include _spray-json_ in your project with
 
