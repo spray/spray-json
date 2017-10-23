@@ -20,19 +20,27 @@ scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "3.8.6" % "test",
-  "org.specs2" %% "specs2-scalacheck" % "3.8.6" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
-)
-
 libraryDependencies ++=
   (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, n)) if n >= 13 =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.1")
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
     case _ =>
-      Seq()
+      Nil
   })
+
+libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+  case Some((2, 10)) => Seq(
+    "org.specs2" %% "specs2-core" % "3.8.9" % "test",
+    "org.specs2" %% "specs2-scalacheck" % "3.8.9" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+  )
+  case Some((2, n)) if n >= 11 => Seq(
+    "org.specs2" %% "specs2-core" % "4.0.1" % "test",
+    "org.specs2" %% "specs2-scalacheck" % "4.0.1" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.13.5" % "test"
+  )
+  case _ => Nil
+})
 
 (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
 
@@ -51,13 +59,16 @@ OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"
 OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
 
 // Migration Manager
-mimaPreviousArtifacts := Set("io.spray" %% "spray-json" % "1.3.3")
+mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
+  case Some((2, 13)) => Set.empty
+  case _ => Set("io.spray" %% "spray-json" % "1.3.3")
+})
 
 ///////////////
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.3")
+crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.3", "2.13.0-M2")
 
 scalaBinaryVersion := {
   val sV = scalaVersion.value
