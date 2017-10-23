@@ -8,12 +8,11 @@ package spray.json
   * <code>
   *     { "id":"234565434567898789098765",
   *       "field1": 7,
-  *       "field3: null,
-  *       "field4": undefined }
+  *       "field3: null }
   * </code>
-  * which would tell the server to update field1 to 7, set field3 to null, and leave field2 and field4 alone.
-  * With a standard scala `Option`, it is impossible to tell whether the payload of the request had field2, field3,
-  * and field4 null or undefined since any missing values translate to `None`.
+  * which would tell the server to update field1 to 7, set field3 to null, and leave field2 alone.
+  * With a standard scala `Option`, it is impossible to tell whether the payload of the request had field2 and field3
+  * null or undefined since any missing values translate to `None`.
   *
   * The Tription solves that problem by defining `Value` for present values, `Null` for null values, and
   * `Undefined` for values which are missing or explicitly marked as undefined.
