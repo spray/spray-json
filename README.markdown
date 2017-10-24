@@ -220,6 +220,38 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 This is a bit more verbose in its definition and the resulting JSON but transports the field semantics over to the
 JSON side. Note that this is the approach _spray-json_ uses for case classes.
 
+### Providing JsonFormats for unboxed types
+
+A value class
+
+```scala
+case class PhoneNumber(value: String) extends AnyVal
+val num = PhoneNumber("+1 212 555 1111")
+```
+
+or a class with multiple members
+
+```scala
+case class Money(currency: String, amount: BigDecimal)
+val bal = Money("USD", 100)
+```
+
+can be handled as above with `jsonFormatX`, etc.
+It may be preferable, however, to serialize such instances without object boxing:
+as `"USD 100"` instead of `{"currency":"USD","amount":100}`.
+This requires explicit (de)serialization logic:
+
+```scala
+implicit object MoneyFormat extends JsonFormat[Money] {
+  val fmt = """([A-Z]{3}) ([0-9.]+)""".r
+  def write(m: Money) = JsString(s"${m.currency} ${m.amount}")
+  def read(json: JsValue) = json match {
+    case JsString(fmt(c, a)) => Money(c, BigDecimal(a))
+    case _ => deserializationError("String expected")
+  }
+}
+```
+
 
 ### JsonFormat vs. RootJsonFormat
 
