@@ -20,7 +20,8 @@ as depicted in this diagram:
 ### Installation
 
 _spray-json_ is available from maven central.
-The latest release is `1.3.3` and is built against Scala 2.10.x, 2.11.x, and 2.12.x.
+
+Latest release: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.spray/spray-json_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.spray/spray-json_2.12)
 
 If you use SBT you can include _spray-json_ in your project with
 
@@ -273,20 +274,22 @@ _spray-json_ is licensed under [APL 2.0].
 
 ### Mailing list
 
-Please use the [spray-user] mailing list if you have any questions.
+Spray-json is in primarily "maintanance mode", as it contains the basic functionality it is meant to deliver.
+If you have any questions about it though, please open issues on this repository.
 
 
-### Patch Policy
+### Maintanance mode
+
+_spray-json_ is largely considered feature-complete for the basic functionality it provides.
+It is currently maintained by the Akka team at Lightbend.
 
 Feedback and contributions to the project, no matter what kind, are always very welcome.
-However, patches can only be accepted from their original author.
+
 Along with any patches, please state that the patch is your original work and that you license the work to the
 _spray-json_ project under the project’s open source license.
 
 
   [JSON]: http://json.org
-  [repo.spray.io]: http://repo.spray.io
   [SJSON]: https://github.com/debasishg/sjson
   [Databinder-Dispatch]: https://github.com/dispatch/classic
   [APL 2.0]: http://www.apache.org/licenses/LICENSE-2.0
-  [spray-user]: http://groups.google.com/group/spray-user
