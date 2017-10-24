@@ -37,9 +37,11 @@ trait PrettyPrinter extends JsonPrinter {
     }
   }
 
+  protected def organiseMembers(members: Map[String, JsValue]): Seq[(String, JsValue)] = members.toSeq
+
   protected def printObject(members: Map[String, JsValue], sb: StringBuilder, indent: Int) {
     sb.append("{\n")    
-    printSeq(members, sb.append(",\n")) { m =>
+    printSeq(organiseMembers(members), sb.append(",\n")) { m =>
       printIndent(sb, indent + Indent)
       printString(m._1, sb)
       sb.append(": ")
