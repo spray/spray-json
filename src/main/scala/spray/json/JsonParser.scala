@@ -38,10 +38,14 @@ class JsonParser(input: ParserInput) {
   private[this] var cursorChar: Char = input.nextChar()
   private[this] var jsValue: JsValue = _
 
-  def parseJsValue(): JsValue = {
+  def parseJsValue(): JsValue =
+    parseJsValue(false)
+
+  def parseJsValue(allowTrailingInput: Boolean): JsValue = {
     ws()
     `value`()
-    require(EOI)
+    if (!allowTrailingInput)
+      require(EOI)
     jsValue
   }
 
