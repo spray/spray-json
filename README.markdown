@@ -114,15 +114,14 @@ For example, a PATCH request may have a payload like this:
 ```json
     { "id":"234565434567898789098765",
       "field1": "new value",
-      "field3": null,
-      "field4": undefined }
+      "field3": null }
 ```
-which would tell the server to update field1 to "new value", set field3 to null, and leave field2 and field4
-unchanged. With a standard scala `Option`, it is impossible to tell whether the values of field2, field3,
-and field4 in the original payload were `null` or `undefined` since any missing values translate to `None`.
+which would tell the server to update field1 to "new value", set field3 to null, and leave field2
+unchanged. With a standard scala `Option`, it is impossible to tell whether the values of field2 and field3
+in the original payload were `null` or undefined since any missing values translate to `None`.
 
-The `Tription` solves that problem by defining `Value` for present values, `Null` for null values, and
-`Undefined` for values which are missing or explicitly marked as undefined.
+The `Tription` solves that problem by defining `Value` for present values, `Null` for values explicitly marked
+null, and `Undefined` for values which are missing.
 
 `Tription`s can be used just like `Option`s:
 ```scala
@@ -184,8 +183,8 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 #### NullOptions
 
 The `NullOptions` trait supplies an alternative rendering mode for optional case class members. Normally optional
-members that are undefined (`None`/`Undefined`) are not rendered at all. By mixing in this trait into your custom JsonProtocol you
-can enforce the rendering of undefined members as `null`.
+members that are undefined (`None`/`Undefined`) are not rendered at all. By mixing in this trait into your custom
+JsonProtocol you can enforce the rendering of undefined members as `null`.
 (Note that this only affect JSON writing, spray-json will always read missing `Option` members as well as `null`
 `Option` members as `None` and missing `Tription` members as `Undefined`.)
 

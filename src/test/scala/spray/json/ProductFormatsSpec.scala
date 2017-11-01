@@ -72,11 +72,17 @@ class ProductFormatsSpec extends Specification {
     "deserialize undefined to Tription `Undefined`" in {
       JsObject("a" -> JsNumber(42), "b" -> JsUndefined).convertTo[TestTription] mustEqual TestTription(42, Undefined)
     }
+    "deserialize valued to Tription the value" in {
+      JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2D)).convertTo[TestTription] mustEqual TestTription(42, Value(4.2D))
+    }
     "not render `None` members during serialization" in {
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42))
     }
     "render `Null` members during serialization" in {
       TestTription(42, Null).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNull)
+    }
+    "render `Value` members during serialization" in {
+      TestTription(42, Value(4.2D)).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2D))
     }
     "not render `Undefined` members during serialization" in {
       TestTription(42, Undefined).toJson mustEqual JsObject("a" -> JsNumber(42))

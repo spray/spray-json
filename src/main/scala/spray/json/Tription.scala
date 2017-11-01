@@ -11,11 +11,11 @@ package spray.json
   *       "field3: null }
   * </code>
   * which would tell the server to update field1 to 7, set field3 to null, and leave field2 alone.
-  * With a standard scala `Option`, it is impossible to tell whether the payload of the request had field2 and field3
+  * With a standard scala `Option`, it is impossible to tell whether field2 and field3 were
   * null or undefined since any missing values translate to `None`.
   *
-  * The Tription solves that problem by defining `Value` for present values, `Null` for null values, and
-  * `Undefined` for values which are missing or explicitly marked as undefined.
+  * The Tription solves that problem by defining `Value` for present values, `Null` for values
+  * explicitly set to null, and `Undefined` for values which are not there at all.
   *
   * Created by bathalh on 2/19/16.
   */

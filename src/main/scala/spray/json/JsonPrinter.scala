@@ -44,11 +44,11 @@ trait JsonPrinter extends (JsValue => String) {
   protected def printLeaf(x: JsValue, sb: JStringBuilder) {
     x match {
       case JsNull      => sb.append("null")
-      case JsUndefined => sb.append("undefined")
       case JsTrue      => sb.append("true")
       case JsFalse     => sb.append("false")
       case JsNumber(x) => sb.append(x)
       case JsString(x) => printString(x, sb)
+      case JsUndefined => throw new IllegalStateException( "Cannot display JsUndefined" )
       case _           => throw new IllegalStateException
     }
   }
