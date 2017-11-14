@@ -92,6 +92,11 @@ object JsNumber {
   val zero: JsNumber = apply(0)
   def apply(n: Int) = new JsNumber(BigDecimal(n))
   def apply(n: Long) = new JsNumber(BigDecimal(n))
+  def apply(n: Float) = n match {
+    case n if n.isNaN      => JsNull
+    case n if n.isInfinity => JsNull
+    case _                 => new JsNumber(BigDecimal(java.lang.Float.toString(n)))
+  }
   def apply(n: Double) = n match {
     case n if n.isNaN      => JsNull
     case n if n.isInfinity => JsNull
