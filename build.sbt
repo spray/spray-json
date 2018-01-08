@@ -47,10 +47,10 @@ libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
 (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
 
 // generate boilerplate
-Boilerplate.settings
+enablePlugins(BoilerplatePlugin)
 
 // OSGi settings
-osgiSettings
+enablePlugins(SbtOsgi)
 
 OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}"""")
 
