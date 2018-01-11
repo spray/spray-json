@@ -16,19 +16,19 @@
 
 package spray.json
 
-trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
+trait ProductReadersInstances { self: ProductFormats with StandardFormats =>
 [#  // Case classes with 1 parameters
 
-  def jsonFormat1[[#P1 :JF#], T <: Product :ClassManifest](construct: ([#P1#]) => T): RootJsonFormat[T] = {
+  def jsonReader1[[#P1 :JsonReader#], T <: Product :ClassManifest](construct: ([#P1#]) => T): RootJsonReader[T] = {
     val Array([#p1#]) = extractFieldNames(classManifest[T])
-    jsonFormat(construct, [#p1#])
+    jsonReader(construct, [#p1#])
   }
-  def jsonFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
-    val writer = jsonWriter(construct, [#fieldName1: String#])
-    val reader = jsonReader(construct, [#fieldName1: String#])
-
-    def write(p: T) = writer.write(p)
-    def read(value: JsValue) = reader.read(value)
+  def jsonReader[[#P1 :JsonReader#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonReader[T] = new RootJsonReader[T]{
+    def read(value: JsValue) = {
+      [#val p1V = fromField[P1](value, fieldName1)#
+      ]
+      construct([#p1V#])
+    }
   }#
 
 
