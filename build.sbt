@@ -1,3 +1,5 @@
+import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem}
+
 name := "spray-json"
 
 version := "1.3.4"
@@ -63,6 +65,10 @@ mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match 
   case Some((2, 13)) => Set.empty
   case _ => Set("io.spray" %% "spray-json" % "1.3.3")
 })
+
+mimaBinaryIssueFilters := Seq(
+  ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
+)
 
 ///////////////
 // publishing
