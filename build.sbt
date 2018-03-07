@@ -8,7 +8,7 @@ lazy val sprayJson =
     .in(file("."))
     .settings(
       name := "spray-json",
-      version := "1.3.4",
+      version := "2.0.0",
       crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.4", "2.13.0-M3"),
       scalaVersion := "2.11.12",
       scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8"),
@@ -26,33 +26,38 @@ lazy val sprayJson =
           CrossVersion.binaryScalaVersion(sV)
         else
           sV
-      }
+      },
+      // Workaround for "Shared resource directory is ignored"
+      // https://github.com/portable-scala/sbt-crossproject/issues/74
+      unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "shared/src/test/resources",
+      boilerplateSource in Compile := (baseDirectory in ThisBuild).value / "shared/src/main/boilerplate"
     )
-    .configurePlatforms(JVMPlatform)( _
-      .enablePlugins(spray.boilerplate.BoilerplatePlugin)
-      .enablePlugins(SbtOsgi)
-    )
-    .jvmSettings(
+    .enablePlugins(spray.boilerplate.BoilerplatePlugin)
+    .configurePlatforms(JVMPlatform)(_.enablePlugins(SbtOsgi))
+    .platformsSettings(JVMPlatform, JSPlatform)(
       libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, 10)) => Seq(
-          "org.specs2" %% "specs2-core" % "3.8.9" % "test",
-          "org.specs2" %% "specs2-scalacheck" % "3.8.9" % "test",
-          "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+          "org.specs2" %%% "specs2-core" % "3.8.9" % "test",
+          "org.specs2" %%% "specs2-scalacheck" % "3.8.9" % "test",
+          "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
         )
         case Some((2, n)) if n >= 11 => Seq(
-          "org.specs2" %% "specs2-core" % "4.0.2" % "test",
-          "org.specs2" %% "specs2-scalacheck" % "4.0.2" % "test",
-          "org.scalacheck" %% "scalacheck" % "1.13.5" % "test"
+          "org.specs2" %%% "specs2-core" % "4.0.2" % "test",
+          "org.specs2" %%% "specs2-scalacheck" % "4.0.2" % "test",
+          "org.scalacheck" %%% "scalacheck" % "1.13.5" % "test"
         )
         case _ => Nil
       }),
+      sourceDirectories in Test += (sourceDirectory in Test).value / "scala-jvm-js"
+    )
+    .jvmSettings(
       OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}""""),
       OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value)),
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
       OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package"),
       mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, 13)) => Set.empty
-        case _ => Set("io.spray" %% "spray-json" % "1.3.3")
+        case _ => Set.empty //Set("io.spray" %% "spray-json" % "1.3.3")
       }),
       mimaBinaryIssueFilters := Seq(
         ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
