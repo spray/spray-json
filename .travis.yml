@@ -1,32 +1,27 @@
+# sudo required for installing dependencies of Scala Native
+sudo: required
 language: scala
-
-scala:
-  - 2.10.7
-  - 2.11.12
-  - 2.12.8
-  - 2.13.0-RC3
 
 jdk:
   - oraclejdk8
 
-matrix:
-  include:
-  - jdk: openjdk11
-    scala: 2.12.8
+before_install:
+  - curl https://raw.githubusercontent.com/scala-native/scala-native/4c2ce46242f872f3e7879810565147c4233cd52e/scripts/travis_setup.sh | bash -x
 
 script:
-  - sbt "++ ${TRAVIS_SCALA_VERSION}!" test mimaReportBinaryIssues
+  - sbt +test +mimaReportBinaryIssues
 
 before_cache:
-  - find $HOME/.ivy2 -name "ivydata-*.properties" -print -delete
-  - find $HOME/.sbt  -name "*.lock"               -print -delete
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+  - rm -rf $HOME/.ivy2/{cache,local}/io.spray/
 
 cache:
   directories:
     - $HOME/.ivy2/cache
-    - $HOME/.sbt/boot
+    - $HOME/.sbt/boot/
 
-notifications:
-  email:
-    - johannes@spray.io
-    - mathias@spray.io
+#notifications:
+#  email:
+#    - johannes@spray.io
+#    - mathias@spray.io

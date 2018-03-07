@@ -1,3 +1,16 @@
+Version 1.3.6 (UNRELEASED)
+--------------------------
+This version mainly updates the build and introduces support for
+cross-compiling spray to ScalaJS and Scala Native, in addition to
+traditional Scala on the JVM.
+
+Source and binary compatibility with the previous release is maintained
+for the JVM project. However, ScalaJS and Scala Native versions do not
+implement reflective product formats, meaning that there are no more
+`jsonFormatX()` methods on these platforms. The overloaded method
+`jsonFormat(<constructor>, <field_names>*)` is still available and may
+be used as a workaround.
+
 Version 1.3.5 (2017-10-24)
 --------------------------
 
