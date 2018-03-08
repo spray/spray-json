@@ -2,6 +2,8 @@
 import sbtcrossproject.{crossProject, CrossType}
 import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem}
 
+
+
 lazy val sprayJson =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Full)
@@ -9,8 +11,7 @@ lazy val sprayJson =
     .settings(
       name := "spray-json",
       version := "2.0.0-SNAPSHOT",
-      crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.4", "2.13.0-M3"),
-      scalaVersion := "2.11.12",
+      scalaVersion := crossScalaVersions.value.head,
       scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8"),
       (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value),
       libraryDependencies ++=
@@ -47,9 +48,10 @@ lazy val sprayJson =
         )
         case _ => Nil
       }),
-      sourceDirectories in Test += (sourceDirectory in Test).value / "scala-jvm-js"
+      unmanagedSourceDirectories in Test += (baseDirectory in ThisBuild).value / "shared/src/test/scala-jvm-js"
     )
     .jvmSettings(
+      crossScalaVersions := Seq("2.13.0-M3", "2.12.4", "2.11.12"),
       OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}""""),
       OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value)),
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
@@ -62,9 +64,20 @@ lazy val sprayJson =
         ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
       )
     )
-    .jsSettings()
-    .nativeSettings() // defined in sbt-scala-native
+    .jsSettings(
+      crossScalaVersions := Seq("2.12.4", "2.11.12"),
+    )
+    .nativeSettings(
+      crossScalaVersions := Seq("2.11.12")
+    )
 
 lazy val sprayJsonJVM = sprayJson.jvm
 lazy val sprayJsonJS = sprayJson.js
 lazy val sprayJsonNative = sprayJson.native
+
+lazy val root = (project in file("."))
+  .aggregate(sprayJsonJVM, sprayJsonJS, sprayJsonNative)
+  .settings(
+    publish := {},
+    publishLocal := {}
+  )

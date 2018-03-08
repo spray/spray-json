@@ -8,7 +8,7 @@ It supports the following features:
 * Type-class based (de)serialization of custom objects (no reflection, no intrusion)
 * No external dependencies
 
-It is available for Scala on the JVM, ScalaJS and Scala Native.
+It is available for Scala on the JVM, ScalaJS and Scala Native<sup>1</sup>.
 
 _spray-json_ allows you to convert between
  * String JSON documents
@@ -18,6 +18,9 @@ _spray-json_ allows you to convert between
 as depicted in this diagram:
 
 ![Spray-JSON conversions](images/Conversions.png "Conversions possible with Spray-JSON")
+
+<sup>1</sup>: *The versions for ScalaJS and Scala Native currently do not support generating
+case class formats through reflection.*
 
 ### Installation
 

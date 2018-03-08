@@ -16,8 +16,6 @@
 
 package spray.json
 
-import scala.annotation.tailrec
-
 /**
  * Provides the helpers for constructing custom JsonFormat implementations for types implementing the Product trait
  * (especially case classes)

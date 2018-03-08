@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2011,2012 Mathias Doenitz, Johannes Rudolph
+ * Original implementation (C) 2009-2011 Debasish Ghosh
+ * Adapted and extended in 2011 by Mathias Doenitz
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +17,10 @@
 
 package spray.json
 
-import scala.reflect.ClassTag
-import scala.reflect.classTag
+/**
+  * Provides all the predefined JsonFormats.
+  */
+trait DefaultJsonProtocol
+  extends SharedJsonProtocol
 
-trait ReflectiveProductFormatsInstances { self: ReflectiveProductFormats with StandardFormats =>
-[#  // Case classes with 1 parameters
-
-  def jsonFormat1[[#P1 :JF#], T <: Product :ClassTag](construct: ([#P1#]) => T): RootJsonFormat[T] = {
-    val Array([#p1#]) = extractFieldNames(classTag[T])
-    jsonFormat(construct, [#p1#])
-  }#
-
-
-]
-}
+object DefaultJsonProtocol extends DefaultJsonProtocol

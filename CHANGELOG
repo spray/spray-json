@@ -24,6 +24,8 @@ formats, meaning that there are no more `jsonFormatX()` methods. The
 overloaded method `jsonFormat(<constructor>, <field_names>*)` is still
 available and may be used as a workaround.
 
+Support for Scala 2.10 has been dropped.
+
 Version 1.3.3 (2016-12-29)
 --------------------------
 

@@ -3,15 +3,15 @@ package spray.json
 import java.lang.reflect.Modifier
 
 import scala.annotation.tailrec
-import scala.reflect.ClassManifest
+import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
 
 trait ReflectiveProductFormats extends ProductFormats with ReflectiveProductFormatsInstances {
   this: StandardFormats =>
 
-  protected def extractFieldNames(classManifest: ClassManifest[_]): Array[String] = {
-    val clazz = classManifest.erasure
+  protected def extractFieldNames(classManifest: ClassTag[_]): Array[String] = {
+    val clazz = classManifest.runtimeClass
     try {
       // copy methods have the form copy$default$N(), we need to sort them in order, but must account for the fact
       // that lexical sorting of ...8(), ...9(), ...10() is not correct, so we extract N and sort by N.toInt
