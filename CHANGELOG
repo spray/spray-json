@@ -1,3 +1,31 @@
+Version 2.0.0 UNRELEASED (2018-03-07)
+-------------------------------------
+
+This version mainly updates the build and introduces support for
+cross-compiling spray to ScalaJS and Scala Native, in addition to
+traditional Scala on the JVM.
+
+Source compatibility with 1.x releases is mostly maintained for the
+JVM project, although there are a couple of internal changes that may
+leak:
+
+ - Methods that require Java reflection have been moved out of
+   `ProductFormats` into `ReflectiveProductFormats` and are only
+   available on the JVM version.
+
+ - The mixins of `DefaultJsonProtocol` have been mostly grouped into a
+   new trait `SharedJsonProtocol` which contains all
+   platform-independent formats (i.e. all formats but reflective
+   ones). `DefaultJsonProtocol` extends `SharedJsonProtocol` with
+   `ReflectiveProductFormats` on the JVM.
+
+ScalaJS and Scala Native versions do not implement reflective product
+formats, meaning that there are no more `jsonFormatX()` methods. The
+overloaded method `jsonFormat(<constructor>, <field_names>*)` is still
+available and may be used as a workaround.
+
+Support for Scala 2.10 has been dropped.
+
 Version 1.3.3 (2016-12-29)
 --------------------------
 
