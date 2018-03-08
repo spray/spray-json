@@ -39,9 +39,6 @@ class CompactPrinterSpec extends Specification {
     "print JsNumber(1.23) to '1.23'" in {
       CompactPrinter(JsNumber(1.23)) mustEqual "1.23"
     }
-    "print JsNumber(-1E10) to '-1E10'" in {
-      CompactPrinter(JsNumber(-1E10)) mustEqual "-1.0E+10"
-    }
     "print JsNumber(12.34e-10) to '12.34e-10'" in {
       CompactPrinter(JsNumber(12.34e-10)) mustEqual "1.234E-9"
     }

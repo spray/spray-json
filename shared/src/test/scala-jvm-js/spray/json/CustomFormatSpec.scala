@@ -18,7 +18,7 @@ package spray.json
 
 import org.specs2.mutable.Specification
 
-class CustomFormatSpec extends Specification with DefaultJsonProtocol {
+class CustomFormatSpec extends Specification with SharedJsonProtocol {
 
   case class MyType(name: String, value: Int)
 

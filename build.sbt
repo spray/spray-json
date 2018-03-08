@@ -8,7 +8,7 @@ lazy val sprayJson =
     .in(file("."))
     .settings(
       name := "spray-json",
-      version := "2.0.0",
+      version := "2.0.0-SNAPSHOT",
       crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.4", "2.13.0-M3"),
       scalaVersion := "2.11.12",
       scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8"),
@@ -29,16 +29,15 @@ lazy val sprayJson =
       },
       // Workaround for "Shared resource directory is ignored"
       // https://github.com/portable-scala/sbt-crossproject/issues/74
-      unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "shared/src/test/resources",
-      boilerplateSource in Compile := (baseDirectory in ThisBuild).value / "shared/src/main/boilerplate"
+      unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "shared/src/test/resources"
     )
     .enablePlugins(spray.boilerplate.BoilerplatePlugin)
     .configurePlatforms(JVMPlatform)(_.enablePlugins(SbtOsgi))
     .platformsSettings(JVMPlatform, JSPlatform)(
       libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, 10)) => Seq(
-          "org.specs2" %%% "specs2-core" % "3.8.9" % "test",
-          "org.specs2" %%% "specs2-scalacheck" % "3.8.9" % "test",
+          "org.specs2" %%% "specs2-core" % "4.0.2" % "test",
+          "org.specs2" %%% "specs2-scalacheck" % "4.0.2" % "test",
           "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
         )
         case Some((2, n)) if n >= 11 => Seq(

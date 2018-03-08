@@ -16,13 +16,13 @@
 
 package spray.json
 
-import org.specs2.mutable.Specification
 import org.scalacheck._
 import org.specs2.ScalaCheck
+import org.specs2.mutable.Specification
 
 object JsValueGenerators {
-  import Gen._
   import Arbitrary.arbitrary
+  import Gen._
 
   val parseableString: Gen[String] = Gen.someOf(('\u0020' to '\u007E').toVector).map(_.mkString)
   val genString: Gen[JsString] = parseableString.map(JsString(_))

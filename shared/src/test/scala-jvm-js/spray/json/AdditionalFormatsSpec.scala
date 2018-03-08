@@ -22,7 +22,7 @@ class AdditionalFormatsSpec extends Specification {
 
   case class Container[A](inner: Option[A])
 
-  object ReaderProtocol extends DefaultJsonProtocol {
+  object ReaderProtocol extends SharedJsonProtocol {
     implicit def containerReader[T :JsonFormat] = lift {
       new JsonReader[Container[T]] {
         def read(value: JsValue) = value match {
@@ -33,7 +33,7 @@ class AdditionalFormatsSpec extends Specification {
     }
   }
 
-  object WriterProtocol extends DefaultJsonProtocol {
+  object WriterProtocol extends SharedJsonProtocol {
     implicit def containerWriter[T :JsonFormat] = lift {
       new JsonWriter[Container[T]] {
         def write(obj: Container[T]) = JsObject("content" -> obj.inner.toJson)
@@ -57,7 +57,7 @@ class AdditionalFormatsSpec extends Specification {
 
   case class Foo(id: Long, name: String, foos: Option[List[Foo]] = None)
 
-  object FooProtocol extends DefaultJsonProtocol {
+  object FooProtocol extends SharedJsonProtocol {
     implicit val fooProtocol: JsonFormat[Foo] = lazyFormat(jsonFormat(Foo, "id", "name", "foos"))
   }
 

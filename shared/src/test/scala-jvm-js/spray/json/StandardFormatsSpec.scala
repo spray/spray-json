@@ -19,7 +19,7 @@ package spray.json
 import org.specs2.mutable._
 import scala.Right
 
-class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
+class StandardFormatsSpec extends Specification with SharedJsonProtocol {
 
   "The optionFormat" should {
     "convert None to JsNull" in {

@@ -18,7 +18,7 @@ package spray.json
 
 import org.specs2.mutable._
 
-class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
+class BasicFormatsSpec extends Specification with SharedJsonProtocol {
 
   "The IntJsonFormat" should {
     "convert an Int to a JsNumber" in {

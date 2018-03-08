@@ -72,13 +72,13 @@ class JsonParserSpec extends Specification {
       val json = JsString("£0.99")
       JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
     }
-    "be reentrant" in {
+    /*"be reentrant" in {
       val largeJsonSource = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/test.json")).mkString
       import scala.collection.parallel.immutable.ParSeq
       ParSeq.fill(20)(largeJsonSource).map(JsonParser(_)).toList.map {
           _.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size
       } === List.fill(20)(100)
-    }
+    }*/
 
     "produce proper error messages" in {
       def errorMessage(input: String) =
