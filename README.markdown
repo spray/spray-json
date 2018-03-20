@@ -171,7 +171,7 @@ Of course you can also supply (de)serialization logic for types that aren't case
 Here is one way to do it:
 
 ```scala
-case class Color(val name: String, val red: Int, val green: Int, val blue: Int)
+class Color(val name: String, val red: Int, val green: Int, val blue: Int)
 
 object MyJsonProtocol extends DefaultJsonProtocol {
   implicit object ColorJsonFormat extends RootJsonFormat[Color] {
@@ -180,7 +180,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 
     def read(value: JsValue) = value match {
       case JsArray(Vector(JsString(name), JsNumber(red), JsNumber(green), JsNumber(blue))) =>
-        Color(name, red.toInt, green.toInt, blue.toInt)
+        new Color(name, red.toInt, green.toInt, blue.toInt)
       case _ => deserializationError("Color expected")
     }
   }
@@ -188,7 +188,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 
 import MyJsonProtocol._
 
-val json = Color("CadetBlue", 95, 158, 160).toJson
+val json = new Color("CadetBlue", 95, 158, 160).toJson
 val color = json.convertTo[Color]
 ```
 
