@@ -16,19 +16,21 @@
 
 package spray.json
 
-trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
+trait ProductWritersInstances { self: ProductFormats with StandardFormats =>
 [#  // Case classes with 1 parameters
 
-  def jsonFormat1[[#P1 :JF#], T <: Product :ClassManifest](construct: ([#P1#]) => T): RootJsonFormat[T] = {
+  def jsonWriter1[[#P1 :JsonWriter#], T <: Product :ClassManifest](construct: ([#P1#]) => T): RootJsonWriter[T] = {
     val Array([#p1#]) = extractFieldNames(classManifest[T])
-    jsonFormat(construct, [#p1#])
+    jsonWriter(construct, [#p1#])
   }
-  def jsonFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
-    val writer = jsonWriter(construct, [#fieldName1: String#])
-    val reader = jsonReader(construct, [#fieldName1: String#])
-
-    def write(p: T) = writer.write(p)
-    def read(value: JsValue) = reader.read(value)
+  def jsonWriter[[#P1 :JsonWriter#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonWriter[T] = new RootJsonWriter[T]{
+    def write(p: T) = {
+      val fields = new collection.mutable.ListBuffer[(String, JsValue)]
+      fields.sizeHint(1 * 2)
+      [#fields ++= productElement##2Field[P1](fieldName1, p, 0)#
+      ]
+      JsObject(fields: _*)
+    }
   }#
 
 
