@@ -68,7 +68,8 @@ case class JsArray(elements: Vector[JsValue]) extends JsValue {
 }
 object JsArray {
   val empty = JsArray(Vector.empty)
-  def apply(elements: JsValue*) = new JsArray(elements.toVector)
+  def apply(elements: JsValue*) = if( elements contains JsUndefined ) throw new IllegalStateException( "JSON arrays cannot contain undefined values" )
+                                  else new JsArray(elements.toVector)
   @deprecated("Use JsArray(Vector[JsValue]) instead", "1.3.0")
   def apply(elements: List[JsValue]) = new JsArray(elements.toVector)
 }
@@ -120,5 +121,8 @@ case object JsFalse extends JsBoolean {
 
 /**
   * The representation for JSON null.
- */
+  */
 case object JsNull extends JsValue
+
+/** The representation for JSON missing value. **/
+case object JsUndefined extends JsValue

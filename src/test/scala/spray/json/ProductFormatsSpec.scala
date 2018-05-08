@@ -24,6 +24,7 @@ class ProductFormatsSpec extends Specification {
   case class Test2(a: Int, b: Option[Double])
   case class Test3[A, B](as: List[A], bs: List[B])
   case class Test4(t2: Test2)
+  case class TestTription(a: Int, b: Tription[Double])
   case class TestTransient(a: Int, b: Option[Double]) {
     @transient var c = false
   }
@@ -37,6 +38,7 @@ class ProductFormatsSpec extends Specification {
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
     implicit def test4Format = jsonFormat1(Test4)
+    implicit val test5Format = jsonFormat2(TestTription)
     implicit def testTransientFormat = jsonFormat2(TestTransient)
     implicit def testStaticFormat = jsonFormat2(TestStatic)
     implicit def testMangledFormat = jsonFormat5(TestMangled)
@@ -58,11 +60,32 @@ class ProductFormatsSpec extends Specification {
       JsObject("b" -> JsNumber(4.2)).convertTo[Test2] must
               throwA(new DeserializationException("Object is missing required member 'a'"))
     )
-    "not require the presence of optional fields for deserialization" in {
+    "not require the presence of Option fields for deserialization" in {
       JsObject("a" -> JsNumber(42)).convertTo[Test2] mustEqual Test2(42, None)
+    }
+    "not require the presence of Tription fields for deserialization" in {
+      JsObject("a" -> JsNumber(42)).convertTo[TestTription] mustEqual TestTription(42, Undefined)
+    }
+    "deserialize null to Tription `Null`" in {
+      JsObject("a" -> JsNumber(42), "b" -> JsNull).convertTo[TestTription] mustEqual TestTription(42, Null)
+    }
+    "deserialize undefined to Tription `Undefined`" in {
+      JsObject("a" -> JsNumber(42), "b" -> JsUndefined).convertTo[TestTription] mustEqual TestTription(42, Undefined)
+    }
+    "deserialize valued to Tription the value" in {
+      JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2D)).convertTo[TestTription] mustEqual TestTription(42, Value(4.2D))
     }
     "not render `None` members during serialization" in {
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42))
+    }
+    "render `Null` members during serialization" in {
+      TestTription(42, Null).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNull)
+    }
+    "render `Value` members during serialization" in {
+      TestTription(42, Value(4.2D)).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2D))
+    }
+    "not render `Undefined` members during serialization" in {
+      TestTription(42, Undefined).toJson mustEqual JsObject("a" -> JsNumber(42))
     }
     "ignore additional members during deserialization" in {
       JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2), "c" -> JsString('no)).convertTo[Test2] mustEqual obj
@@ -86,9 +109,12 @@ class ProductFormatsSpec extends Specification {
   }
 
   "A JsonProtocol mixing in NullOptions" should {
+    import TestProtocol2._
     "render `None` members to `null`" in {
-      import TestProtocol2._
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsNull)
+    }
+    "render `Undefined` members to `undefined`" in {
+      TestTription(42, Undefined).toJson mustEqual JsObject("a" -> JsNumber(42), "b" -> JsUndefined)
     }
   }
 

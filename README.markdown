@@ -96,6 +96,7 @@ important reference and collection types. As long as your code uses nothing more
 * String, Symbol
 * BigInt, BigDecimal
 * Option, Either, Tuple1 - Tuple7
+* Tription
 * List, Array
 * immutable.{Map, Iterable, Seq, IndexedSeq, LinearSeq, Set, Vector}
 * collection.{Iterable, Seq, IndexedSeq, LinearSeq, Set}
@@ -104,6 +105,29 @@ important reference and collection types. As long as your code uses nothing more
 In most cases however you'll also want to convert types not covered by the `DefaultJsonProtocol`. In these cases you
 need to provide `JsonFormat[T]`s for your custom types. This is not hard at all.
 
+### Triptions
+
+`Tription`s are "triple options": values that can either exist, be null, or be undefined.
+
+JavaScript (and JSON), unlike Java/Scala, allow `undefined` values, which are distinct from `null` values.
+For example, a PATCH request may have a payload like this:
+```json
+    { "id":"234565434567898789098765",
+      "field1": "new value",
+      "field3": null }
+```
+which would tell the server to update field1 to "new value", set field3 to null, and leave field2
+unchanged. With a standard scala `Option`, it is impossible to tell whether the values of field2 and field3
+in the original payload were `null` or undefined since any missing values translate to `None`.
+
+The `Tription` solves that problem by defining `Value` for present values, `Null` for values explicitly marked
+null, and `Undefined` for values which are missing.
+
+`Tription`s can be used just like `Option`s:
+```scala
+case class RequestObject( id: String, field1: Tription[String], field2: Tription[Int],
+                          field3: Tription[String], field4: Tription[SubResource] )
+```
 
 ### Providing JsonFormats for Case Classes
 
@@ -159,10 +183,10 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 #### NullOptions
 
 The `NullOptions` trait supplies an alternative rendering mode for optional case class members. Normally optional
-members that are undefined (`None`) are not rendered at all. By mixing in this trait into your custom JsonProtocol you
-can enforce the rendering of undefined members as `null`.
-(Note that this only affect JSON writing, spray-json will always read missing optional members as well as `null`
-optional members as `None`.)
+members that are undefined (`None`/`Undefined`) are not rendered at all. By mixing in this trait into your custom
+JsonProtocol you can enforce the rendering of undefined members as `null`.
+(Note that this only affect JSON writing, spray-json will always read missing `Option` members as well as `null`
+`Option` members as `None` and missing `Tription` members as `Undefined`.)
 
 
 ### Providing JsonFormats for other Types

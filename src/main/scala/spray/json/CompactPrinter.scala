@@ -33,10 +33,11 @@ trait CompactPrinter extends JsonPrinter {
 
   protected def printObject(members: Map[String, JsValue], sb: StringBuilder) {
     sb.append('{')
-    printSeq(members, sb.append(',')) { m =>
-      printString(m._1, sb)
-      sb.append(':')
-      print(m._2, sb)
+    val definedMembers = members filter { case (_, v) => v != JsUndefined }
+    printSeq(definedMembers, sb.append(',')) { m =>
+      printString( m._1, sb )
+      sb.append( ':' )
+      print( m._2, sb )
     }
     sb.append('}')
   }

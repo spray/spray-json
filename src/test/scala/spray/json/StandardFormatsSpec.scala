@@ -17,9 +17,11 @@
 package spray.json
 
 import org.specs2.mutable._
-import scala.Right
+import scala.util.Random._
 
 class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
+
+  def nextString = new String( (alphanumeric take (nextInt( 16 ) + 1)).toArray )
 
   "The optionFormat" should {
     "convert None to JsNull" in {
@@ -34,6 +36,29 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert JsString(Hello) to Some(Hello)" in {
       JsString("Hello").convertTo[Option[String]] mustEqual Some("Hello")
     } 
+  }
+
+  "The triptionFormat" should {
+    "convert Undefined to JsUndefined" in {
+      Undefined.asInstanceOf[Tription[Int]].toJson mustEqual JsUndefined
+    }
+    "convert JsUndefined to Undefined" in {
+      JsUndefined.convertTo[Tription[Int]] mustEqual Undefined
+    }
+    "convert Null to JsNull" in {
+      Null.asInstanceOf[Tription[Int]].toJson mustEqual JsNull
+    }
+    "convert JsNull to Null" in {
+      JsNull.convertTo[Tription[Int]] mustEqual Null
+    }
+    "convert Value(x) to JsString(x)" in {
+      val x = nextString
+      Value(x).asInstanceOf[Tription[String]].toJson mustEqual JsString(x)
+    }
+    "convert JsString(x) to Value(x)" in {
+      val x = nextString
+      JsString(x).convertTo[Tription[String]] mustEqual Value(x)
+    }
   }
 
   "The eitherFormat" should {

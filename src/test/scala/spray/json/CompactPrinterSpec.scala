@@ -24,6 +24,14 @@ class CompactPrinterSpec extends Specification {
     "print JsNull to 'null'" in {
       CompactPrinter(JsNull) mustEqual "null"
     }
+    "throw exception when printing JsUndefined" in {
+      try {
+        CompactPrinter(JsUndefined) mustEqual "undefined"
+      } catch {
+        case ise: IllegalStateException =>
+          ise.getMessage mustEqual "Cannot display JsUndefined"
+      }
+    }
     "print JsTrue to 'true'" in {
       CompactPrinter(JsTrue) mustEqual "true"
     }
@@ -64,6 +72,14 @@ class CompactPrinterSpec extends Specification {
       CompactPrinter(JsObject("key" -> JsNumber(42), "key2" -> JsString("value")))
               mustEqual """{"key":42,"key2":"value"}"""
     )
+    "properly print a simple JsObject with undefined values" in (
+        CompactPrinter(JsObject("key" -> JsNumber(42), "key2" -> JsString("value"), "key3" -> JsUndefined))
+            mustEqual """{"key":42,"key2":"value"}"""
+        )
+    "properly print a simple JsObject with only undefined values" in (
+        CompactPrinter(JsObject("key" -> JsUndefined, "key2" -> JsUndefined))
+            mustEqual "{}"
+        )
     "properly print a simple JsArray" in (
       CompactPrinter(JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsBoolean(true))))
               mustEqual """[null,1.23,{"key":true}]"""

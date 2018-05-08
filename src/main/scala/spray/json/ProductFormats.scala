@@ -43,6 +43,7 @@ trait ProductFormats extends ProductFormatsInstances {
     val value = p.productElement(ix).asInstanceOf[T]
     writer match {
       case _: OptionFormat[_] if (value == None) => rest
+      case _: TriptionFormat[_] if (value == Undefined) => rest
       case _ => (fieldName, writer.write(value)) :: rest
     }
   }
@@ -53,6 +54,10 @@ trait ProductFormats extends ProductFormatsInstances {
       (reader.isInstanceOf[OptionFormat[_]] &
         !x.fields.contains(fieldName)) =>
       None.asInstanceOf[T]
+    case x: JsObject if
+      (reader.isInstanceOf[TriptionFormat[_]] &
+        !x.fields.contains(fieldName)) =>
+      Undefined.asInstanceOf[T]
     case x: JsObject =>
       try reader.read(x.fields(fieldName))
       catch {

@@ -48,6 +48,7 @@ trait JsonPrinter extends (JsValue => String) {
       case JsFalse     => sb.append("false")
       case JsNumber(x) => sb.append(x)
       case JsString(x) => printString(x, sb)
+      case JsUndefined => throw new IllegalStateException( "Cannot display JsUndefined" )
       case _           => throw new IllegalStateException
     }
   }
