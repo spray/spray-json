@@ -16,7 +16,10 @@
 
 package spray.json
 
+import scala.collection.mutable.HashSet
+
 trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
+  def allowExtraKeys: Boolean = true
 [#  // Case classes with 1 parameters
 
   def jsonFormat1[[#P1 :JF#], T <: Product :ClassManifest](construct: ([#P1#]) => T): RootJsonFormat[T] = {
@@ -24,6 +27,10 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
     jsonFormat(construct, [#p1#])
   }
   def jsonFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
+    val knownFields = HashSet[String]()
+    [# knownFields.add(fieldName1)#
+    ]
+
     def write(p: T) = {
       val fields = new collection.mutable.ListBuffer[(String, JsValue)]
       fields.sizeHint(1 * 2)
@@ -34,6 +41,14 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
     def read(value: JsValue) = {
       [#val p1V = fromField[P1](value, fieldName1)#
       ]
+      if (!allowExtraKeys) {
+        val jsObject = value.asJsObject()
+        val keySet = jsObject.fields.keys.toSet
+        val keySetDiff = keySet.diff(knownFields)
+        if (!keySetDiff.isEmpty) {
+          throw new DeserializationException(s"${keySetDiff.head} is not a known key", null, keySetDiff.toList)
+        }
+      }
       construct([#p1V#])
     }
   }#
