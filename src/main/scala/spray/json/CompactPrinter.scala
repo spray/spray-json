@@ -23,7 +23,7 @@ import java.lang.StringBuilder
  */
 trait CompactPrinter extends JsonPrinter {
 
-  def print(x: JsValue, sb: StringBuilder) {
+  def print(x: JsValue, sb: StringBuilder): Unit = {
     x match {
       case JsObject(x) => printObject(x, sb)
       case JsArray(x)  => printArray(x, sb)
@@ -31,7 +31,7 @@ trait CompactPrinter extends JsonPrinter {
     }
   }
 
-  protected def printObject(members: Map[String, JsValue], sb: StringBuilder) {
+  protected def printObject(members: Map[String, JsValue], sb: StringBuilder): Unit = {
     sb.append('{')
     printSeq(members, sb.append(',')) { m =>
       printString(m._1, sb)
@@ -41,7 +41,7 @@ trait CompactPrinter extends JsonPrinter {
     sb.append('}')
   }
 
-  protected def printArray(elements: Seq[JsValue], sb: StringBuilder) {
+  protected def printArray(elements: Seq[JsValue], sb: StringBuilder): Unit = {
     sb.append('[')
     printSeq(elements, sb.append(','))(print(_, sb))
     sb.append(']')
