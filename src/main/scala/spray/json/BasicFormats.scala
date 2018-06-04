@@ -98,7 +98,7 @@ trait BasicFormats {
 
   implicit object UnitJsonFormat extends JsonFormat[Unit] {
     def write(x: Unit) = JsNumber(1)
-    def read(value: JsValue) {}
+    def read(value: JsValue): Unit = {}
   }
 
   implicit object BooleanJsonFormat extends JsonFormat[Boolean] {
