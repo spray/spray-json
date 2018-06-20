@@ -50,7 +50,7 @@ sealed abstract class JsValue {
  */
 case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   override def asJsObject(errorMsg: String) = this
-  def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.flatMap(fields.get)(collection.breakOut)
+  def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.toIterator.flatMap(fields.get).toList
 }
 object JsObject {
   val empty = JsObject(Map.empty[String, JsValue])

@@ -61,7 +61,12 @@ class CollectionFormatsSpec extends Specification with DefaultJsonProtocol {
     val set = Set(1, 2, 3)
     val json = JsArray(JsNumber(1), JsNumber(2), JsNumber(3))
     "convert a Set[Int] to a JsArray of JsNumbers" in {
-      set.toJson mustEqual json
+      set.toJson match {
+        case JsArray(values) =>
+          values.toSet mustEqual json.elements.toSet
+        case other =>
+          sys.error(other.toString)
+      }
     }
     "convert a JsArray of JsNumbers to a Set[Int]" in {
       json.convertTo[Set[Int]] mustEqual set
