@@ -16,7 +16,6 @@
 
 package spray.json
 
-import scala.collection.immutable.ListMap
 import org.specs2.mutable._
 
 class SortedPrinterSpec extends Specification {
