@@ -16,8 +16,6 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.11.12"
-
 scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8")
 
 resolvers += Opts.resolver.sonatypeReleases
@@ -77,7 +75,7 @@ mimaBinaryIssueFilters := Seq(
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.6", "2.13.0-M3")
+crossScalaVersions := Seq("2.12.6", "2.10.7", "2.11.12", "2.13.0-M3")
 
 scalaBinaryVersion := {
   val sV = scalaVersion.value
