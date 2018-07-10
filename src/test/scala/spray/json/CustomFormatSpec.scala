@@ -16,7 +16,10 @@
 
 package spray.json
 
+import java.io.{NotSerializableException, ObjectOutputStream}
+
 import org.specs2.mutable.Specification
+import org.specs2.reporter.NullOutputStream
 
 class CustomFormatSpec extends Specification with DefaultJsonProtocol {
 
@@ -39,6 +42,9 @@ class CustomFormatSpec extends Specification with DefaultJsonProtocol {
     }
     "support full round-trip (de)serialization" in {
       value.toJson.convertTo[MyType] mustEqual value
+    }
+    "be serializable" in {
+      new ObjectOutputStream(NullOutputStream).writeObject(MyTypeProtocol) must not(throwA[NotSerializableException])
     }
   }
 

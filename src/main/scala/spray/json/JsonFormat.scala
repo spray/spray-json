@@ -23,7 +23,7 @@ import annotation.implicitNotFound
   * Provides the JSON deserialization for type T.
  */
 @implicitNotFound(msg = "Cannot find JsonReader or JsonFormat type class for ${T}")
-trait JsonReader[T] {
+trait JsonReader[T] extends Serializable {
   def read(json: JsValue): T
 }
 
@@ -37,7 +37,7 @@ object JsonReader {
   * Provides the JSON serialization for type T.
  */
 @implicitNotFound(msg = "Cannot find JsonWriter or JsonFormat type class for ${T}")
-trait JsonWriter[T] {
+trait JsonWriter[T] extends Serializable {
   def write(obj: T): JsValue
 }
 
