@@ -63,7 +63,10 @@ OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-
 // Migration Manager
 mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
   case Some((2, 13)) => Set.empty
-  case _ => Set("io.spray" %% "spray-json" % "1.3.3")
+  case _ =>
+    Set("1.3.2", "1.3.3", "1.3.4").map { v =>
+      "io.spray" %% "spray-json" % v
+    }
 })
 
 mimaBinaryIssueFilters := Seq(
