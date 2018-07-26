@@ -20,14 +20,6 @@ scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies ++=
-  (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, n)) if n >= 13 =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
-    case _ =>
-      Nil
-  })
-
 libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
   case Some((2, 10)) => Seq(
     "org.specs2" %% "specs2-core" % "3.8.9" % "test",
@@ -75,7 +67,7 @@ mimaBinaryIssueFilters := Seq(
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.12.6", "2.10.7", "2.11.12", "2.13.0-M3")
+crossScalaVersions := Seq("2.12.6", "2.10.7", "2.11.12")
 
 publishMavenStyle := true
 
