@@ -16,6 +16,7 @@
 
 package spray.json
 
+import scala.reflect.ClassTag
 import java.lang.reflect.Modifier
 import scala.annotation.tailrec
 import scala.util.control.NonFatal
@@ -64,8 +65,8 @@ trait ProductFormats extends ProductFormatsInstances {
     case _ => deserializationError("Object expected in field '" + fieldName + "'", fieldNames = fieldName :: Nil)
   }
 
-  protected def extractFieldNames(classManifest: ClassManifest[_]): Array[String] = {
-    val clazz = classManifest.erasure
+  protected def extractFieldNames(classTag: ClassTag[_]): Array[String] = {
+    val clazz = classTag.runtimeClass
     try {
       // copy methods have the form copy$default$N(), we need to sort them in order, but must account for the fact
       // that lexical sorting of ...8(), ...9(), ...10() is not correct, so we extract N and sort by N.toInt
