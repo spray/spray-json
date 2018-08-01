@@ -32,7 +32,11 @@ trait ProductFormats extends ProductFormatsInstances {
     new RootJsonFormat[T] {
       def write(p: T) = JsObject()
       def read(value: JsValue) = value match {
-        case JsObject(_) => construct()
+        case JsObject(fields) =>
+          if (fields.size > 0) {
+            throw new DeserializationException(s"Redundant fields: ${fields.keys.mkString(",")}")
+          }
+          construct()
         case _ => throw new DeserializationException("Object expected")
       }
     }
@@ -63,6 +67,12 @@ trait ProductFormats extends ProductFormatsInstances {
           deserializationError(msg, cause, fieldName :: fieldNames)
       }
     case _ => deserializationError("Object expected in field '" + fieldName + "'", fieldNames = fieldName :: Nil)
+  }
+
+  protected def getJsValueFields(value: JsValue) = value match {
+    case JsObject(fields) => fields
+    case _ => deserializationError("object expected!")
+
   }
 
   protected def extractFieldNames(tag: ClassTag[_]): Array[String] = {

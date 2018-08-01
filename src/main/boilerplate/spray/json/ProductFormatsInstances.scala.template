@@ -34,6 +34,10 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
       JsObject(fields: _*)
     }
     def read(value: JsValue) = {
+      val fields = getJsValueFields(value)
+      if (fields.size != 1) {
+        deserializationError("Number of fields in JSON does not equal to target class")
+      }
       [#val p1V = fromField[P1](value, fieldName1)#
       ]
       construct([#p1V#])
