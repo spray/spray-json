@@ -81,7 +81,7 @@ class JsonParserSpec extends Specification {
       val list = Await.result(
         Future.traverse(List.fill(20)(largeJsonSource))(src => Future(JsonParser(src))),
         5.seconds
-      ).toList
+      )
       list.map(_.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size) === List.fill(20)(100)
     }
 

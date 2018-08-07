@@ -59,17 +59,12 @@ class CollectionFormatsSpec extends Specification with DefaultJsonProtocol {
   
   "The immutableSetFormat" should {
     val set = Set(1, 2, 3)
-    val json = JsArray(JsNumber(1), JsNumber(2), JsNumber(3))
+    val numbers = Set(JsNumber(1), JsNumber(2), JsNumber(3))
     "convert a Set[Int] to a JsArray of JsNumbers" in {
-      set.toJson match {
-        case JsArray(values) =>
-          values.toSet mustEqual json.elements.toSet
-        case other =>
-          sys.error(other.toString)
-      }
+      set.toJson.asInstanceOf[JsArray].elements.toSet mustEqual numbers
     }
     "convert a JsArray of JsNumbers to a Set[Int]" in {
-      json.convertTo[Set[Int]] mustEqual set
+      JsArray(numbers.toVector).convertTo[Set[Int]] mustEqual set
     }
   }
 

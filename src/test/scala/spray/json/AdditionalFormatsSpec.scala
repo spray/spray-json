@@ -64,18 +64,10 @@ class AdditionalFormatsSpec extends Specification {
   "The lazyFormat wrapper" should {
     "enable recursive format definitions" in {
       import FooProtocol._
-      val json = Foo(1, "a", Some(Foo(2, "b", Some(Foo(3, "c") :: Nil)) :: Foo(4, "d") :: Nil)).toJson.toString
+      val json = Foo(1, "a", Some(Foo(2, "b", Some(Foo(3, "c") :: Nil)) :: Foo(4, "d") :: Nil)).toJson
 
-      val v = scala.util.Properties.versionNumberString
-      // TODO this test depeneds on internal implementations of scala.Map
-      // https://github.com/scala/scala/commit/6a570b6f1f59222cae4f
-      if (v != "2.13.0-M4") {
-        json mustEqual
-          """{"id":1,"name":"a","foos":[{"id":2,"name":"b","foos":[{"id":3,"name":"c"}]},{"id":4,"name":"d"}]}"""
-      } else {
-        json mustEqual
-          """{"name":"a","foos":[{"name":"b","foos":[{"name":"c","id":3}],"id":2},{"name":"d","id":4}],"id":1}"""
-      }
+      json mustEqual
+        """{"id":1,"name":"a","foos":[{"id":2,"name":"b","foos":[{"id":3,"name":"c"}]},{"id":4,"name":"d"}]}""".parseJson
     }
   }
 }
