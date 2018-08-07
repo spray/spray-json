@@ -16,19 +16,9 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.11.12"
-
 scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8")
 
 resolvers += Opts.resolver.sonatypeReleases
-
-libraryDependencies ++=
-  (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, n)) if n >= 13 =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
-    case _ =>
-      Nil
-  })
 
 libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
   case Some((2, 10)) => Seq(
@@ -37,9 +27,9 @@ libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
     "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
   )
   case Some((2, n)) if n >= 11 => Seq(
-    "org.specs2" %% "specs2-core" % "4.0.2" % "test",
-    "org.specs2" %% "specs2-scalacheck" % "4.0.2" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.5" % "test"
+    "org.specs2" %% "specs2-core" % "4.3.2" % "test",
+    "org.specs2" %% "specs2-scalacheck" % "4.3.2" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
   case _ => Nil
 })
@@ -77,15 +67,7 @@ mimaBinaryIssueFilters := Seq(
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.6", "2.13.0-M3")
-
-scalaBinaryVersion := {
-  val sV = scalaVersion.value
-  if (CrossVersion.isScalaApiCompatible(sV))
-    CrossVersion.binaryScalaVersion(sV)
-  else
-    sV
-}
+crossScalaVersions := Seq("2.12.6", "2.10.7", "2.11.12")
 
 publishMavenStyle := true
 
