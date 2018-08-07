@@ -27,7 +27,7 @@ trait CollectionFormats {
   implicit def listFormat[T :JsonFormat] = new RootJsonFormat[List[T]] {
     def write(list: List[T]) = JsArray(list.map(_.toJson).toVector)
     def read(value: JsValue): List[T] = value match {
-      case JsArray(elements) => elements.map(_.convertTo[T])(collection.breakOut)
+      case JsArray(elements) => elements.toIterator.map(_.convertTo[T]).toList
       case x => deserializationError("Expected List as JsArray, but got " + x)
     }
   }
@@ -59,7 +59,7 @@ trait CollectionFormats {
     def read(value: JsValue) = value match {
       case x: JsObject => x.fields.map { field =>
         (JsString(field._1).convertTo[K], field._2.convertTo[V])
-      } (collection.breakOut)
+      }
       case x => deserializationError("Expected Map as JsObject, but got " + x)
     }
   }

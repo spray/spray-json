@@ -198,12 +198,12 @@ class ProductFormatsSpec extends Specification {
 
   "A JsonFormat created with `jsonFormat`, for a case class with mangled-name members," should {
     import TestProtocol1._
-    val json = """{"ü$bavf$u56ú$":true,"=><+-*/!@#%^&~?|":1.0,"foo-bar!":42,"-x-":26,"User ID":"Karl"}"""
+    val json = """{"ü$bavf$u56ú$":true,"=><+-*/!@#%^&~?|":1.0,"foo-bar!":42,"-x-":26,"User ID":"Karl"}""".parseJson
     "produce the correct JSON" in {
-      TestMangled(42, "Karl", true, 26, 1.0f).toJson.compactPrint === json
+      TestMangled(42, "Karl", true, 26, 1.0f).toJson === json
     }
     "convert a JsObject to the respective case class instance" in {
-      json.parseJson.convertTo[TestMangled] === TestMangled(42, "Karl", true, 26, 1.0f)
+      json.convertTo[TestMangled] === TestMangled(42, "Karl", true, 26, 1.0f)
     }
   }
 }
