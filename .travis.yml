@@ -9,6 +9,10 @@ script:
   - sbt "++ ${TRAVIS_SCALA_VERSION}!" test mimaReportBinaryIssues
 jdk:
   - oraclejdk8
+matrix:
+  include:
+  - jdk: openjdk11
+    scala: 2.12.7
 notifications:
   email:
     - johannes@spray.io
