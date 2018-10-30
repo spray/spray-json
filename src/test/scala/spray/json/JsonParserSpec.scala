@@ -118,8 +118,8 @@ class JsonParserSpec extends Specification {
     }
 
     "produce proper error messages" in {
-      def errorMessage(input: String) =
-        try JsonParser(input) catch { case e: JsonParser.ParsingException => e.getMessage }
+      def errorMessage(input: String, settings: JsonParserSettings = JsonParserSettings.default) =
+        try JsonParser(input, settings) catch { case e: JsonParser.ParsingException => e.getMessage }
 
       errorMessage("""[null, 1.23 {"key":true } ]""") ===
         """Unexpected character '{' at input index 12 (line 1, position 13), expected ']':
@@ -144,6 +144,13 @@ class JsonParserSpec extends Specification {
           |{}x
           |  ^
           |""".stripMargin
+
+      "reject numbers which are too big / have too high precision" in {
+        val settings = JsonParserSettings.default.withMaxNumberCharacters(5)
+        errorMessage("123.4567890", settings) ===
+          "Number too long:The number starting with '123.4567890' had 11 characters which is more than the allowed limit " +
+          "maxNumberCharacters = 5. If this is legit input consider increasing the limit."
+      }
     }
 
     "fail gracefully for deeply nested structures" in {

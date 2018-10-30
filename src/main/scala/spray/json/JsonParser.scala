@@ -135,9 +135,19 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     `int`()
     `frac`()
     `exp`()
+    val numberLength = input.cursor - start
+
     jsValue =
       if (startChar == '0' && input.cursor - start == 1) JsNumber.zero
-      else JsNumber(input.sliceCharArray(start, input.cursor))
+      else if (numberLength <= settings.maxNumberCharacters) JsNumber(input.sliceCharArray(start, input.cursor))
+      else {
+        val numberSnippet = new String(input.sliceCharArray(start, math.min(input.cursor, start + 20)))
+        throw new ParsingException("Number too long",
+          s"The number starting with '$numberSnippet' had " +
+          s"$numberLength characters which is more than the allowed limit maxNumberCharacters = ${settings.maxNumberCharacters}. If this is legit input " +
+          s"consider increasing the limit."
+        )
+      }
     ws()
   }
 
