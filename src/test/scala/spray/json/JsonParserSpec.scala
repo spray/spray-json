@@ -84,6 +84,36 @@ class JsonParserSpec extends Specification {
       )
       list.map(_.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size) === List.fill(20)(100)
     }
+    "not show bad performance characteristics when object keys' hashCodes collide" in {
+      val numKeys = 10000
+      val value = "null"
+
+      val regularKeys = Iterator.from(1).map(i => s"key_$i").take(numKeys)
+      val collidingKeys = HashCodeCollider.zeroHashCodeIterator().take(numKeys)
+
+      def createJson(keys: Iterator[String]): String = keys.mkString("""{"""", s"""":$value,"""", s"""":$value}""")
+
+      def nanoBench(block: => Unit): Long = {
+        // great microbenchmark (the comment must be kept, otherwise it's not true)
+        val f = block _
+
+        // warmup
+        (1 to 10).foreach(_ => f())
+
+        val start = System.nanoTime()
+        f()
+        val end = System.nanoTime()
+        end - start
+      }
+
+      val regularJson = createJson(regularKeys)
+      val collidingJson = createJson(collidingKeys)
+
+      val regularTime = nanoBench { JsonParser(regularJson) }
+      val collidingTime = nanoBench { JsonParser(collidingJson) }
+
+      collidingTime / regularTime must be < 2L // speed must be in same order of magnitude
+    }
 
     "produce proper error messages" in {
       def errorMessage(input: String) =

@@ -18,8 +18,10 @@ package spray.json
 
 import scala.annotation.{switch, tailrec}
 import java.lang.{StringBuilder => JStringBuilder}
-import java.nio.{CharBuffer, ByteBuffer}
+import java.nio.{ByteBuffer, CharBuffer}
 import java.nio.charset.Charset
+
+import scala.collection.immutable.TreeMap
 
 /**
  * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
@@ -86,8 +88,7 @@ class JsonParser(input: ParserInput) {
         val nextMap = map.updated(key, jsValue)
         if (ws(',')) members(nextMap) else nextMap
       }
-      var map = Map.empty[String, JsValue]
-      map = members(map)
+      val map = members(TreeMap.empty[String, JsValue])
       require('}')
       JsObject(map)
     } else {

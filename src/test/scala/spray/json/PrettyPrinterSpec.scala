@@ -23,7 +23,7 @@ class PrettyPrinterSpec extends Specification {
 
   "The PrettyPrinter" should {
     "print a more complicated JsObject nicely aligned" in {
-      val JsObject(fields) = JsonParser {
+      val js = JsonParser {
         """{
           |  "Boolean no": false,
           |  "Boolean yes":true,
@@ -40,7 +40,12 @@ class PrettyPrinterSpec extends Specification {
           |  "zero": 0
           |}""".stripMargin
       }
-      PrettyPrinter(JsObject(ListMap(fields.toSeq.sortBy(_._1):_*))) mustEqual {
+      def fixedFieldOrder(js: JsValue): JsValue = js match {
+        case JsObject(fields) => JsObject(ListMap(fields.toSeq.sortBy(_._1).map { case (k, v) => (k, fixedFieldOrder(v)) }:_*))
+        case x => x
+      }
+
+      PrettyPrinter(fixedFieldOrder(js)) mustEqual {
         """{
           |  "Boolean no": false,
           |  "Boolean yes": true,
@@ -50,17 +55,17 @@ class PrettyPrinterSpec extends Specification {
           |  "number": -0.000012323424,
           |  "simpleKey": "some value",
           |  "sub object": {
-          |    "sub key": 26.5,
           |    "a": "b",
           |    "array": [1, 2, {
-          |      "yes": 1,
-          |      "no": 0
-          |    }, ["a", "b", null], false]
+          |      "no": 0,
+          |      "yes": 1
+          |    }, ["a", "b", null], false],
+          |    "sub key": 26.5
           |  },
           |  "zero": 0
           |}""".stripMargin
       }
     }
   }
-  
+
 }
