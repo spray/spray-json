@@ -24,7 +24,7 @@ package object json {
   def serializationError(msg: String) = throw new SerializationException(msg)
 
   def jsonReader[T](implicit reader: JsonReader[T]) = reader
-  def jsonWriter[T](implicit writer: JsonWriter[T]) = writer 
+  def jsonWriter[T](implicit writer: JsonWriter[T]) = writer
 
   implicit def enrichAny[T](any: T) = new RichAny(any)
   implicit def enrichString(string: String) = new RichString(string)
@@ -48,6 +48,7 @@ package json {
     @deprecated("deprecated in favor of parseJson", "1.2.6")
     def asJson: JsValue = parseJson
     def parseJson: JsValue = JsonParser(string)
+    def parseJson(settings: JsonParserSettings): JsValue = JsonParser(string, settings)
   }
 
   @deprecated("use RichAny", "1.3.4")

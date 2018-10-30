@@ -26,12 +26,15 @@ import java.nio.charset.Charset
  */
 object JsonParser {
   def apply(input: ParserInput): JsValue = new JsonParser(input).parseJsValue()
+  def apply(input: ParserInput, settings: JsonParserSettings): JsValue = new JsonParser(input, settings).parseJsValue()
 
   class ParsingException(val summary: String, val detail: String = "")
     extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
 }
 
-class JsonParser(input: ParserInput) {
+class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSettings.default) {
+  def this(input: ParserInput) = this(input, JsonParserSettings.default)
+
   import JsonParser.ParsingException
 
   private[this] val sb = new JStringBuilder
