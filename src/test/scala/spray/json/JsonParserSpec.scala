@@ -18,6 +18,8 @@ package spray.json
 
 import org.specs2.mutable._
 
+import scala.util.control.NonFatal
+
 class JsonParserSpec extends Specification {
 
   "The JsonParser" should {
@@ -112,6 +114,30 @@ class JsonParserSpec extends Specification {
           |{}x
           |  ^
           |""".stripMargin
+    }
+
+    "fail gracefully for deeply nested structures" in {
+      val queue = new java.util.ArrayDeque[String]()
+
+      // testing revealed that each recursion will need approx. 280 bytes of stack space
+      val depth = 1500
+      val runnable = new Runnable {
+        override def run(): Unit =
+          try {
+            val nested = "[{\"key\":" * (depth / 2)
+            JsonParser(nested)
+            queue.push("didn't fail")
+          } catch {
+            case s: StackOverflowError => queue.push("stackoverflow")
+            case NonFatal(e) =>
+              queue.push(s"nonfatal: ${e.getMessage}")
+          }
+      }
+
+      val thread = new Thread(null, runnable, "parser-test", 655360)
+      thread.start()
+      thread.join()
+      queue.peek() === "nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxNesting = 1000"
     }
 
     "parse multiple values when allowTrailingInput" in {
