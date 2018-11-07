@@ -1,18 +1,31 @@
 language: scala
+
 scala:
   - 2.10.7
   - 2.11.12
   - 2.12.7
   - 2.13.0-M5
 
-script:
-  - sbt "++ ${TRAVIS_SCALA_VERSION}!" test mimaReportBinaryIssues
 jdk:
   - oraclejdk8
+
 matrix:
   include:
   - jdk: openjdk11
     scala: 2.12.7
+
+script:
+  - sbt "++ ${TRAVIS_SCALA_VERSION}!" test mimaReportBinaryIssues
+
+before_cache:
+  - find $HOME/.ivy2 -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt  -name "*.lock"               -print -delete
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot
+
 notifications:
   email:
     - johannes@spray.io
