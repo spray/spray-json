@@ -77,6 +77,25 @@ lazy val sprayJsonJVM = sprayJson.jvm
 lazy val sprayJsonJS = sprayJson.js
 lazy val sprayJsonNative = sprayJson.native
 
+lazy val benchmark = Project("benchmark", file("benchmark"))
+  .settings(
+    scalaVersion := scala212
+  )
+  .settings(noPublishSettings: _*)
+  .enablePlugins(JmhPlugin)
+  .dependsOn(sprayJsonJVM % "compile->test")
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %% "upickle" % "0.6.7",
+      "io.circe" %% "circe-parser" % "0.10.0",
+      "com.typesafe.play" %% "play-json" % "2.7.0-M1"
+    )
+  )
+
+lazy val noPublishSettings = Seq(
+  skip in publish := true
+)
+
 lazy val root = (project in file("."))
   .aggregate(sprayJsonJVM, sprayJsonJS, sprayJsonNative)
   .settings(
