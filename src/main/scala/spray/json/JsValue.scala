@@ -19,6 +19,7 @@
 package spray.json
 
 import collection.immutable
+import scala.collection.immutable.TreeMap
 
 /**
   * The general type of a JSON AST node.
@@ -53,10 +54,10 @@ case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.toIterator.flatMap(fields.get).toList
 }
 object JsObject {
-  val empty = JsObject(Map.empty[String, JsValue])
-  def apply(members: JsField*) = new JsObject(Map(members: _*))
+  val empty = JsObject(TreeMap.empty[String, JsValue])
+  def apply(members: JsField*): JsObject = new JsObject(TreeMap(members: _*))
   @deprecated("Use JsObject(JsValue*) instead", "1.3.0")
-  def apply(members: List[JsField]) = new JsObject(Map(members: _*))
+  def apply(members: List[JsField]): JsObject = apply(members: _*)
 }
 
 /**
