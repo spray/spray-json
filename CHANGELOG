@@ -1,3 +1,32 @@
+Version 1.3.5 (2017-10-24)
+--------------------------
+
+Security fix for several Denial Of Service vulnerabilities:
+
+- CVE-2018-18853: Limit the number of characters for numbers in the parser (#278)
+- CVE-2018-18854: Use TreeMap instead of HashMap for JsObject to prevent collision attacks (#277)
+- CVE-2018-18855: Fix uncontrolled recursion in parser by limiting nesting depth (#286)
+
+Thanks, [Andriy Plokhotnyuk](https://github.com/plokhotnyuk) who brought the first two issues to
+our attention.
+
+## Migration Notes
+
+For some fixes, we added new limits to the parser:
+
+ * Maximum depth of nested JSON values, defaults to 1000
+ * Maximum characters for number values, defaults to 100
+
+We introduced a `JsonParserSettings` class which can be used to customize these limits.
+New overloads for `JsonParser.apply` and `String.parseJson` have been introduced to specify
+custom settings.
+
+Version 1.3.4 (2017-10-24)
+--------------------------
+
+- Replace ClassManifest by ClassTag
+- Deprecate Pimp* classes and replace by Rich*
+
 Version 1.3.3 (2016-12-29)
 --------------------------
 
