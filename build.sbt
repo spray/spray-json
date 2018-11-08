@@ -2,7 +2,7 @@ import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProble
 
 name := "spray-json"
 
-version := "1.3.5"
+version := "1.3.6-SNAPSHOT"
 
 organization := "io.spray"
 
