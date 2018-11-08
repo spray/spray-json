@@ -70,7 +70,6 @@ In order to make steps 3 and 4 work for an object of type `T` you need to bring 
 provide `JsonFormat[T]` instances for `T` and all types used by `T` (directly or indirectly).
 The way you normally do this is via a "JsonProtocol".
 
-
 ### JsonProtocol
 
 _spray-json_ uses [SJSON]s Scala-idiomatic type-class-based approach to connect an existing type `T` with the logic how
@@ -292,6 +291,21 @@ wrapper). Note, that `lazyFormat` returns a `JsonFormat` even if it was given a 
 picked up by `SprayJsonSupport`. To get back a `RootJsonFormat` just wrap the complete `lazyFormat` call with another
 call to `rootFormat`.
 
+
+### Customizing Parser Settings
+
+The parser can be customized by providing a custom instance of `JsonParserSettings` to `JsonParser.apply` or
+`String.parseJson`:
+
+```scala
+val customSettings =
+  JsonParserSettings.default
+     .withMaxDepth(100)
+     .withMaxNumberCharacters(20)
+val jsValue = JsonParser(jsonString, customSettings)
+// or
+val jsValue = jsonString.parseJson(customSettings)
+```
 
 ### Credits
 
