@@ -1,6 +1,22 @@
 package spray.json
 
-trait JsonParserSettings {
+/**
+ * Allows to customize settings for the JSON parser.
+ *
+ * Use it like this:
+ *
+ * ```
+ * val customSettings =
+ *   JsonParserSettings.default
+ *     .withMaxDepth(100)
+ *     .withMaxNumberCharacters(20)
+ *
+ * JsonParser(jsonString, customSettings)
+ * // or
+ * jsonString.parseJson(customSettings)
+ * ```
+ */
+sealed trait JsonParserSettings {
   /**
    * The JsonParser uses recursive decent parsing that keeps intermediate values on the stack. To prevent
    * StackOverflowExceptions a limit is enforced on the depth of the parsed JSON structure.
