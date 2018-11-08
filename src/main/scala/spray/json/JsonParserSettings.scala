@@ -12,16 +12,29 @@ trait JsonParserSettings {
   def maxDepth: Int
 
   /**
-   * Return a copy of this settings object with the `maxDepth` setting changed to the new value.
+   * Returns a copy of this settings object with the `maxDepth` setting changed to the new value.
    */
   def withMaxDepth(newValue: Int): JsonParserSettings
+
+  /**
+   * The maximum number of characters the parser should support for numbers. This is restricted because creating
+   * `BigDecimal`s with high precision can be very slow (approx. quadratic runtime per amount of characters).
+   */
+  def maxNumberCharacters: Int
+
+  /**
+   * Returns a copy of this settings object with the `maxNumberCharacters` setting changed to the new value.
+   */
+  def withMaxNumberCharacters(newValue: Int): JsonParserSettings
 }
 object JsonParserSettings {
   val default: JsonParserSettings = SettingsImpl()
 
   private case class SettingsImpl(
-    maxDepth: Int = 1000
+    maxDepth: Int = 1000,
+    maxNumberCharacters: Int = 100
   ) extends JsonParserSettings {
     override def withMaxDepth(newValue: Int): JsonParserSettings = copy(maxDepth = newValue)
+    override def withMaxNumberCharacters(newValue: Int): JsonParserSettings = copy(maxNumberCharacters = newValue)
   }
 }
