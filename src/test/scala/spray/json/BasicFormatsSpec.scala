@@ -158,10 +158,10 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
   
   "The SymbolJsonFormat" should {
     "convert a Symbol to a JsString" in {
-      'Hello.toJson mustEqual JsString("Hello")
+      Symbol("Hello").toJson mustEqual JsString("Hello")
     }
     "convert a JsString to a Symbol" in {
-      JsString("Hello").convertTo[Symbol] mustEqual 'Hello
+      JsString("Hello").convertTo[Symbol] mustEqual Symbol("Hello")
     }
   }
   

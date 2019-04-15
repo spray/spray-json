@@ -1,6 +1,6 @@
 addSbtPlugin("io.spray" % "sbt-boilerplate" % "0.6.1")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-osgi" % "0.9.4")
+addSbtPlugin("com.typesafe.sbt" % "sbt-osgi" % "0.9.5")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.2")
 

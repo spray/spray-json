@@ -22,13 +22,13 @@ resolvers += Opts.resolver.sonatypeReleases
 
 libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
   case Some((2, 10)) => Seq(
-    "org.specs2" %% "specs2-core" % "3.8.9" % "test",
-    "org.specs2" %% "specs2-scalacheck" % "3.8.9" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+    "org.specs2" %% "specs2-core" % "3.10.0" % "test",
+    "org.specs2" %% "specs2-scalacheck" % "3.10.0" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
   case Some((2, n)) if n >= 11 => Seq(
-    "org.specs2" %% "specs2-core" % "4.3.5" % "test",
-    "org.specs2" %% "specs2-scalacheck" % "4.3.5" % "test",
+    "org.specs2" %% "specs2-core" % "4.5.1" % "test",
+    "org.specs2" %% "specs2-scalacheck" % "4.5.1" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
   case _ => Nil
@@ -67,7 +67,7 @@ mimaBinaryIssueFilters := Seq(
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.12.7", "2.10.7", "2.11.12", "2.13.0-M5")
+crossScalaVersions := Seq("2.12.8", "2.10.7", "2.11.12", "2.13.0-RC1")
 
 publishMavenStyle := true
 

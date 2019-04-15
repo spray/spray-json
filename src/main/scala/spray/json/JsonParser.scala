@@ -231,7 +231,7 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
       s"Unexpected $unexpected at input index $cursor (line $lineNr, position $col), expected $expected"
     }
     val detail = {
-      val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
+      val sanitizedText = text.map(c => if (Character.isISOControl(c)) '?' else c)
       s"\n$sanitizedText\n${" " * (col-1)}^\n"
     }
     throw new ParsingException(summary, detail)

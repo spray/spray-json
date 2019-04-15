@@ -59,8 +59,8 @@ trait JsonPrinter extends (JsValue => String) {
 
     sb.append('"')
     firstToBeEncoded() match {
-      case -1 ⇒ sb.append(s)
-      case first ⇒
+      case -1 => sb.append(s)
+      case first =>
         sb.append(s, 0, first)
         @tailrec def append(ix: Int): Unit =
           if (ix < s.length) {
