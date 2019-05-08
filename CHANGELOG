@@ -1,3 +1,60 @@
+Version 1.3.5 (2017-10-24)
+--------------------------
+
+Security fix for several Denial Of Service vulnerabilities:
+
+- CVE-2018-18853: Limit the number of characters for numbers in the parser (#278)
+- CVE-2018-18854: Use TreeMap instead of HashMap for JsObject to prevent collision attacks (#277)
+- CVE-2018-18855: Fix uncontrolled recursion in parser by limiting nesting depth (#286)
+
+Thanks, [Andriy Plokhotnyuk](https://github.com/plokhotnyuk) who brought the first two issues to
+our attention.
+
+## Migration Notes
+
+For some fixes, we added new limits to the parser:
+
+ * Maximum depth of nested JSON values, defaults to 1000
+ * Maximum characters for number values, defaults to 100
+
+We introduced a `JsonParserSettings` class which can be used to customize these limits.
+New overloads for `JsonParser.apply` and `String.parseJson` have been introduced to specify
+custom settings.
+
+Also, field ordering changed when printing a `JsValue`. Use `jsValue.sortedPrint` if you want
+to be sure fields are always ordered the same.
+
+Version 1.3.4 (2017-10-24)
+--------------------------
+
+- Replace ClassManifest by ClassTag
+- Deprecate Pimp* classes and replace by Rich*
+
+Version 1.3.3 (2016-12-29)
+--------------------------
+
+For Scala 2.12, this release brings no updates over 1.3.2 because the 2.12 release
+of 1.3.2 was released from a later version of the master branch. Version 1.3.3
+brings the artifacts for Scala 2.10 and 2.11 also to this latest state.
+
+- Fixed decoding of 4-byte UTF-8 characters
+- Refactored UTF-8 decoding into better reusable superclass
+- Decode BigInt / BigDecimal values from JsString (#182)
+- Cross published for Scala 2.10.x, 2.11.x, and 2.12.x
+
+Version 1.3.2 (2015-05-06)
+--------------------------
+- Fixed performance bottleneck in `ProductFormats::fromField` (#132)
+- Fixed multibyte chars at ix 0 of JSON String not being parsed correctly (#148)
+- Fixed automatic field name discovery for member names with mangled prefix (#142)
+- Reinstated deprecated `JsArray` and `JsObject` List-based constructors for backwards compatibility
+- Added standard `OptionFormat` type (#151)
+- Exposed field name in deserialization errors if possible
+- Improved name unmangling in ProductFormats (#138)
+- Introduced `JsObject.empty`, `JsArray.empty`, `JsString.empty` and `JsNumber.zero` (#143)
+- Made `JsonParser` require complete consumption of parsing input (#137)
+
+
 Version 1.3.1 (2014-10-28)
 --------------------------
 - Fixed OutOfMemoryError when parsing unterminated JSON strings (#122)
@@ -77,7 +134,7 @@ Version 1.1.1 (2012-03-13)
 Version 1.1.0 (2012-02-01)
 --------------------------
 - Added automatic case class field name extraction via new jsonFormatX overloads
-- Added 'asJson' pimp to Strings
+- Added 'asJson' extension method to Strings
 - Added RootJsonFormat (JsonFormat for types corresponding to JSON document roots)
 - Fixed problem of JSON object deserialization not being member-order independent
   (removed JsField, turned JsObject(List[JsField]) into JsObject(Map[String, JsValue]))

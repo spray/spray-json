@@ -16,36 +16,30 @@
 
 package spray.json
 
-import scala.collection.immutable.ListMap
 import org.specs2.mutable._
 
-class PrettyPrinterSpec extends Specification {
+class SortedPrinterSpec extends Specification {
 
-  "The PrettyPrinter" should {
-    "print a more complicated JsObject nicely aligned" in {
-      val js = JsonParser {
+  "The SortedPrinter" should {
+    "print a more complicated JsObject nicely aligned with fields sorted" in {
+      val obj = JsonParser {
         """{
-          |  "Boolean no": false,
-          |  "Boolean yes":true,
           |  "Unic\u00f8de" :  "Long string with newline\nescape",
+          |  "Boolean no": false,
+          |  "number": -1.2323424E-5,
           |  "key with \"quotes\"" : "string",
           |  "key with spaces": null,
-          |  "number": -1.2323424E-5,
           |  "simpleKey" : "some value",
+          |    "zero": 0,
           |  "sub object" : {
           |    "sub key": 26.5,
           |    "a": "b",
           |    "array": [1, 2, { "yes":1, "no":0 }, ["a", "b", null], false]
           |  },
-          |  "zero": 0
+          |  "Boolean yes":true
           |}""".stripMargin
       }
-      def fixedFieldOrder(js: JsValue): JsValue = js match {
-        case JsObject(fields) => JsObject(ListMap(fields.toSeq.sortBy(_._1).map { case (k, v) => (k, fixedFieldOrder(v)) }:_*))
-        case x => x
-      }
-
-      PrettyPrinter(fixedFieldOrder(js)) mustEqual {
+      SortedPrinter(obj) mustEqual {
         """{
           |  "Boolean no": false,
           |  "Boolean yes": true,

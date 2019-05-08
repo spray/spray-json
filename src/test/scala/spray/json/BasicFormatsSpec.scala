@@ -105,6 +105,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNumber to a BigDecimal" in {
       JsNumber(42).convertTo[BigDecimal] mustEqual BigDecimal(42)
     }
+    """convert a JsString to a BigDecimal (to allow the quoted-large-numbers pattern)""" in {
+      JsString("9223372036854775809").convertTo[BigDecimal] mustEqual BigDecimal("9223372036854775809")
+    }
   }
   
   "The BigIntJsonFormat" should {
@@ -114,6 +117,9 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     "convert a JsNumber to a BigInt" in {
       JsNumber(42).convertTo[BigInt] mustEqual BigInt(42)
     }
+    """convert a JsString to a BigInt (to allow the quoted-large-numbers pattern)""" in {
+      JsString("9223372036854775809").convertTo[BigInt] mustEqual BigInt("9223372036854775809")
+    }
   }
   
   "The UnitJsonFormat" should {
@@ -121,7 +127,7 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
       ().toJson mustEqual JsNumber(1)
     }
     "convert a JsNumber to Unit" in {
-      JsNumber(1).convertTo[Unit] mustEqual ()
+      JsNumber(1).convertTo[Unit] mustEqual (())
     }
   }
   
@@ -152,10 +158,10 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
   
   "The SymbolJsonFormat" should {
     "convert a Symbol to a JsString" in {
-      'Hello.toJson mustEqual JsString("Hello")
+      Symbol("Hello").toJson mustEqual JsString("Hello")
     }
     "convert a JsString to a Symbol" in {
-      JsString("Hello").convertTo[Symbol] mustEqual 'Hello
+      JsString("Hello").convertTo[Symbol] mustEqual Symbol("Hello")
     }
   }
   

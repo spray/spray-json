@@ -64,8 +64,10 @@ class AdditionalFormatsSpec extends Specification {
   "The lazyFormat wrapper" should {
     "enable recursive format definitions" in {
       import FooProtocol._
-      Foo(1, "a", Some(Foo(2, "b", Some(Foo(3, "c") :: Nil)) :: Foo(4, "d") :: Nil)).toJson.toString mustEqual
-        """{"id":1,"name":"a","foos":[{"id":2,"name":"b","foos":[{"id":3,"name":"c"}]},{"id":4,"name":"d"}]}"""
+      val json = Foo(1, "a", Some(Foo(2, "b", Some(Foo(3, "c") :: Nil)) :: Foo(4, "d") :: Nil)).toJson
+
+      json mustEqual
+        """{"id":1,"name":"a","foos":[{"id":2,"name":"b","foos":[{"id":3,"name":"c"}]},{"id":4,"name":"d"}]}""".parseJson
     }
   }
 }
