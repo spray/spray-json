@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009-2011 Mathias Doenitz
  * Inspired by a similar implementation by Nathan Hamblen
- * (https://github.com/n8han/Databinder-Dispatch)
+ * (https://github.com/dispatch/classic)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 package spray.json
 
 import collection.immutable
+import scala.collection.immutable.TreeMap
 
 /**
   * The general type of a JSON AST node.
@@ -28,6 +29,7 @@ sealed abstract class JsValue {
   def toString(printer: (JsValue => String)) = printer(this)
   def compactPrint = CompactPrinter(this)
   def prettyPrint = PrettyPrinter(this)
+  def sortedPrint = SortedPrinter(this)
   def convertTo[T :JsonReader]: T = jsonReader[T].read(this)
 
   /**
@@ -49,28 +51,37 @@ sealed abstract class JsValue {
  */
 case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   override def asJsObject(errorMsg: String) = this
-  def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.flatMap(fields.get)(collection.breakOut)
+  def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.toIterator.flatMap(fields.get).toList
 
   /**
-   * Merges two JsObjets together, ovewriting values on collision.
-   */
-  def mergeWith(other: JsObject) = {
+    * Merges two JsObjects together, overwriting with values from `other` on collision.
+    */
+  def mergeWith(other: JsObject): JsObject = {
     new JsObject(this.fields ++ other.fields)
   }
 
-  def ++(other: JsObject) = this mergeWith other
+  def ++(other: JsObject): JsObject = this mergeWith other
 }
 
 object JsObject {
-  def apply(members: JsField*) = new JsObject(Map(members: _*))
+  val empty = JsObject(TreeMap.empty[String, JsValue])
+  def apply(members: JsField*): JsObject = new JsObject(TreeMap(members: _*))
+  @deprecated("Use JsObject(JsValue*) instead", "1.3.0")
+  def apply(members: List[JsField]): JsObject = apply(members: _*)
 }
 
 /**
   * A JSON array.
  */
-case class JsArray(elements: Vector[JsValue]) extends JsValue
+case class JsArray(elements: Vector[JsValue]) extends JsValue {
+  @deprecated("Use JsArray(Vector[JsValue]) instead", "1.3.0")
+  def this(elements: List[JsValue]) = this(elements.toVector)
+}
 object JsArray {
+  val empty = JsArray(Vector.empty)
   def apply(elements: JsValue*) = new JsArray(elements.toVector)
+  @deprecated("Use JsArray(Vector[JsValue]) instead", "1.3.0")
+  def apply(elements: List[JsValue]) = new JsArray(elements.toVector)
 }
 
 /**
@@ -79,6 +90,7 @@ object JsArray {
 case class JsString(value: String) extends JsValue
 
 object JsString {
+  val empty = JsString("")
   def apply(value: Symbol) = new JsString(value.name)
 }
 
@@ -87,6 +99,7 @@ object JsString {
  */
 case class JsNumber(value: BigDecimal) extends JsValue
 object JsNumber {
+  val zero: JsNumber = apply(0)
   def apply(n: Int) = new JsNumber(BigDecimal(n))
   def apply(n: Long) = new JsNumber(BigDecimal(n))
   def apply(n: Double) = n match {

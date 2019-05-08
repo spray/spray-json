@@ -1,6 +1,6 @@
 _spray-json_ is a lightweight, clean and efficient [JSON] implementation in Scala.
 
-It sports the following features:
+It supports the following features:
 
 * A simple immutable model of the JSON language elements
 * An efficient JSON parser
@@ -19,13 +19,14 @@ as depicted in this diagram:
 
 ### Installation
 
-_spray-json_ is available from the [repo.spray.io] repository.
-The latest release is `1.3.1` and is built against Scala 2.10.4 and Scala 2.11.2.
+_spray-json_ is available from maven central.
+
+Latest release: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.spray/spray-json_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.spray/spray-json_2.12)
 
 If you use SBT you can include _spray-json_ in your project with
 
 ```scala
-libraryDependencies += "io.spray" %%  "spray-json" % "1.3.1"
+libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5"
 ```
 
 ### Usage
@@ -40,26 +41,26 @@ import DefaultJsonProtocol._ // if you don't supply your own Protocol (see below
 
 and do one or more of the following:
 
-* Parse a JSON string into its Abstract Syntax Tree (AST) representation
+1. Parse a JSON string into its Abstract Syntax Tree (AST) representation
     
     ```scala
     val source = """{ "some": "JSON source" }"""
     val jsonAst = source.parseJson // or JsonParser(source)
     ```
     
-* Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
+2. Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
     
     ```scala
     val json = jsonAst.prettyPrint // or .compactPrint
     ```
     
-* Convert any Scala object to a JSON AST using the pimped `toJson` method
+3. Convert any Scala object to a JSON AST using the `toJson` extension method
     
     ```scala
     val jsonAst = List(1, 2, 3).toJson
     ```
     
-* Convert a JSON AST to a Scala object with the `convertTo` method
+4. Convert a JSON AST to a Scala object with the `convertTo` method
     
     ```scala
     val myObject = jsonAst.convertTo[MyObjectType]
@@ -68,7 +69,6 @@ and do one or more of the following:
 In order to make steps 3 and 4 work for an object of type `T` you need to bring implicit values in scope that
 provide `JsonFormat[T]` instances for `T` and all types used by `T` (directly or indirectly).
 The way you normally do this is via a "JsonProtocol".
-
 
 ### JsonProtocol
 
@@ -116,6 +116,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 }
 
 import MyJsonProtocol._
+import spray.json._
 
 val json = Color("CadetBlue", 95, 158, 160).toJson
 val color = json.convertTo[Color]
@@ -186,7 +187,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 
 import MyJsonProtocol._
 
-val json = Color("CadetBlue", 95, 158, 160).toJson
+val json = new Color("CadetBlue", 95, 158, 160).toJson
 val color = json.convertTo[Color]
 ```
 
@@ -217,6 +218,38 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 
 This is a bit more verbose in its definition and the resulting JSON but transports the field semantics over to the
 JSON side. Note that this is the approach _spray-json_ uses for case classes.
+
+### Providing JsonFormats for unboxed types
+
+A value class
+
+```scala
+case class PhoneNumber(value: String) extends AnyVal
+val num = PhoneNumber("+1 212 555 1111")
+```
+
+or a class with multiple members
+
+```scala
+case class Money(currency: String, amount: BigDecimal)
+val bal = Money("USD", 100)
+```
+
+can be handled as above with `jsonFormatX`, etc.
+It may be preferable, however, to serialize such instances without object boxing:
+as `"USD 100"` instead of `{"currency":"USD","amount":100}`.
+This requires explicit (de)serialization logic:
+
+```scala
+implicit object MoneyFormat extends JsonFormat[Money] {
+  val fmt = """([A-Z]{3}) ([0-9.]+)""".r
+  def write(m: Money) = JsString(s"${m.currency} ${m.amount}")
+  def read(json: JsValue) = json match {
+    case JsString(fmt(c, a)) => Money(c, BigDecimal(a))
+    case _ => deserializationError("String expected")
+  }
+}
+```
 
 
 ### JsonFormat vs. RootJsonFormat
@@ -259,6 +292,21 @@ picked up by `SprayJsonSupport`. To get back a `RootJsonFormat` just wrap the co
 call to `rootFormat`.
 
 
+### Customizing Parser Settings
+
+The parser can be customized by providing a custom instance of `JsonParserSettings` to `JsonParser.apply` or
+`String.parseJson`:
+
+```scala
+val customSettings =
+  JsonParserSettings.default
+     .withMaxDepth(100)
+     .withMaxNumberCharacters(20)
+val jsValue = JsonParser(jsonString, customSettings)
+// or
+val jsValue = jsonString.parseJson(customSettings)
+```
+
 ### Credits
 
 Most of type-class (de)serialization code is nothing but a polished copy of what **Debasish Ghosh** made available
@@ -272,20 +320,22 @@ _spray-json_ is licensed under [APL 2.0].
 
 ### Mailing list
 
-Please use the [spray-user] mailing list if you have any questions.
+Spray-json is in primarily "maintanance mode", as it contains the basic functionality it is meant to deliver.
+If you have any questions about it though, please open issues on this repository.
 
 
-### Patch Policy
+### Maintanance mode
+
+_spray-json_ is largely considered feature-complete for the basic functionality it provides.
+It is currently maintained by the Akka team at Lightbend.
 
 Feedback and contributions to the project, no matter what kind, are always very welcome.
-However, patches can only be accepted from their original author.
+
 Along with any patches, please state that the patch is your original work and that you license the work to the
 _spray-json_ project under the project’s open source license.
 
 
   [JSON]: http://json.org
-  [repo.spray.io]: http://repo.spray.io
   [SJSON]: https://github.com/debasishg/sjson
-  [Databinder-Dispatch]: https://github.com/n8han/Databinder-Dispatch
+  [Databinder-Dispatch]: https://github.com/dispatch/classic
   [APL 2.0]: http://www.apache.org/licenses/LICENSE-2.0
-  [spray-user]: http://groups.google.com/group/spray-user

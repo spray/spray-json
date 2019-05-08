@@ -16,11 +16,13 @@
 
 package spray.json
 
+import scala.reflect.{ classTag, ClassTag }
+
 trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
 [#  // Case classes with 1 parameters
 
-  def jsonFormat1[[#P1 :JF#], T <: Product :ClassManifest](construct: ([#P1#]) => T): RootJsonFormat[T] = {
-    val Array([#p1#]) = extractFieldNames(classManifest[T])
+  def jsonFormat1[[#P1 :JF#], T <: Product :ClassTag](construct: ([#P1#]) => T): RootJsonFormat[T] = {
+    val Array([#p1#]) = extractFieldNames(classTag[T])
     jsonFormat(construct, [#p1#])
   }
   def jsonFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
@@ -29,7 +31,7 @@ trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
       fields.sizeHint(1 * 2)
       [#fields ++= productElement##2Field[P1](fieldName1, p, 0)#
       ]
-      JsObject(fields: _*)
+      JsObject(fields.toSeq: _*)
     }
     def read(value: JsValue) = {
       [#val p1V = fromField[P1](value, fieldName1)#

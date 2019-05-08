@@ -1,6 +1,8 @@
+import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem}
+
 name := "spray-json"
 
-version := "1.3.1"
+version := "1.3.6-SNAPSHOT"
 
 organization := "io.spray"
 
@@ -14,49 +16,79 @@ startYear := Some(2011)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "2.11.2"
-
-scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-encoding", "utf8")
+scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8")
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "2.4.9" % "test",
-  "org.specs2" %% "specs2-scalacheck" % "2.4.9" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.11.6" % "test"
-)
+libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+  case Some((2, 10)) => Seq(
+    "org.specs2" %% "specs2-core" % "3.10.0" % "test",
+    "org.specs2" %% "specs2-scalacheck" % "3.10.0" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+  )
+  case Some((2, n)) if n >= 11 => Seq(
+    "org.specs2" %% "specs2-core" % "4.5.1" % "test",
+    "org.specs2" %% "specs2-scalacheck" % "4.5.1" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+  )
+  case _ => Nil
+})
 
 (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
 
 // generate boilerplate
-Boilerplate.settings
+enablePlugins(BoilerplatePlugin)
 
 // OSGi settings
-osgiSettings
+enablePlugins(SbtOsgi)
 
 OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}"""")
 
-OsgiKeys.importPackage <<= scalaVersion { sv => Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(sv)) }
+OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value))
 
 OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*")
 
 OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
 
+// Migration Manager
+mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
+  case Some((2, 13)) => Set.empty
+  case _ =>
+    Set("1.3.2", "1.3.3", "1.3.4").map { v =>
+      "io.spray" %% "spray-json" % v
+    }
+})
+
+mimaBinaryIssueFilters := Seq(
+  ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
+)
+
 ///////////////
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.10.4", "2.11.2")
-
-scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
+crossScalaVersions := Seq("2.12.8", "2.10.7", "2.11.12", "2.13.0-RC1")
 
 publishMavenStyle := true
 
-publishTo := Some {
-    "spray repo" at {
-      // public uri is repo.spray.io, we use an SSH tunnel to the nexus here
-      "http://localhost:42424/content/repositories/" + {
-        if (version.value.trim.endsWith("SNAPSHOT")) "snapshots/" else "releases/"
-      }
-    }
-  }
+useGpg := true
+
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (version.value.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+
+pomIncludeRepository := { _ => false }
+
+pomExtra :=
+  <scm>
+    <url>git://github.com/spray/spray.git</url>
+    <connection>scm:git:git@github.com:spray/spray.git</connection>
+  </scm>
+  <developers>
+    <developer><id>sirthias</id><name>Mathias Doenitz</name></developer>
+    <developer><id>jrudolph</id><name>Johannes Rudolph</name></developer>
+  </developers>

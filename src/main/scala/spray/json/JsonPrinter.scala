@@ -39,9 +39,9 @@ trait JsonPrinter extends (JsValue => String) {
     sb.toString
   }
   
-  def print(x: JsValue, sb: JStringBuilder)
+  def print(x: JsValue, sb: JStringBuilder): Unit
   
-  protected def printLeaf(x: JsValue, sb: JStringBuilder) {
+  protected def printLeaf(x: JsValue, sb: JStringBuilder): Unit = {
     x match {
       case JsNull      => sb.append("null")
       case JsTrue      => sb.append("true")
@@ -52,15 +52,15 @@ trait JsonPrinter extends (JsValue => String) {
     }
   }
 
-  protected def printString(s: String, sb: JStringBuilder) {
+  protected def printString(s: String, sb: JStringBuilder): Unit = {
     import JsonPrinter._
     @tailrec def firstToBeEncoded(ix: Int = 0): Int =
       if (ix == s.length) -1 else if (requiresEncoding(s.charAt(ix))) ix else firstToBeEncoded(ix + 1)
 
     sb.append('"')
     firstToBeEncoded() match {
-      case -1 ⇒ sb.append(s)
-      case first ⇒
+      case -1 => sb.append(s)
+      case first =>
         sb.append(s, 0, first)
         @tailrec def append(ix: Int): Unit =
           if (ix < s.length) {
@@ -85,7 +85,7 @@ trait JsonPrinter extends (JsValue => String) {
     sb.append('"')
   }
   
-  protected def printSeq[A](iterable: Iterable[A], printSeparator: => Unit)(f: A => Unit) {
+  protected def printSeq[A](iterable: Iterable[A], printSeparator: => Unit)(f: A => Unit): Unit = {
     var first = true
     iterable.foreach { a =>
       if (first) first = false else printSeparator

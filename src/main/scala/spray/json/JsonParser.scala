@@ -16,31 +16,41 @@
 
 package spray.json
 
-import java.lang.{StringBuilder => JStringBuilder}
-import java.nio.{CharBuffer, ByteBuffer}
-import java.nio.charset.Charset
 import scala.annotation.{switch, tailrec}
+import java.lang.{StringBuilder => JStringBuilder}
+import java.nio.{ByteBuffer, CharBuffer}
+import java.nio.charset.Charset
+
+import scala.collection.immutable.TreeMap
 
 /**
  * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
  */
 object JsonParser {
   def apply(input: ParserInput): JsValue = new JsonParser(input).parseJsValue()
+  def apply(input: ParserInput, settings: JsonParserSettings): JsValue = new JsonParser(input, settings).parseJsValue()
 
   class ParsingException(val summary: String, val detail: String = "")
     extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
 }
 
-class JsonParser(input: ParserInput) {
+class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSettings.default) {
+  def this(input: ParserInput) = this(input, JsonParserSettings.default)
+
   import JsonParser.ParsingException
 
   private[this] val sb = new JStringBuilder
   private[this] var cursorChar: Char = input.nextChar()
   private[this] var jsValue: JsValue = _
 
-  def parseJsValue(): JsValue = {
+  def parseJsValue(): JsValue =
+    parseJsValue(false)
+
+  def parseJsValue(allowTrailingInput: Boolean): JsValue = {
     ws()
-    `value`()
+    `value`(settings.maxDepth)
+    if (!allowTrailingInput)
+      require(EOI)
     jsValue
   }
 
@@ -49,73 +59,101 @@ class JsonParser(input: ParserInput) {
   private final val EOI = '\uFFFF' // compile-time constant
 
   // http://tools.ietf.org/html/rfc4627#section-2.1
-  private def `value`(): Unit = {
-    val mark = input.cursor
-    def simpleValue(matched: Boolean, value: JsValue) = if (matched) jsValue = value else fail("JSON Value", mark)
-    (cursorChar: @switch) match {
-      case 'f' => simpleValue(`false`(), JsFalse)
-      case 'n' => simpleValue(`null`(), JsNull)
-      case 't' => simpleValue(`true`(), JsTrue)
-      case '{' => advance(); `object`()
-      case '[' => advance(); `array`()
-      case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
-      case '"' => `string`(); jsValue = JsString(sb.toString)
-      case _ => fail("JSON Value")
+  private def `value`(remainingNesting: Int): Unit =
+    if (remainingNesting == 0)
+      throw new ParsingException(
+        "JSON input nested too deeply",
+        s"JSON input was nested more deeply than the configured limit of maxNesting = ${settings.maxDepth}"
+      )
+    else {
+      val mark = input.cursor
+      def simpleValue(matched: Boolean, value: JsValue) = if (matched) jsValue = value else fail("JSON Value", mark)
+      (cursorChar: @switch) match {
+        case 'f' => simpleValue(`false`(), JsFalse)
+        case 'n' => simpleValue(`null`(), JsNull)
+        case 't' => simpleValue(`true`(), JsTrue)
+        case '{' => advance(); `object`(remainingNesting)
+        case '[' => advance(); `array`(remainingNesting)
+        case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
+        case '"' => `string`(); jsValue = if (sb.length == 0) JsString.empty else JsString(sb.toString)
+        case _ => fail("JSON Value")
+      }
     }
-  }
 
   private def `false`() = advance() && ch('a') && ch('l') && ch('s') && ws('e')
   private def `null`() = advance() && ch('u') && ch('l') && ws('l')
   private def `true`() = advance() && ch('r') && ch('u') && ws('e')
 
   // http://tools.ietf.org/html/rfc4627#section-2.2
-  private def `object`(): Unit = {
+  private def `object`(remainingNesting: Int): Unit = {
     ws()
-    var map = Map.empty[String, JsValue]
-    @tailrec def members(): Unit = {
-      `string`()
-      require(':')
-      ws()
-      val key = sb.toString
-      `value`()
-      map = map.updated(key, jsValue)
-      if (ws(',')) members()
+    jsValue = if (cursorChar != '}') {
+      @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
+        `string`()
+        require(':')
+        ws()
+        val key = sb.toString
+        `value`(remainingNesting - 1)
+        val nextMap = map.updated(key, jsValue)
+        if (ws(',')) members(nextMap) else nextMap
+      }
+      val map = members(TreeMap.empty[String, JsValue])
+      require('}')
+      JsObject(map)
+    } else {
+      advance()
+      JsObject.empty
     }
-    if (cursorChar != '}') members()
-    require('}')
     ws()
-    jsValue = JsObject(map)
   }
 
   // http://tools.ietf.org/html/rfc4627#section-2.3
-  private def `array`(): Unit = {
+  private def `array`(remainingNesting: Int): Unit = {
     ws()
-    var list = Vector.newBuilder[JsValue]
-    @tailrec def values(): Unit = {
-      `value`()
-      list += jsValue
-      if (ws(',')) values()
+    jsValue = if (cursorChar != ']') {
+      val list = Vector.newBuilder[JsValue]
+      @tailrec def values(): Unit = {
+        `value`(remainingNesting - 1)
+        list += jsValue
+        if (ws(',')) values()
+      }
+      values()
+      require(']')
+      JsArray(list.result())
+    } else {
+      advance()
+      JsArray.empty
     }
-    if (cursorChar != ']') values()
-    require(']')
     ws()
-    jsValue = JsArray(list.result())
   }
 
   // http://tools.ietf.org/html/rfc4627#section-2.4
   private def `number`() = {
     val start = input.cursor
+    val startChar = cursorChar
     ch('-')
     `int`()
     `frac`()
     `exp`()
-    jsValue = JsNumber(input.sliceCharArray(start, input.cursor))
+    val numberLength = input.cursor - start
+
+    jsValue =
+      if (startChar == '0' && input.cursor - start == 1) JsNumber.zero
+      else if (numberLength <= settings.maxNumberCharacters) JsNumber(input.sliceCharArray(start, input.cursor))
+      else {
+        val numberSnippet = new String(input.sliceCharArray(start, math.min(input.cursor, start + 20)))
+        throw new ParsingException("Number too long",
+          s"The number starting with '$numberSnippet' had " +
+          s"$numberLength characters which is more than the allowed limit maxNumberCharacters = ${settings.maxNumberCharacters}. If this is legit input " +
+          s"consider increasing the limit."
+        )
+      }
     ws()
   }
 
   private def `int`(): Unit = if (!ch('0')) oneOrMoreDigits()
   private def `frac`(): Unit = if (ch('.')) oneOrMoreDigits()
-  private def `exp`(): Unit = if ((ch('e') || ch('E')) && (ch('-') || ch('+') || true)) oneOrMoreDigits()
+  private def `exp`(): Unit = if (ch('e') || ch('E')) { ch('-') || ch('+'); oneOrMoreDigits() }
 
   private def oneOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits() else fail("DIGIT")
   @tailrec private def zeroOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits()
@@ -124,7 +162,7 @@ class JsonParser(input: ParserInput) {
 
   // http://tools.ietf.org/html/rfc4627#section-2.5
   private def `string`(): Unit = {
-    require('"')
+    if (cursorChar == '"') cursorChar = input.nextUtf8Char() else fail("'\"'")
     sb.setLength(0)
     while (`char`()) cursorChar = input.nextUtf8Char()
     require('"')
@@ -189,10 +227,11 @@ class JsonParser(input: ParserInput) {
           val c = if (Character.isISOControl(errorChar)) "\\u%04x" format errorChar.toInt else errorChar.toString
           s"character '$c'"
         } else "end-of-input"
-      s"Unexpected $unexpected at input index $cursor (line $lineNr, position $col), expected $target"
+      val expected = if (target != "'\uFFFF'") target else "end-of-input"
+      s"Unexpected $unexpected at input index $cursor (line $lineNr, position $col), expected $expected"
     }
     val detail = {
-      val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
+      val sanitizedText = text.map(c => if (Character.isISOControl(c)) '?' else c)
       s"\n$sanitizedText\n${" " * (col-1)}^\n"
     }
     throw new ParsingException(summary, detail)
@@ -251,45 +290,62 @@ object ParserInput {
   private val UTF8 = Charset.forName("UTF-8")
 
   /**
-   * ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded representation
-   * of the JSON input, without requiring a separate decoding step.
+   * ParserInput that allows to create a ParserInput from any randomly accessible indexed byte storage.
    */
-  class ByteArrayBasedParserInput(bytes: Array[Byte]) extends DefaultParserInput {
+  abstract class IndexedBytesParserInput extends DefaultParserInput {
+    def length: Int
+    protected def byteAt(offset: Int): Byte
+
     private val byteBuffer = ByteBuffer.allocate(4)
-    private val charBuffer = CharBuffer.allocate(1) // we currently don't support surrogate pairs!
+    private val charBuffer = CharBuffer.allocate(2)
     private val decoder = UTF8.newDecoder()
     def nextChar() = {
       _cursor += 1
-      if (_cursor < bytes.length) (bytes(_cursor) & 0xFF).toChar else EOI
+      if (_cursor < length) (byteAt(_cursor) & 0xFF).toChar else EOI
     }
     def nextUtf8Char() = {
       @tailrec def decode(byte: Byte, remainingBytes: Int): Char = {
         byteBuffer.put(byte)
         if (remainingBytes > 0) {
           _cursor += 1
-          if (_cursor < bytes.length) decode(bytes(_cursor), remainingBytes - 1) else ErrorChar
+          if (_cursor < length) decode(byteAt(_cursor), remainingBytes - 1) else ErrorChar
         } else {
           byteBuffer.flip()
           val coderResult = decoder.decode(byteBuffer, charBuffer, false)
           charBuffer.flip()
           val result = if (coderResult.isUnderflow & charBuffer.hasRemaining) charBuffer.get() else ErrorChar
           byteBuffer.clear()
-          charBuffer.clear()
+          if (!charBuffer.hasRemaining) charBuffer.clear()
           result
         }
       }
 
-      _cursor += 1
-      if (_cursor < bytes.length) {
-        val byte = bytes(_cursor)
-        if (byte >= 0) byte.toChar // 7-Bit ASCII
-        else if ((byte & 0xE0) == 0xC0) decode(byte, 1) // 2-byte UTF-8 sequence
-        else if ((byte & 0xF0) == 0xE0) decode(byte, 2) // 3-byte UTF-8 sequence
-        else if ((byte & 0xF8) == 0xF0) decode(byte, 3) // 4-byte UTF-8 sequence, will probably produce an (unsupported) surrogate pair
-        else ErrorChar
-      } else EOI
+      if (charBuffer.position() > 0) {
+        val result = charBuffer.get()
+        charBuffer.clear()
+        result
+      } else {
+        _cursor += 1
+        if (_cursor < length) {
+          val byte = byteAt(_cursor)
+          if (byte >= 0) byte.toChar // 7-Bit ASCII
+          else if ((byte & 0xE0) == 0xC0) decode(byte, 1) // 2-byte UTF-8 sequence
+          else if ((byte & 0xF0) == 0xE0) decode(byte, 2) // 3-byte UTF-8 sequence
+          else if ((byte & 0xF8) == 0xF0) decode(byte, 3) // 4-byte UTF-8 sequence
+          else ErrorChar
+        } else EOI
+      }
     }
-    def length = bytes.length
+  }
+
+  /**
+   * ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded representation
+   * of the JSON input, without requiring a separate decoding step.
+   */
+  class ByteArrayBasedParserInput(bytes: Array[Byte]) extends IndexedBytesParserInput {
+    protected def byteAt(offset: Int): Byte = bytes(offset)
+    def length: Int = bytes.length
+
     def sliceString(start: Int, end: Int) = new String(bytes, start, end - start, UTF8)
     def sliceCharArray(start: Int, end: Int) =
       UTF8.decode(ByteBuffer.wrap(java.util.Arrays.copyOfRange(bytes, start, end))).array()

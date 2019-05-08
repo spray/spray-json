@@ -23,21 +23,23 @@ class ProductFormatsSpec extends Specification {
   case class Test0()
   case class Test2(a: Int, b: Option[Double])
   case class Test3[A, B](as: List[A], bs: List[B])
+  case class Test4(t2: Test2)
   case class TestTransient(a: Int, b: Option[Double]) {
     @transient var c = false
   }
   @SerialVersionUID(1L) // SerialVersionUID adds a static field to the case class
   case class TestStatic(a: Int, b: Option[Double])
-  case class TestMangled(`foo-bar!`: Int)
+  case class TestMangled(`foo-bar!`: Int, `User ID`: String, `ü$bavf$u56ú$`: Boolean, `-x-`: Int, `=><+-*/!@#%^&~?|`: Float)
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
     implicit val test0Format = jsonFormat0(Test0)
     implicit val test2Format = jsonFormat2(Test2)
     implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
+    implicit def test4Format = jsonFormat1(Test4)
     implicit def testTransientFormat = jsonFormat2(TestTransient)
     implicit def testStaticFormat = jsonFormat2(TestStatic)
-    implicit def testMangledFormat = jsonFormat1(TestMangled)
+    implicit def testMangledFormat = jsonFormat5(TestMangled)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -63,7 +65,7 @@ class ProductFormatsSpec extends Specification {
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42))
     }
     "ignore additional members during deserialization" in {
-      JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2), "c" -> JsString('no)).convertTo[Test2] mustEqual obj
+      JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2), "c" -> JsString(Symbol("no"))).convertTo[Test2] mustEqual obj
     }
     "not depend on any specific member order for deserialization" in {
       JsObject("b" -> JsNumber(4.2), "a" -> JsNumber(42)).convertTo[Test2] mustEqual obj
@@ -71,6 +73,16 @@ class ProductFormatsSpec extends Specification {
     "throw a DeserializationException if the JsValue is not a JsObject" in (
       JsNull.convertTo[Test2] must throwA(new DeserializationException("Object expected in field 'a'"))
     )
+    "expose the fieldName in the DeserializationException when able" in {
+      JsNull.convertTo[Test2] must throwA[DeserializationException].like {
+        case DeserializationException(_, _, fieldNames) => fieldNames mustEqual "a" :: Nil
+      }
+    }
+    "expose all gathered fieldNames in the DeserializationException" in {
+      JsObject("t2" -> JsObject("a" -> JsString("foo"))).convertTo[Test4] must throwA[DeserializationException].like {
+        case DeserializationException(_, _, fieldNames) => fieldNames mustEqual "t2" :: "a" :: Nil
+      }
+    }
   }
 
   "A JsonProtocol mixing in NullOptions" should {
@@ -186,12 +198,12 @@ class ProductFormatsSpec extends Specification {
 
   "A JsonFormat created with `jsonFormat`, for a case class with mangled-name members," should {
     import TestProtocol1._
-    val json = "{\"foo-bar!\":42}"
+    val json = """{"ü$bavf$u56ú$":true,"=><+-*/!@#%^&~?|":1.0,"foo-bar!":42,"-x-":26,"User ID":"Karl"}""".parseJson
     "produce the correct JSON" in {
-      TestMangled(42).toJson.compactPrint === json
+      TestMangled(42, "Karl", true, 26, 1.0f).toJson === json
     }
     "convert a JsObject to the respective case class instance" in {
-      json.parseJson.convertTo[TestMangled] === TestMangled(42)
+      json.convertTo[TestMangled] === TestMangled(42, "Karl", true, 26, 1.0f)
     }
   }
 }
