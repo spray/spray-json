@@ -16,6 +16,10 @@ lazy val sprayJson =
       version := "1.3.6-SNAPSHOT",
       scalaVersion := crossScalaVersions.value.head,
       scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8"),
+      scalacOptions ++= {
+        if (scalaMinorVersion.value >= 12) Seq("-release", "8")
+        else Nil
+      },
       (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value),
       scalaBinaryVersion := {
         val sV = scalaVersion.value
@@ -30,19 +34,20 @@ lazy val sprayJson =
     )
     .enablePlugins(spray.boilerplate.BoilerplatePlugin)
     .platformsSettings(JVMPlatform, JSPlatform)(
-      libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, 10)) => Seq(
-          "org.specs2" %%% "specs2-core" % "3.8.9" % "test",
-          "org.specs2" %%% "specs2-scalacheck" % "3.8.9" % "test",
-          "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
-        )
-        case Some((2, n)) if n >= 11 => Seq(
-          "org.specs2" %%% "specs2-core" % "4.5.1" % "test",
-          "org.specs2" %%% "specs2-scalacheck" % "4.5.1" % "test",
-          "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test"
-        )
-        case _ => Nil
-      })
+      libraryDependencies ++= {
+        if (scalaMinorVersion.value >= 11)
+          Seq(
+            "org.specs2" %%% "specs2-core" % "4.5.1" % "test",
+            "org.specs2" %%% "specs2-scalacheck" % "4.5.1" % "test",
+            "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test"
+          )
+        else // 2.10
+          Seq(
+            "org.specs2" %%% "specs2-core" % "3.8.9" % "test",
+            "org.specs2" %%% "specs2-scalacheck" % "3.8.9" % "test",
+            "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
+          )
+      }
     )
     .configurePlatforms(JVMPlatform)(_.enablePlugins(SbtOsgi))
     .jvmSettings(
@@ -51,10 +56,10 @@ lazy val sprayJson =
       OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value)),
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
       OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package"),
-      mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, 13)) => Set("io.spray" %% "spray-json" % "1.3.5")
-        case _ => Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v => "io.spray" %% "spray-json" % v }
-      }),
+      mimaPreviousArtifacts := {
+        if (scalaMinorVersion.value == 13) Set("io.spray" %% "spray-json" % "1.3.5")
+        else Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v => "io.spray" %% "spray-json" % v }
+      },
       mimaBinaryIssueFilters := Seq(
         ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
       )
@@ -76,5 +81,8 @@ lazy val root = (project in file("."))
   .aggregate(sprayJsonJVM, sprayJsonJS, sprayJsonNative)
   .settings(
     publish := {},
-    publishLocal := {}
+    publishLocal := {},
+    scalaVersion := scala212,
   )
+
+def scalaMinorVersion: Def.Initialize[Long] = Def.setting { CrossVersion.partialVersion(scalaVersion.value).get._2 }
