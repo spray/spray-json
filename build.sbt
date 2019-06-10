@@ -67,7 +67,7 @@ mimaBinaryIssueFilters := Seq(
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.12.8", "2.10.7", "2.11.12", "2.13.0-RC3")
+crossScalaVersions := Seq("2.12.8", "2.10.7", "2.11.12", "2.13.0")
 
 publishMavenStyle := true
 
