@@ -19,7 +19,7 @@ package spray.json
 
 /**
   * Provides the JsonFormats for the most important Scala types.
- */
+  */
 trait BasicFormats {
 
   implicit object IntJsonFormat extends JsonFormat[Int] {
@@ -63,7 +63,7 @@ trait BasicFormats {
       case x => deserializationError("Expected Byte as JsNumber, but got " + x)
     }
   }
-  
+
   implicit object ShortJsonFormat extends JsonFormat[Short] {
     def write(x: Short) = JsNumber(x)
     def read(value: JsValue) = value match {
@@ -117,7 +117,7 @@ trait BasicFormats {
       case x => deserializationError("Expected Char as single-character JsString, but got " + x)
     }
   }
-  
+
   implicit object StringJsonFormat extends JsonFormat[String] {
     def write(x: String) = {
       require(x ne null)
@@ -128,12 +128,64 @@ trait BasicFormats {
       case x => deserializationError("Expected String as JsString, but got " + x)
     }
   }
-  
+
   implicit object SymbolJsonFormat extends JsonFormat[Symbol] {
     def write(x: Symbol) = JsString(x.name)
     def read(value: JsValue) = value match {
       case JsString(x) => Symbol(x)
       case x => deserializationError("Expected Symbol as JsString, but got " + x)
+    }
+  }
+
+  implicit object NumberJsonFormat extends JsonFormat[Number] {
+    def write(x: Number): JsValue = x match {
+      case n: java.lang.Short =>
+        ShortJsonFormat.write(n)
+      case n: java.lang.Integer =>
+        IntJsonFormat.write(n)
+      case n: java.lang.Long =>
+        LongJsonFormat.write(n)
+      case n: java.lang.Float =>
+        FloatJsonFormat.write(n)
+      case n: java.lang.Double =>
+        DoubleJsonFormat.write(n)
+      case n: java.math.BigInteger =>
+        BigIntJsonFormat.write(n)
+      case n: java.math.BigDecimal =>
+        BigDecimalJsonFormat.write(n)
+      case n: BigInt =>
+        BigIntJsonFormat.write(n)
+      case n: BigDecimal =>
+        BigDecimalJsonFormat.write(n)
+      case n: java.lang.Byte =>
+        ByteJsonFormat.write(n)
+      case null =>
+        JsNull
+      case other =>
+        serializationError(s"Unsupported sub type of Number: ${other.getClass}")
+    }
+
+    def read(value: JsValue): Number = value match {
+      case JsNumber(x) if x.isValidShort =>
+        ShortJsonFormat.read(value)
+      case JsNumber(x) if x.isValidInt =>
+        IntJsonFormat.read(value)
+      case JsNumber(x) if x.isValidLong =>
+        LongJsonFormat.read(value)
+      case JsNumber(x) if x.isDecimalFloat =>
+        FloatJsonFormat.read(value)
+      case JsNumber(x) if x.isDecimalDouble =>
+        DoubleJsonFormat.read(value)
+      case JsNumber(x) if x.toBigIntExact().isDefined =>
+        BigIntJsonFormat.read(value)
+      case JsNumber(x) if x.isValidByte =>
+        ByteJsonFormat.read(value)
+      case JsNumber(x) =>
+        BigDecimalJsonFormat.read(value)
+      case JsNull =>
+        // java.lang.Number does not have a `isNaN` method
+        null
+      case x => deserializationError("Expected Number as JsNumber, but got " + x)
     }
   }
 }
