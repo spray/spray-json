@@ -52,9 +52,10 @@ OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-
 
 // Migration Manager
 mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 13)) => Set.empty
+  case Some((2, 13)) =>
+    Set("io.spray" %% "spray-json" % "1.3.5")
   case _ =>
-    Set("1.3.2", "1.3.3", "1.3.4").map { v =>
+    Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v =>
       "io.spray" %% "spray-json" % v
     }
 })
@@ -67,7 +68,7 @@ mimaBinaryIssueFilters := Seq(
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.12.8", "2.10.7", "2.11.12", "2.13.0-RC3")
+crossScalaVersions := Seq("2.12.8", "2.10.7", "2.11.12", "2.13.0")
 
 publishMavenStyle := true
 
