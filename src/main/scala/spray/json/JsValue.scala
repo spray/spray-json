@@ -52,7 +52,17 @@ sealed abstract class JsValue {
 case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   override def asJsObject(errorMsg: String) = this
   def getFields(fieldNames: String*): immutable.Seq[JsValue] = fieldNames.toIterator.flatMap(fields.get).toList
+
+  /**
+    * Merges two JsObjects together, overwriting with values from `other` on collision.
+    */
+  def mergeWith(other: JsObject): JsObject = {
+    new JsObject(this.fields ++ other.fields)
+  }
+
+  def ++(other: JsObject): JsObject = this mergeWith other
 }
+
 object JsObject {
   val empty = JsObject(TreeMap.empty[String, JsValue])
   def apply(members: JsField*): JsObject = new JsObject(TreeMap(members: _*))
