@@ -11,7 +11,7 @@ implement reflective product formats, meaning that there are no more
 `jsonFormat(<constructor>, <field_names>*)` is still available and may
 be used as a workaround.
 
-Version 1.3.5 (2017-10-24)
+Version 1.3.5 (2018-11-08)
 --------------------------
 
 Security fix for several Denial Of Service vulnerabilities:

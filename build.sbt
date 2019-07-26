@@ -52,8 +52,8 @@ lazy val sprayJson =
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
       OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package"),
       mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, 13)) => Set.empty
-        case _ => Set("io.spray" %% "spray-json" % "1.3.5")
+        case Some((2, 13)) => Set("io.spray" %% "spray-json" % "1.3.5")
+        case _ => Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v => "io.spray" %% "spray-json" % v }
       }),
       mimaBinaryIssueFilters := Seq(
         ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
