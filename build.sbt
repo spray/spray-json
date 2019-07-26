@@ -10,7 +10,7 @@ lazy val scala213 = "2.13.0"
 lazy val sprayJson =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Full)
-    .in(file("."))
+    .in(file("spray-json"))
     .settings(
       name := "spray-json",
       version := "1.3.6-SNAPSHOT",
