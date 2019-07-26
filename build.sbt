@@ -1,95 +1,80 @@
+// shadow sbt-scalajs' crossProject and CrossType until Scala.js 1.0.0 is released
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem}
 
-name := "spray-json"
+lazy val scala210 = "2.10.7"
+lazy val scala211 = "2.11.12"
+lazy val scala212 = "2.12.8"
+lazy val scala213 = "2.13.0"
 
-version := "1.3.6-SNAPSHOT"
+lazy val sprayJson =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Full)
+    .in(file("."))
+    .settings(
+      name := "spray-json",
+      version := "1.3.6-SNAPSHOT",
+      scalaVersion := crossScalaVersions.value.head,
+      scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8"),
+      (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value),
+      scalaBinaryVersion := {
+        val sV = scalaVersion.value
+        if (CrossVersion.isScalaApiCompatible(sV))
+          CrossVersion.binaryScalaVersion(sV)
+        else
+          sV
+      },
+      // Workaround for "Shared resource directory is ignored"
+      // https://github.com/portable-scala/sbt-crossproject/issues/74
+      unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "shared/src/test/resources"
+    )
+    .enablePlugins(spray.boilerplate.BoilerplatePlugin)
+    .platformsSettings(JVMPlatform, JSPlatform)(
+      libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, 10)) => Seq(
+          "org.specs2" %%% "specs2-core" % "3.8.9" % "test",
+          "org.specs2" %%% "specs2-scalacheck" % "3.8.9" % "test",
+          "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
+        )
+        case Some((2, n)) if n >= 11 => Seq(
+          "org.specs2" %%% "specs2-core" % "4.5.1" % "test",
+          "org.specs2" %%% "specs2-scalacheck" % "4.5.1" % "test",
+          "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test"
+        )
+        case _ => Nil
+      })
+    )
+    .configurePlatforms(JVMPlatform)(_.enablePlugins(SbtOsgi))
+    .jvmSettings(
+      crossScalaVersions := Seq(scala213, scala212, scala211, scala210),
+      OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}""""),
+      OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value)),
+      OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
+      OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package"),
+      mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, 13)) => Set("io.spray" %% "spray-json" % "1.3.5")
+        case _ => Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v => "io.spray" %% "spray-json" % v }
+      }),
+      mimaBinaryIssueFilters := Seq(
+        ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
+      )
+    )
+    .jsSettings(
+      crossScalaVersions := Seq(scala212, scala211)
+    )
+    .nativeSettings(
+      crossScalaVersions := Seq(scala211),
+      // Disable tests in Scala Native until testing frameworks for it become available
+      unmanagedSourceDirectories in Test := Seq.empty
+    )
 
-organization := "io.spray"
+lazy val sprayJsonJVM = sprayJson.jvm
+lazy val sprayJsonJS = sprayJson.js
+lazy val sprayJsonNative = sprayJson.native
 
-organizationHomepage := Some(new URL("http://spray.io"))
-
-description := "A Scala library for easy and idiomatic JSON (de)serialization"
-
-homepage := Some(new URL("https://github.com/spray/spray-json"))
-
-startYear := Some(2011)
-
-licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
-
-scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8")
-
-resolvers += Opts.resolver.sonatypeReleases
-
-libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 10)) => Seq(
-    "org.specs2" %% "specs2-core" % "3.10.0" % "test",
-    "org.specs2" %% "specs2-scalacheck" % "3.10.0" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+lazy val root = (project in file("."))
+  .aggregate(sprayJsonJVM, sprayJsonJS, sprayJsonNative)
+  .settings(
+    publish := {},
+    publishLocal := {}
   )
-  case Some((2, n)) if n >= 11 => Seq(
-    "org.specs2" %% "specs2-core" % "4.5.1" % "test",
-    "org.specs2" %% "specs2-scalacheck" % "4.5.1" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
-  )
-  case _ => Nil
-})
-
-(scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
-
-// generate boilerplate
-enablePlugins(BoilerplatePlugin)
-
-// OSGi settings
-enablePlugins(SbtOsgi)
-
-OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}"""")
-
-OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value))
-
-OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*")
-
-OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
-
-// Migration Manager
-mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 13)) =>
-    Set("io.spray" %% "spray-json" % "1.3.5")
-  case _ =>
-    Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v =>
-      "io.spray" %% "spray-json" % v
-    }
-})
-
-mimaBinaryIssueFilters := Seq(
-  ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
-)
-
-///////////////
-// publishing
-///////////////
-
-crossScalaVersions := Seq("2.12.8", "2.10.7", "2.11.12", "2.13.0")
-
-publishMavenStyle := true
-
-useGpg := true
-
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (version.value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
-
-pomIncludeRepository := { _ => false }
-
-pomExtra :=
-  <scm>
-    <url>git://github.com/spray/spray.git</url>
-    <connection>scm:git:git@github.com:spray/spray.git</connection>
-  </scm>
-  <developers>
-    <developer><id>sirthias</id><name>Mathias Doenitz</name></developer>
-    <developer><id>jrudolph</id><name>Johannes Rudolph</name></developer>
-  </developers>

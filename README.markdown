@@ -17,6 +17,14 @@ as depicted in this diagram:
 
 ![Spray-JSON conversions](images/Conversions.png "Conversions possible with Spray-JSON")
 
+_spray-json_ is available for Scala on the JVM, ScalaJS and Scala Native<sup>1</sup>.
+
+<sup>1</sup>: *The versions for ScalaJS and Scala Native do not support generating
+case class formats through introspection, meaning that there are no `jsonFormatX`
+methods available on these platforms. See section
+[Providing JsonFormats for Case Classes](#providing-jsonformats-for-case-classes) below
+for an explanation and workaround.*
+
 ### Installation
 
 _spray-json_ is available from maven central.
@@ -42,26 +50,26 @@ import DefaultJsonProtocol._ // if you don't supply your own Protocol (see below
 and do one or more of the following:
 
 1. Parse a JSON string into its Abstract Syntax Tree (AST) representation
-    
+
     ```scala
     val source = """{ "some": "JSON source" }"""
     val jsonAst = source.parseJson // or JsonParser(source)
     ```
-    
+
 2. Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
-    
+
     ```scala
     val json = jsonAst.prettyPrint // or .compactPrint
     ```
-    
+
 3. Convert any Scala object to a JSON AST using the `toJson` extension method
-    
+
     ```scala
     val jsonAst = List(1, 2, 3).toJson
     ```
-    
+
 4. Convert a JSON AST to a Scala object with the `convertTo` method
-    
+
     ```scala
     val myObject = jsonAst.convertTo[MyObjectType]
     ```
@@ -129,6 +137,9 @@ method). The `jsonFormatX` methods try to extract the field names of your case c
 `jsonFormat` overloads, which let you specify the field name manually. So, if spray-json has trouble determining the
 field names or if your JSON objects use member names that differ from the case class fields you can also use
 `jsonFormat` directly.
+
+*Note that spray-json for ScalaJS or Scala Native does not support the `jsonFormatX` methods, and hence using
+the `jsonFormat` overloads is required on these platforms.*
 
 There is one additional quirk: If you explicitly declare the companion object for your case class the notation above will
 stop working. You'll have to explicitly refer to the companion objects `apply` method to fix this:

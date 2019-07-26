@@ -18,8 +18,6 @@ package spray.json
 
 import org.specs2.mutable._
 
-import scala.util.control.NonFatal
-
 class JsonParserSpec extends Specification {
 
   "The JsonParser" should {
@@ -74,20 +72,8 @@ class JsonParserSpec extends Specification {
       val json = JsString("£0.99")
       JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
     }
-    "be reentrant" in {
-      import scala.concurrent.{Await, Future}
-      import scala.concurrent.duration._
-      import scala.concurrent.ExecutionContext.Implicits.global
-
-      val largeJsonSource = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/test.json")).mkString
-      val list = Await.result(
-        Future.traverse(List.fill(20)(largeJsonSource))(src => Future(JsonParser(src))),
-        5.seconds
-      )
-      list.map(_.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size) === List.fill(20)(100)
-    }
     "not show bad performance characteristics when object keys' hashCodes collide" in {
-      val numKeys = 10000
+      val numKeys = 100000
       val value = "null"
 
       val regularKeys = Iterator.from(1).map(i => s"key_$i").take(numKeys)
@@ -151,30 +137,6 @@ class JsonParserSpec extends Specification {
           "Number too long:The number starting with '123.4567890' had 11 characters which is more than the allowed limit " +
           "maxNumberCharacters = 5. If this is legit input consider increasing the limit."
       }
-    }
-
-    "fail gracefully for deeply nested structures" in {
-      val queue = new java.util.ArrayDeque[String]()
-
-      // testing revealed that each recursion will need approx. 280 bytes of stack space
-      val depth = 1500
-      val runnable = new Runnable {
-        override def run(): Unit =
-          try {
-            val nested = "[{\"key\":" * (depth / 2)
-            JsonParser(nested)
-            queue.push("didn't fail")
-          } catch {
-            case s: StackOverflowError => queue.push("stackoverflow")
-            case NonFatal(e) =>
-              queue.push(s"nonfatal: ${e.getMessage}")
-          }
-      }
-
-      val thread = new Thread(null, runnable, "parser-test", 655360)
-      thread.start()
-      thread.join()
-      queue.peek() === "nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxNesting = 1000"
     }
 
     "parse multiple values when allowTrailingInput" in {
