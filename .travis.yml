@@ -2,15 +2,14 @@
 sudo: required
 dist: bionic
 
-jdk: openjdk8
 language: scala
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -y libre2-dev libunwind-dev clang nodejs
+  - sudo apt-get install -y libre2-dev libunwind-dev clang nodejs openjdk-8-jdk-headless
 
 script:
-  - sbt +test +mimaReportBinaryIssues
+  - sbt -java-home /usr/lib/jvm/java-8-openjdk-amd64 +test +mimaReportBinaryIssues
 
 before_cache:
   - find $HOME/.sbt -name "*.lock" | xargs rm
