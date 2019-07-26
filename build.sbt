@@ -30,7 +30,7 @@ lazy val sprayJson =
       },
       // Workaround for "Shared resource directory is ignored"
       // https://github.com/portable-scala/sbt-crossproject/issues/74
-      unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "shared/src/test/resources"
+      unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "spray-json/shared/src/test/resources"
     )
     .enablePlugins(spray.boilerplate.BoilerplatePlugin)
     .platformsSettings(JVMPlatform, JSPlatform)(
