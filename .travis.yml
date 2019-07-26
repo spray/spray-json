@@ -1,6 +1,6 @@
 # sudo required for installing dependencies of Scala Native
 sudo: required
-dist: trusty
+dist: bionic
 
 language: scala
 
@@ -8,7 +8,8 @@ jdk:
   - oraclejdk8
 
 before_install:
-  - curl https://raw.githubusercontent.com/scala-native/scala-native/4c2ce46242f872f3e7879810565147c4233cd52e/scripts/travis_setup.sh | bash -x
+  - sudo apt-get update
+  - sudo apt-get install -y libre2-dev libunwind-dev clang
 
 script:
   - sbt +test +mimaReportBinaryIssues
