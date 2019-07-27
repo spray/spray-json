@@ -26,7 +26,7 @@ class CustomFormatSpec extends Specification with DefaultJsonProtocol {
     def read(json: JsValue) = {
       json.asJsObject.getFields("name", "value") match {
         case Seq(JsString(name), JsNumber(value)) => MyType(name, value.toInt)
-        case _ => deserializationError("Expected fields: 'name' (JSON string) and 'value' (JSON number)")
+        case _                                    => deserializationError("Expected fields: 'name' (JSON string) and 'value' (JSON number)")
       }
     }
     def write(obj: MyType) = JsObject("name" -> JsString(obj.name), "value" -> JsNumber(obj.value))

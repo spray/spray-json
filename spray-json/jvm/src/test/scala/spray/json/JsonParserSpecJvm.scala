@@ -23,7 +23,7 @@ class JsonParserSpecJvm extends Specification {
 
   "The JsonParser (on the JVM)" should {
     "be reentrant" in {
-      import scala.concurrent.{Await, Future}
+      import scala.concurrent.{ Await, Future }
       import scala.concurrent.duration._
       import scala.concurrent.ExecutionContext.Implicits.global
 

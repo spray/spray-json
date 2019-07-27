@@ -41,8 +41,8 @@ class PrettyPrinterSpec extends Specification {
           |}""".stripMargin
       }
       def fixedFieldOrder(js: JsValue): JsValue = js match {
-        case JsObject(fields) => JsObject(ListMap(fields.toSeq.sortBy(_._1).map { case (k, v) => (k, fixedFieldOrder(v)) }:_*))
-        case x => x
+        case JsObject(fields) => JsObject(ListMap(fields.toSeq.sortBy(_._1).map { case (k, v) => (k, fixedFieldOrder(v)) }: _*))
+        case x                => x
       }
 
       PrettyPrinter(fixedFieldOrder(js)) mustEqual {

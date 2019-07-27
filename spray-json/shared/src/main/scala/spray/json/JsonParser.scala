@@ -16,9 +16,9 @@
 
 package spray.json
 
-import scala.annotation.{switch, tailrec}
-import java.lang.{StringBuilder => JStringBuilder}
-import java.nio.{ByteBuffer, CharBuffer}
+import scala.annotation.{ switch, tailrec }
+import java.lang.{ StringBuilder => JStringBuilder }
+import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.charset.Charset
 
 import scala.collection.immutable.TreeMap
@@ -72,10 +72,13 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
         case 'f' => simpleValue(`false`(), JsFalse)
         case 'n' => simpleValue(`null`(), JsNull)
         case 't' => simpleValue(`true`(), JsTrue)
-        case '{' => advance(); `object`(remainingNesting)
-        case '[' => advance(); `array`(remainingNesting)
+        case '{' =>
+          advance(); `object`(remainingNesting)
+        case '[' =>
+          advance(); `array`(remainingNesting)
         case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
-        case '"' => `string`(); jsValue = if (sb.length == 0) JsString.empty else JsString(sb.toString)
+        case '"' =>
+          `string`(); jsValue = if (sb.length == 0) JsString.empty else JsString(sb.toString)
         case _ => fail("JSON Value")
       }
     }
@@ -142,10 +145,11 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
       else if (numberLength <= settings.maxNumberCharacters) JsNumber(input.sliceCharArray(start, input.cursor))
       else {
         val numberSnippet = new String(input.sliceCharArray(start, math.min(input.cursor, start + 20)))
-        throw new ParsingException("Number too long",
+        throw new ParsingException(
+          "Number too long",
           s"The number starting with '$numberSnippet' had " +
-          s"$numberLength characters which is more than the allowed limit maxNumberCharacters = ${settings.maxNumberCharacters}. If this is legit input " +
-          s"consider increasing the limit."
+            s"$numberLength characters which is more than the allowed limit maxNumberCharacters = ${settings.maxNumberCharacters}. If this is legit input " +
+            s"consider increasing the limit."
         )
       }
     ws()
@@ -175,8 +179,9 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
     else cursorChar match {
       case '"' | EOI => false
-      case '\\' => advance(); `escaped`()
-      case c => (c >= ' ') && appendSB(c)
+      case '\\'      =>
+        advance(); `escaped`()
+      case c         => (c >= ' ') && appendSB(c)
     }
 
   private def `escaped`() = {
@@ -197,13 +202,14 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     }
     (cursorChar: @switch) match {
       case '"' | '/' | '\\' => appendSB(cursorChar)
-      case 'b' => appendSB('\b')
-      case 'f' => appendSB('\f')
-      case 'n' => appendSB('\n')
-      case 'r' => appendSB('\r')
-      case 't' => appendSB('\t')
-      case 'u' => advance(); unicode()
-      case _ => fail("JSON escape sequence")
+      case 'b'              => appendSB('\b')
+      case 'f'              => appendSB('\f')
+      case 'n'              => appendSB('\n')
+      case 'r'              => appendSB('\r')
+      case 't'              => appendSB('\t')
+      case 'u'              =>
+        advance(); unicode()
+      case _                => fail("JSON escape sequence")
     }
   }
 
@@ -232,7 +238,7 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     }
     val detail = {
       val sanitizedText = text.map(c => if (Character.isISOControl(c)) '?' else c)
-      s"\n$sanitizedText\n${" " * (col-1)}^\n"
+      s"\n$sanitizedText\n${" " * (col - 1)}^\n"
     }
     throw new ParsingException(summary, detail)
   }
@@ -275,9 +281,10 @@ object ParserInput {
       val sb = new java.lang.StringBuilder
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
         nextUtf8Char() match {
-          case '\n' if index > ix => sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
-          case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
-          case c => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
+          case '\n' if index > ix =>
+            sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
+          case '\n' | EOI         => Line(lineNr, index - lineStartIx + 1, sb.toString)
+          case c                  => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
         }
       val savedCursor = _cursor
       _cursor = -1

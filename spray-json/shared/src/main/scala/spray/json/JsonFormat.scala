@@ -20,7 +20,7 @@ package spray.json
 import annotation.implicitNotFound
 
 /**
-  * Provides the JSON deserialization for type T.
+ * Provides the JSON deserialization for type T.
  */
 @implicitNotFound(msg = "Cannot find JsonReader or JsonFormat type class for ${T}")
 trait JsonReader[T] {
@@ -34,7 +34,7 @@ object JsonReader {
 }
 
 /**
-  * Provides the JSON serialization for type T.
+ * Provides the JSON serialization for type T.
  */
 @implicitNotFound(msg = "Cannot find JsonWriter or JsonFormat type class for ${T}")
 trait JsonWriter[T] {
@@ -48,7 +48,7 @@ object JsonWriter {
 }
 
 /**
-  * Provides the JSON deserialization and serialization for type T.
+ * Provides the JSON deserialization and serialization for type T.
  */
 trait JsonFormat[T] extends JsonReader[T] with JsonWriter[T]
 
