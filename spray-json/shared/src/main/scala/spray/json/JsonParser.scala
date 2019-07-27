@@ -78,7 +78,8 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
           advance(); `array`(remainingNesting)
         case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
         case '"' =>
-          `string`(); jsValue = if (sb.length == 0) JsString.empty else JsString(sb.toString)
+          val str = `string`()
+          jsValue = if (str.length == 0) JsString.empty else JsString(str)
         case _ => fail("JSON Value")
       }
     }
@@ -92,10 +93,9 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     ws()
     jsValue = if (cursorChar != '}') {
       @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
-        `string`()
+        val key = `string`()
         require(':')
         ws()
-        val key = sb.toString
         `value`(remainingNesting - 1)
         val nextMap = map.updated(key, jsValue)
         if (ws(',')) members(nextMap) else nextMap
@@ -165,12 +165,41 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   private def DIGIT(): Boolean = cursorChar >= '0' && cursorChar <= '9' && advance()
 
   // http://tools.ietf.org/html/rfc4627#section-2.5
-  private def `string`(): Unit = {
-    if (cursorChar == '"') cursorChar = input.nextUtf8Char() else fail("'\"'")
-    sb.setLength(0)
-    while (`char`()) cursorChar = input.nextUtf8Char()
+  private def `string`(): String = {
+    if (cursorChar != '"') fail("'\"'")
+    val res = stringFast()
     require('"')
     ws()
+    res
+  }
+
+  private def stringFast(): String = {
+    val start = input.cursor
+    cursorChar = input.nextChar()
+
+    @tailrec
+    def parseOne(): Int =
+      if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) {
+        cursorChar = input.nextChar(); parseOne()
+      } else cursorChar match {
+        case '"' | EOI => input.cursor
+        case '\\'      => -1
+        case x if x < 128 =>
+          cursorChar = input.nextChar(); parseOne()
+        case x => -1
+      }
+
+    parseOne() match {
+      case -1 =>
+        input.setCursor(start); stringSlow()
+      case last => input.sliceString(start + 1, last)
+    }
+  }
+  private def stringSlow(): String = {
+    cursorChar = input.nextUtf8Char()
+    sb.setLength(0)
+    while (`char`()) cursorChar = input.nextUtf8Char()
+    if (sb.length() == 0) "" else sb.toString
   }
 
   private def `char`() =
@@ -258,6 +287,7 @@ trait ParserInput {
   def nextUtf8Char(): Char
 
   def cursor: Int
+  def setCursor(newCursor: Int): Unit
   def length: Int
   def sliceString(start: Int, end: Int): String
   def sliceCharArray(start: Int, end: Int): Array[Char]
@@ -277,6 +307,8 @@ object ParserInput {
   abstract class DefaultParserInput extends ParserInput {
     protected var _cursor: Int = -1
     def cursor = _cursor
+    override def setCursor(newCursor: Int): Unit = _cursor = newCursor
+
     def getLine(index: Int): Line = {
       val sb = new java.lang.StringBuilder
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
@@ -342,6 +374,12 @@ object ParserInput {
           else ErrorChar
         } else EOI
       }
+    }
+
+    override def setCursor(cursor: Int): Unit = {
+      _cursor = cursor
+      byteBuffer.clear()
+      charBuffer.clear()
     }
   }
 
