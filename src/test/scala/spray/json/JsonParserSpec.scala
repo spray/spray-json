@@ -114,7 +114,7 @@ class JsonParserSpec extends Specification {
       val regularTime = nanoBench { JsonParser(regularJson) }
       val collidingTime = nanoBench { JsonParser(collidingJson) }
 
-      collidingTime / regularTime must be < 2L // speed must be in same order of magnitude
+      collidingTime / regularTime must be < 5L // speed must be in same order of magnitude
     }
 
     "produce proper error messages" in {
