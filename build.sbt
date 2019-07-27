@@ -51,7 +51,7 @@ lazy val sprayJson =
     )
     .configurePlatforms(JVMPlatform)(_.enablePlugins(SbtOsgi))
     .jvmSettings(
-      crossScalaVersions := Seq(scala213, scala212, scala211, scala210),
+      crossScalaVersions := Seq(scala212, scala213, scala211, scala210),
       OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}""""),
       OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value)),
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
@@ -78,9 +78,7 @@ lazy val sprayJsonJS = sprayJson.js
 lazy val sprayJsonNative = sprayJson.native
 
 lazy val benchmark = Project("benchmark", file("benchmark"))
-  .settings(
-    scalaVersion := scala212
-  )
+  .settings(crossScalaVersions := Seq(scala212))
   .settings(noPublishSettings: _*)
   .enablePlugins(JmhPlugin)
   .dependsOn(sprayJsonJVM % "compile->test")
