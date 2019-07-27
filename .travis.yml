@@ -5,6 +5,7 @@ dist: bionic
 language: scala
 
 before_install:
+  - sudo rm -r /usr/local/clang-7.0.0
   - sudo apt-get update
   - sudo apt-get install -y libre2-dev libunwind-dev clang nodejs openjdk-8-jdk-headless
 
