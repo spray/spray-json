@@ -18,59 +18,65 @@ package spray.json
 
 import org.specs2.mutable._
 
-class JsonParserSpec extends Specification {
+class JsonParserFromStringSpec extends JsonParserSpec(identity)
+class JsonParserFromCharArraySpec extends JsonParserSpec(_.toCharArray)
+class JsonParserFromBytesSpec extends JsonParserSpec(_.getBytes("utf8"))
+
+abstract class JsonParserSpec(inputFromString: String => ParserInput) extends Specification {
+  def parseString(json: String, settings: JsonParserSettings = JsonParserSettings.default): JsValue =
+    JsonParser(inputFromString(json), settings)
 
   "The JsonParser" should {
     "parse 'null' to JsNull" in {
-      JsonParser("null") === JsNull
+      parseString("null") === JsNull
     }
     "parse 'true' to JsTrue" in {
-      JsonParser("true") === JsTrue
+      parseString("true") === JsTrue
     }
     "parse 'false' to JsFalse" in {
-      JsonParser("false") === JsFalse
+      parseString("false") === JsFalse
     }
     "parse '0' to JsNumber" in {
-      JsonParser("0") === JsNumber(0)
+      parseString("0") === JsNumber(0)
     }
     "parse '1.23' to JsNumber" in {
-      JsonParser("1.23") === JsNumber(1.23)
+      parseString("1.23") === JsNumber(1.23)
     }
     "parse '-1E10' to JsNumber" in {
-      JsonParser("-1E10") === JsNumber("-1E+10")
+      parseString("-1E10") === JsNumber("-1E+10")
     }
     "parse '12.34e-10' to JsNumber" in {
-      JsonParser("12.34e-10") === JsNumber("1.234E-9")
+      parseString("12.34e-10") === JsNumber("1.234E-9")
     }
     "parse \"xyz\" to JsString" in {
-      JsonParser("\"xyz\"") === JsString("xyz")
+      parseString("\"xyz\"") === JsString("xyz")
     }
     "parse escapes in a JsString" in {
-      JsonParser(""""\"\\/\b\f\n\r\t"""") === JsString("\"\\/\b\f\n\r\t")
-      JsonParser("\"L\\" + "u00e4nder\"") === JsString("Länder")
+      parseString(""""\"\\/\b\f\n\r\t"""") === JsString("\"\\/\b\f\n\r\t")
+      parseString("\"L\\" + "u00e4nder\"") === JsString("Länder")
     }
     "parse all representations of the slash (SOLIDUS) character in a JsString" in {
-      JsonParser( "\"" + "/\\/\\u002f" + "\"") === JsString("///")
+      parseString( "\"" + "/\\/\\u002f" + "\"") === JsString("///")
     }
     "parse a simple JsObject" in (
-      JsonParser(""" { "key" :42, "key2": "value" }""") ===
+      parseString(""" { "key" :42, "key2": "value" }""") ===
               JsObject("key" -> JsNumber(42), "key2" -> JsString("value"))
     )
     "parse a simple JsArray" in (
-      JsonParser("""[null, 1.23 ,{"key":true } ] """) ===
+      parseString("""[null, 1.23 ,{"key":true } ] """) ===
               JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsTrue))
     )
-    "parse directly from UTF-8 encoded bytes" in {
+    "parse UTF-8 encoded strings" in {
       val json = JsObject(
         "7-bit" -> JsString("This is regular 7-bit ASCII text."),
         "2-bytes" -> JsString("2-byte UTF-8 chars like £, æ or Ö"),
         "3-bytes" -> JsString("3-byte UTF-8 chars like ﾖ, ᄅ or ᐁ."),
         "4-bytes" -> JsString("4-byte UTF-8 chars like \uD801\uDC37, \uD852\uDF62 or \uD83D\uDE01."))
-      JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
+      parseString(json.prettyPrint) === json
     }
-    "parse directly from UTF-8 encoded bytes when string starts with a multi-byte character" in {
+    "parse UTF-8 encoded bytes when starting with a multi-byte character" in {
       val json = JsString("£0.99")
-      JsonParser(json.prettyPrint.getBytes("UTF-8")) === json
+      parseString(json.prettyPrint) === json
     }
     "not show bad performance characteristics when object keys' hashCodes collide" in {
       val numKeys = 100000
@@ -97,15 +103,15 @@ class JsonParserSpec extends Specification {
       val regularJson = createJson(regularKeys)
       val collidingJson = createJson(collidingKeys)
 
-      val regularTime = nanoBench { JsonParser(regularJson) }
-      val collidingTime = nanoBench { JsonParser(collidingJson) }
+      val regularTime = nanoBench { parseString(regularJson) }
+      val collidingTime = nanoBench { parseString(collidingJson) }
 
       collidingTime / regularTime must be < 2L // speed must be in same order of magnitude
     }
 
     "produce proper error messages" in {
       def errorMessage(input: String, settings: JsonParserSettings = JsonParserSettings.default) =
-        try JsonParser(input, settings) catch { case e: JsonParser.ParsingException => e.getMessage }
+        try parseString(input, settings) catch { case e: JsonParser.ParsingException => e.getMessage }
 
       errorMessage("""[null, 1.23 {"key":true } ]""") ===
         """Unexpected character '{' at input index 12 (line 1, position 13), expected ']':
@@ -140,13 +146,13 @@ class JsonParserSpec extends Specification {
     }
 
     "parse multiple values when allowTrailingInput" in {
-      val parser = new JsonParser("""{"key":1}{"key":2}""")
+      val parser = new JsonParser(inputFromString("""{"key":1}{"key":2}"""))
       parser.parseJsValue(true) === JsObject("key" -> JsNumber(1))
       parser.parseJsValue(true) === JsObject("key" -> JsNumber(2))
     }
     "reject trailing input when !allowTrailingInput" in {
-      def parser = JsonParser("""{"key":1}x""")
-      parser must throwA[JsonParser.ParsingException].like {
+      def parser = new JsonParser(inputFromString("""{"key":1}x"""))
+      parser.parseJsValue(false) must throwA[JsonParser.ParsingException].like {
         case e: JsonParser.ParsingException => e.getMessage must contain("expected end-of-input")
       }
     }
