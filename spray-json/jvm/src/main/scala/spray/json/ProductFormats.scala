@@ -33,26 +33,23 @@ trait ProductFormats extends ProductFormatsInstances {
       def write(p: T) = JsObject()
       def read(value: JsValue) = value match {
         case JsObject(_) => construct()
-        case _ => throw new DeserializationException("Object expected")
+        case _           => throw new DeserializationException("Object expected")
       }
     }
 
   // helpers
-  
-  protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField] = Nil)
-                                       (implicit writer: JsonWriter[T]): List[JsField] = {
+
+  protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField] = Nil)(implicit writer: JsonWriter[T]): List[JsField] = {
     val value = p.productElement(ix).asInstanceOf[T]
     writer match {
       case _: OptionFormat[_] if (value == None) => rest
-      case _ => (fieldName, writer.write(value)) :: rest
+      case _                                     => (fieldName, writer.write(value)) :: rest
     }
   }
 
-  protected def fromField[T](value: JsValue, fieldName: String)
-                                     (implicit reader: JsonReader[T]) = value match {
-    case x: JsObject if
-      (reader.isInstanceOf[OptionFormat[_]] &
-        !x.fields.contains(fieldName)) =>
+  protected def fromField[T](value: JsValue, fieldName: String)(implicit reader: JsonReader[T]) = value match {
+    case x: JsObject if (reader.isInstanceOf[OptionFormat[_]] &
+      !x.fields.contains(fieldName)) =>
       None.asInstanceOf[T]
     case x: JsObject =>
       try reader.read(x.fields(fieldName))
@@ -74,7 +71,7 @@ trait ProductFormats extends ProductFormatsInstances {
         _.getName.drop("copy$default$".length).takeWhile(_ != '(').toInt)
       val fields = clazz.getDeclaredFields.filterNot { f =>
         import Modifier._
-        (f.getModifiers & (TRANSIENT | STATIC | 0x1000 /* SYNTHETIC*/)) > 0
+        (f.getModifiers & (TRANSIENT | STATIC | 0x1000 /* SYNTHETIC*/ )) > 0
       }
       if (copyDefaultMethods.length != fields.length)
         sys.error("Case class " + clazz.getName + " declares additional fields")
@@ -92,7 +89,7 @@ trait ProductFormats extends ProductFormatsInstances {
 object ProductFormats {
 
   private def unmangle(name: String) = {
-    import java.lang.{StringBuilder => JStringBuilder}
+    import java.lang.{ StringBuilder => JStringBuilder }
     @tailrec def rec(ix: Int, builder: JStringBuilder): String = {
       val rem = name.length - ix
       if (rem > 0) {
@@ -147,8 +144,7 @@ object ProductFormats {
 trait NullOptions extends ProductFormats {
   this: StandardFormats =>
 
-  override protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField])
-                                                (implicit writer: JsonWriter[T]) = {
+  override protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField])(implicit writer: JsonWriter[T]) = {
     val value = p.productElement(ix).asInstanceOf[T]
     (fieldName, writer.write(value)) :: rest
   }

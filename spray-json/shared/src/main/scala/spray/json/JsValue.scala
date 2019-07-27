@@ -22,7 +22,7 @@ import collection.immutable
 import scala.collection.immutable.TreeMap
 
 /**
-  * The general type of a JSON AST node.
+ * The general type of a JSON AST node.
  */
 sealed abstract class JsValue {
   override def toString = compactPrint
@@ -30,7 +30,7 @@ sealed abstract class JsValue {
   def compactPrint = CompactPrinter(this)
   def prettyPrint = PrettyPrinter(this)
   def sortedPrint = SortedPrinter(this)
-  def convertTo[T :JsonReader]: T = jsonReader[T].read(this)
+  def convertTo[T: JsonReader]: T = jsonReader[T].read(this)
 
   /**
    * Returns `this` if this JsValue is a JsObject, otherwise throws a DeserializationException with the given error msg.
@@ -43,11 +43,11 @@ sealed abstract class JsValue {
   def asJsObject: JsObject = asJsObject()
 
   @deprecated("Superceded by 'convertTo'", "1.1.0")
-  def fromJson[T :JsonReader]: T = convertTo
+  def fromJson[T: JsonReader]: T = convertTo
 }
 
 /**
-  * A JSON object.
+ * A JSON object.
  */
 case class JsObject(fields: Map[String, JsValue]) extends JsValue {
   override def asJsObject(errorMsg: String) = this
@@ -61,7 +61,7 @@ object JsObject {
 }
 
 /**
-  * A JSON array.
+ * A JSON array.
  */
 case class JsArray(elements: Vector[JsValue]) extends JsValue {
   @deprecated("Use JsArray(Vector[JsValue]) instead", "1.3.0")
@@ -75,7 +75,7 @@ object JsArray {
 }
 
 /**
-  * A JSON string.
+ * A JSON string.
  */
 case class JsString(value: String) extends JsValue
 
@@ -85,7 +85,7 @@ object JsString {
 }
 
 /**
-  * A JSON number.
+ * A JSON number.
  */
 case class JsNumber(value: BigDecimal) extends JsValue
 object JsNumber {
@@ -103,7 +103,7 @@ object JsNumber {
 }
 
 /**
-  * JSON Booleans.
+ * JSON Booleans.
  */
 sealed abstract class JsBoolean extends JsValue {
   def value: Boolean
@@ -120,6 +120,6 @@ case object JsFalse extends JsBoolean {
 }
 
 /**
-  * The representation for JSON null.
+ * The representation for JSON null.
  */
 case object JsNull extends JsValue

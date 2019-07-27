@@ -23,7 +23,7 @@ class AdditionalFormatsSpec extends Specification {
   case class Container[A](inner: Option[A])
 
   object ReaderProtocol extends DefaultJsonProtocol {
-    implicit def containerReader[T :JsonFormat] = lift {
+    implicit def containerReader[T: JsonFormat] = lift {
       new JsonReader[Container[T]] {
         def read(value: JsValue) = value match {
           case JsObject(fields) if fields.contains("content") => Container(Some(jsonReader[T].read(fields("content"))))
@@ -34,7 +34,7 @@ class AdditionalFormatsSpec extends Specification {
   }
 
   object WriterProtocol extends DefaultJsonProtocol {
-    implicit def containerWriter[T :JsonFormat] = lift {
+    implicit def containerWriter[T: JsonFormat] = lift {
       new JsonWriter[Container[T]] {
         def write(obj: Container[T]) = JsObject("content" -> obj.inner.toJson)
       }

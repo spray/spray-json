@@ -47,7 +47,7 @@ object JsonParserSettings {
   val default: JsonParserSettings = SettingsImpl()
 
   private case class SettingsImpl(
-    maxDepth: Int = 1000,
+    maxDepth:            Int = 1000,
     maxNumberCharacters: Int = 100
   ) extends JsonParserSettings {
     override def withMaxDepth(newValue: Int): JsonParserSettings = copy(maxDepth = newValue)

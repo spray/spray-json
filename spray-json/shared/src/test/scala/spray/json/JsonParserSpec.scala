@@ -56,15 +56,15 @@ abstract class JsonParserSpec(inputFromString: String => ParserInput) extends Sp
       parseString("\"L\\" + "u00e4nder\"") === JsString("Länder")
     }
     "parse all representations of the slash (SOLIDUS) character in a JsString" in {
-      parseString( "\"" + "/\\/\\u002f" + "\"") === JsString("///")
+      parseString("\"" + "/\\/\\u002f" + "\"") === JsString("///")
     }
     "parse a simple JsObject" in (
       parseString(""" { "key" :42, "key2": "value" }""") ===
-              JsObject("key" -> JsNumber(42), "key2" -> JsString("value"))
+      JsObject("key" -> JsNumber(42), "key2" -> JsString("value"))
     )
     "parse a simple JsArray" in (
       parseString("""[null, 1.23 ,{"key":true } ] """) ===
-              JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsTrue))
+      JsArray(JsNull, JsNumber(1.23), JsObject("key" -> JsTrue))
     )
     "parse UTF-8 encoded strings" in {
       val json = JsObject(

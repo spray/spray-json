@@ -56,7 +56,7 @@ class ProductFormatsSpec extends Specification {
     }
     "throw a DeserializationException if the JsObject does not all required members" in (
       JsObject("b" -> JsNumber(4.2)).convertTo[Test2] must
-              throwA(new DeserializationException("Object is missing required member 'a'"))
+      throwA(new DeserializationException("Object is missing required member 'a'"))
     )
     "not require the presence of optional fields for deserialization" in {
       JsObject("a" -> JsNumber(42)).convertTo[Test2] mustEqual Test2(42, None)
@@ -111,15 +111,15 @@ class ProductFormatsSpec extends Specification {
       implicit val test18Format = jsonFormat18(Test18)
     }
     case class Test18(
-      a1: String,
-      a2: String,
-      a3: String,
-      a4: String,
-      a5: Int,
-      a6: String,
-      a7: String,
-      a8: String,
-      a9: String,
+      a1:  String,
+      a2:  String,
+      a3:  String,
+      a4:  String,
+      a5:  Int,
+      a6:  String,
+      a7:  String,
+      a8:  String,
+      a9:  String,
       a10: String,
       a11: String,
       a12: Double,
@@ -132,7 +132,7 @@ class ProductFormatsSpec extends Specification {
 
     import Test18Protocol._
     val obj = Test18("a1", "a2", "a3", "a4", 5, "a6", "a7", "a8", "a9",
-                     "a10", "a11", 12d, "a13", "a14", "a15", "a16", "a17", "a18")
+      "a10", "a11", 12d, "a13", "a14", "a15", "a16", "a17", "a18")
 
     val json = JsonParser("""{"a1":"a1","a2":"a2","a3":"a3","a4":"a4","a5":5,"a6":"a6","a7":"a7","a8":"a8","a9":"a9","a10":"a10","a11":"a11","a12":12.0,"a13":"a13","a14":"a14","a15":"a15","a16":"a16","a17":"a17","a18":"a18"}""")
     "convert to a respective JsObject" in {

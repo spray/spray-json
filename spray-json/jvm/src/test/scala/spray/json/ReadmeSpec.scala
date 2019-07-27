@@ -23,14 +23,14 @@ class ReadmeSpec extends Specification {
   "The Usage snippets" should {
     "behave as expected" in {
       import DefaultJsonProtocol._
-      
+
       val source = """{ "some": "JSON source" }"""
       val jsonAst = source.parseJson
       jsonAst mustEqual JsObject("some" -> JsString("JSON source"))
-      
+
       val json2 = jsonAst.prettyPrint
       json2 mustEqual
-              """{
+        """{
                 |  "some": "JSON source"
                 |}""".stripMargin
 
@@ -94,5 +94,5 @@ class ReadmeSpec extends Specification {
       color.toJson.convertTo[Color] mustEqual color
     }
   }
-  
+
 }

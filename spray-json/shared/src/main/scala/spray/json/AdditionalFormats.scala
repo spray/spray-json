@@ -18,7 +18,7 @@
 package spray.json
 
 /**
-  * Provides additional JsonFormats and helpers
+ * Provides additional JsonFormats and helpers
  */
 trait AdditionalFormats {
 
@@ -36,7 +36,7 @@ trait AdditionalFormats {
     def write(value: JsArray) = value
     def read(value: JsValue) = value match {
       case x: JsArray => x
-      case _ => deserializationError("JSON array expected")
+      case _          => deserializationError("JSON array expected")
     }
   }
 
@@ -57,7 +57,7 @@ trait AdditionalFormats {
   /**
    * Turns a JsonWriter into a JsonFormat that throws an UnsupportedOperationException for reads.
    */
-  def lift[T](writer :JsonWriter[T]) = new JsonFormat[T] {
+  def lift[T](writer: JsonWriter[T]) = new JsonFormat[T] {
     def write(obj: T): JsValue = writer.write(obj)
     def read(value: JsValue) =
       throw new UnsupportedOperationException("JsonReader implementation missing")
@@ -66,13 +66,13 @@ trait AdditionalFormats {
   /**
    * Turns a RootJsonWriter into a RootJsonFormat that throws an UnsupportedOperationException for reads.
    */
-  def lift[T](writer :RootJsonWriter[T]): RootJsonFormat[T] =
-    rootFormat(lift(writer :JsonWriter[T]))
+  def lift[T](writer: RootJsonWriter[T]): RootJsonFormat[T] =
+    rootFormat(lift(writer: JsonWriter[T]))
 
   /**
    * Turns a JsonReader into a JsonFormat that throws an UnsupportedOperationException for writes.
    */
-  def lift[T <: AnyRef](reader :JsonReader[T]) = new JsonFormat[T] {
+  def lift[T <: AnyRef](reader: JsonReader[T]) = new JsonFormat[T] {
     def write(obj: T): JsValue =
       throw new UnsupportedOperationException("No JsonWriter[" + obj.getClass + "] available")
     def read(value: JsValue) = reader.read(value)
@@ -81,8 +81,8 @@ trait AdditionalFormats {
   /**
    * Turns a RootJsonReader into a RootJsonFormat that throws an UnsupportedOperationException for writes.
    */
-  def lift[T <: AnyRef](reader :RootJsonReader[T]): RootJsonFormat[T] =
-    rootFormat(lift(reader :JsonReader[T]))
+  def lift[T <: AnyRef](reader: RootJsonReader[T]): RootJsonFormat[T] =
+    rootFormat(lift(reader: JsonReader[T]))
 
   /**
    * Lazy wrapper around serialization. Useful when you want to serialize (mutually) recursive structures.
@@ -104,7 +104,7 @@ trait AdditionalFormats {
   /**
    * Wraps an existing JsonReader with Exception protection.
    */
-  def safeReader[A :JsonReader] = new JsonReader[Either[Exception, A]] {
+  def safeReader[A: JsonReader] = new JsonReader[Either[Exception, A]] {
     def read(json: JsValue) = {
       try {
         Right(json.convertTo[A])
