@@ -22,7 +22,7 @@ class GithubIssuesJsonAST extends Common {
     sprayJsonAST = JsonParser(jsonString)
     playJsonAST = Json.parse(jsonString)
     upickleAST = ujson.read(jsonString)
-    circeAST  = io.circe.parser.parse(jsonString).right.get
+    circeAST = io.circe.parser.parse(jsonString).right.get
   }
 
   @Benchmark
