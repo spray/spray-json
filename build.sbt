@@ -86,9 +86,11 @@ lazy val benchmark = Project("benchmark", file("benchmark"))
   .dependsOn(sprayJsonJVM % "compile->test")
   .settings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "upickle" % "0.6.7",
-      "io.circe" %% "circe-parser" % "0.10.0",
-      "com.typesafe.play" %% "play-json" % "2.7.0-M1"
+      "com.lihaoyi" %% "upickle" % "0.7.5",
+      "io.circe" %% "circe-parser" % "0.11.1",
+      "io.circe" %% "circe-core" % "0.11.1",
+      "io.circe" %% "circe-generic" % "0.11.1",
+      "com.typesafe.play" %% "play-json" % "2.7.1"
     )
   )
 
