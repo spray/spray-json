@@ -173,26 +173,30 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     res
   }
 
+  private val charBuffer = new Array[Char](1024)
   private def stringFast(): String = {
     val start = input.cursor
     cursorChar = input.nextChar()
 
     @tailrec
-    def parseOne(): Int =
-      if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) {
-        cursorChar = input.nextChar(); parseOne()
-      } else cursorChar match {
-        case '"' | EOI => input.cursor
-        case '\\'      => -1
-        case x if x < 128 =>
-          cursorChar = input.nextChar(); parseOne()
-        case x => -1
+    def parseOne(idx: Int): Int =
+      if (idx >= 1024) -1
+      else {
+        cursorChar match {
+          case '"' | EOI => idx
+          case '\\'      => -1
+          case x if x < 128 =>
+            charBuffer(idx) = x
+            cursorChar = input.nextChar()
+            parseOne(idx + 1)
+          case x => -1
+        }
       }
 
-    parseOne() match {
-      case -1 =>
+    parseOne(0) match {
+      case -1     =>
         input.setCursor(start); stringSlow()
-      case last => input.sliceString(start + 1, last)
+      case length => new String(charBuffer, 0, length)
     }
   }
   private def stringSlow(): String = {
