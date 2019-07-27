@@ -63,7 +63,7 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     if (remainingNesting == 0)
       throw new ParsingException(
         "JSON input nested too deeply",
-        s"JSON input was nested more deeply than the configured limit of maxNesting = ${settings.maxDepth}"
+        s"JSON input was nested more deeply than the configured limit of maxDepth = ${settings.maxDepth}"
       )
     else {
       val mark = input.cursor
