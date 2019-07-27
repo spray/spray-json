@@ -3,6 +3,11 @@ sudo: required
 dist: bionic
 
 language: scala
+scala:
+  - 2.10.7
+  - 2.11.12
+  - 2.12.8
+  - 2.13.0
 
 before_install:
   - sudo rm -r /usr/local/clang-7.0.0
@@ -13,7 +18,7 @@ env:
   -JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 script:
-  - sbt -java-home /usr/lib/jvm/java-8-openjdk-amd64 +test +mimaReportBinaryIssues
+  - sbt -java-home /usr/lib/jvm/java-8-openjdk-amd64 ++$TRAVIS_SCALA_VERSION test mimaReportBinaryIssues
 
 before_cache:
   - find $HOME/.sbt -name "*.lock" | xargs rm
