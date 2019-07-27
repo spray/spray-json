@@ -106,7 +106,7 @@ abstract class JsonParserSpec(inputFromString: String => ParserInput) extends Sp
       val regularTime = nanoBench { parseString(regularJson) }
       val collidingTime = nanoBench { parseString(collidingJson) }
 
-      collidingTime / regularTime must be < 2L // speed must be in same order of magnitude
+      collidingTime / regularTime must be < 5L // speed must be in same order of magnitude
     }
 
     "produce proper error messages" in {
