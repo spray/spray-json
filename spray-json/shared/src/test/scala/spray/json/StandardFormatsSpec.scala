@@ -53,6 +53,22 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
       JsString("Hello").convertTo[Either[Int, String]] mustEqual Right("Hello")
     }
   }
+  "JsonReader" should {
+    "be automatically provided from JsonFormat" in {
+      trait X
+      implicit def format: JsonFormat[X] = ???
+      implicit def reader = implicitly[JsonReader[X]]
+      success
+    }
+  }
+  "JsonWriter" should {
+    "be automatically provided from JsonFormat" in {
+      trait X
+      implicit def format: JsonFormat[X] = ???
+      implicit def reader = implicitly[JsonWriter[X]]
+      success
+    }
+  }
 
   "The tuple1Format" should {
     "convert (42) to a JsNumber" in {
