@@ -56,6 +56,7 @@ trait JsonFormat[T] extends JsonReader[T] with JsonWriter[T]
 
 object JsonFormat
   extends AdditionalFormatsImplicits
+  with BasicFormatsImplicits
 
 /**
  * A special JsonReader capable of reading a legal JSON root object, i.e. either a JSON array or a JSON object.
