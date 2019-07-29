@@ -88,7 +88,7 @@ lazy val benchmark = Project("benchmark", file("benchmark"))
       "io.circe" %% "circe-parser" % "0.11.1",
       "io.circe" %% "circe-core" % "0.11.1",
       "io.circe" %% "circe-generic" % "0.11.1",
-      "com.typesafe.play" %% "play-json" % "2.7.1"
+      "com.typesafe.play" %% "play-json" % "2.7.4",
     )
   )
 
