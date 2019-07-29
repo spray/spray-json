@@ -22,6 +22,7 @@ import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.charset.Charset
 
 import scala.collection.immutable.TreeMap
+import scala.util.control.NonFatal
 
 /**
  * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
@@ -46,12 +47,14 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   def parseJsValue(): JsValue =
     parseJsValue(false)
 
-  def parseJsValue(allowTrailingInput: Boolean): JsValue = {
+  def parseJsValue(allowTrailingInput: Boolean): JsValue = try {
     ws()
     `value`(settings.maxDepth)
-    if (!allowTrailingInput)
-      require(EOI)
+    if (!allowTrailingInput && !input.isAtEOI)
+      fail("expected end-of-input")
     jsValue
+  } catch {
+    case _: ArrayIndexOutOfBoundsException => fail("unexpected end of input")
   }
 
   ////////////////////// GRAMMAR ////////////////////////
@@ -168,7 +171,6 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   private def `string`(): String = {
     if (cursorChar != '"') fail("'\"'")
     val res = stringFast()
-    require('"')
     ws()
     res
   }
@@ -176,18 +178,34 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   private val charBuffer = new Array[Char](1024)
   private def stringFast(): String = {
     val start = input.cursor
-    cursorChar = input.nextChar()
+    try {
+      @tailrec
+      def parseOne(cursor: Int, charsRead: Int): String = {
+        val cursorChar = input.byteAt(cursor)
+        charBuffer(charsRead) = (cursorChar & 0xff).toChar
+        //println(s"At $cursor $charsRead read '${charBuffer(charsRead)}'")
 
-    @tailrec
-    def parseOne(idx: Int): Int =
-      if (cursorChar == '"' || cursorChar == EOI) idx
-      else if (((cursorChar - 32) ^ 60) <= 0) -1
-      else parseOne(idx + 1)
+        if (cursorChar == '"') {
+          input.setCursor(cursor) // now at end '"'
+          advance()
+          new String(charBuffer, 0, charsRead)
+        } else if (((cursorChar - 32) ^ 60) <= 0) {
+          input.setCursor(start - 1) // reparse everything, FIXME: optimize
+          advance()
+          val result = stringSlow()
+          require('"')
+          result
+        } else
+          parseOne(cursor + 1, charsRead + 1)
+      }
 
-    parseOne(0) match {
-      case -1 =>
-        input.setCursor(start); stringSlow()
-      case length => new String(charBuffer, 0, length)
+      parseOne(start + 1, 0)
+    } catch {
+      case NonFatal(e) =>
+        e.printStackTrace()
+        input.setCursor(start - 1)
+        advance()
+        stringSlow()
     }
   }
   private def stringSlow(): String = {
@@ -287,6 +305,8 @@ trait ParserInput {
   def sliceString(start: Int, end: Int): String
   def sliceCharArray(start: Int, end: Int): Array[Char]
   def getLine(index: Int): ParserInput.Line
+  def byteAt(offset: Int): Byte
+  def isAtEOI: Boolean = cursor == length
 }
 
 object ParserInput {
@@ -328,7 +348,7 @@ object ParserInput {
    */
   abstract class IndexedBytesParserInput extends DefaultParserInput {
     def length: Int
-    protected def byteAt(offset: Int): Byte
+    def byteAt(offset: Int): Byte
 
     private val byteBuffer = ByteBuffer.allocate(4)
     private val charBuffer = CharBuffer.allocate(2)
@@ -383,7 +403,7 @@ object ParserInput {
    * of the JSON input, without requiring a separate decoding step.
    */
   class ByteArrayBasedParserInput(bytes: Array[Byte]) extends IndexedBytesParserInput {
-    protected def byteAt(offset: Int): Byte = bytes(offset)
+    def byteAt(offset: Int): Byte = bytes(offset)
     def length: Int = bytes.length
 
     def sliceString(start: Int, end: Int) = new String(bytes, start, end - start, UTF8)
@@ -392,6 +412,8 @@ object ParserInput {
   }
 
   class StringBasedParserInput(string: String) extends DefaultParserInput {
+    override def byteAt(offset: Int): Byte = string.charAt(offset).toByte
+
     def nextChar(): Char = {
       _cursor += 1
       if (_cursor < string.length) string.charAt(_cursor) else EOI
@@ -407,6 +429,8 @@ object ParserInput {
   }
 
   class CharArrayBasedParserInput(chars: Array[Char]) extends DefaultParserInput {
+    override def byteAt(offset: Int): Byte = chars(offset).toByte
+
     def nextChar(): Char = {
       _cursor += 1
       if (_cursor < chars.length) chars(_cursor) else EOI
