@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 trait ProductFormats extends ProductFormatsInstances {
   this: StandardFormats =>
 
-  def jsonFormat0[T](construct: () => T): RootJsonFormat[T] =
+  def jsonFormatN[T](construct: () => T): RootJsonFormat[T] =
     new RootJsonFormat[T] {
       def write(p: T) = JsObject()
       def read(value: JsValue) = value match {
@@ -36,6 +36,9 @@ trait ProductFormats extends ProductFormatsInstances {
         case _           => throw new DeserializationException("Object expected")
       }
     }
+  @deprecated("Use jsonFormatN instead", since = "1.4.0")
+  def jsonFormat0[T](construct: () => T): RootJsonFormat[T] =
+    jsonFormatN(construct)
 
   // helpers
 

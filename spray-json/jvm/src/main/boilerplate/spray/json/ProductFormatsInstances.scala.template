@@ -21,10 +21,30 @@ import scala.reflect.{ classTag, ClassTag }
 trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
 [#  // Case classes with 1 parameters
 
-  def jsonFormat1[[#P1 :JF#], T <: Product :ClassTag](construct: ([#P1#]) => T): RootJsonFormat[T] = {
+  /**
+   * Create a format for a case class, given the constructor for an instance.
+   *
+   * While creating the format (but not after), Java reflection is used to figure out the
+   * field names. JSON field names are then mapped 1-to-1 to case class field names. Use
+   * backtick-quoted field names for unusual field names.
+   *
+   * Recommended usage example:
+   *
+   * ```
+   *   case class Person(name: String, age: Int)
+   *   object Person {
+   *     implicit val personFormat = jsonFormatN(Person.apply _)
+   *   }
+   * ```
+   */
+  def jsonFormatN[[#P1 :JF#], T <: Product :ClassTag](construct: ([#P1#]) => T): RootJsonFormat[T] = {
     val Array([#p1#]) = extractFieldNames(classTag[T])
     jsonFormat(construct, [#p1#])
   }
+  @deprecated("Use jsonFormatN instead", since = "##1.4.##0")
+  def jsonFormat1[[#P1 :JF#], T <: Product :ClassTag](construct: ([#P1#]) => T): RootJsonFormat[T] =
+    jsonFormatN(construct)
+
   def jsonFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
     def write(p: T) = {
       val fields = new collection.mutable.ListBuffer[(String, JsValue)]

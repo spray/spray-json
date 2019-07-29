@@ -33,13 +33,13 @@ class ProductFormatsSpec extends Specification {
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
-    implicit val test0Format = jsonFormat0(Test0)
-    implicit val test2Format = jsonFormat2(Test2)
-    implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormat2(Test3.apply[A, B])
-    implicit def test4Format = jsonFormat1(Test4)
-    implicit def testTransientFormat = jsonFormat2(TestTransient)
-    implicit def testStaticFormat = jsonFormat2(TestStatic)
-    implicit def testMangledFormat = jsonFormat5(TestMangled)
+    implicit val test0Format = jsonFormatN(Test0)
+    implicit val test2Format = jsonFormatN(Test2.apply _)
+    implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormatN(Test3[A, B] _)
+    implicit def test4Format = jsonFormatN(Test4.apply _)
+    implicit def testTransientFormat = jsonFormatN(TestTransient)
+    implicit def testStaticFormat = jsonFormatN(TestStatic)
+    implicit def testMangledFormat = jsonFormatN(TestMangled)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -108,7 +108,7 @@ class ProductFormatsSpec extends Specification {
   }
   "A JsonFormat for a case class with 18 parameters and created with `jsonFormat`" should {
     object Test18Protocol extends DefaultJsonProtocol {
-      implicit val test18Format = jsonFormat18(Test18)
+      implicit val test18Format = jsonFormatN(Test18.apply _)
     }
     case class Test18(
       a1:  String,
@@ -144,10 +144,10 @@ class ProductFormatsSpec extends Specification {
   }
 
   "A JsonFormat for a generic case class with an explicitly provided type parameter" should {
-    "support the jsonFormat1 syntax" in {
+    "support the jsonFormatN syntax" in {
       case class Box[A](a: A)
       object BoxProtocol extends DefaultJsonProtocol {
-        implicit val boxFormat = jsonFormat1(Box[Int])
+        implicit val boxFormat = jsonFormatN(Box[Int] _)
       }
       import BoxProtocol._
       Box(42).toJson === JsObject(Map("a" -> JsNumber(42)))

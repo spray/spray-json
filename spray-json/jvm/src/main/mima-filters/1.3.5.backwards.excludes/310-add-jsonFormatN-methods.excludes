@@ -1,0 +1,5 @@
+# Addition of jsonFormatN method is not compatible in Scala 2.10 and 2.11 when a third-party
+# implementation of ProductFormatsInstances was provided and then the user tries to use jsonFormatN.
+# We accept that as an unlikely problem only happening with old Scala versions.
+ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.ProductFormatsInstances.jsonFormatN")
+ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.ProductFormats.jsonFormatN")
