@@ -176,7 +176,8 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   private var charBuffer = new Array[Char](settings.initialMaxStringCharacters)
   private def stringFast(start: Int): String = {
     /* Scan to the end of a simple string as fast as possible, no escapes, no unicode */
-    @tailrec def parseOneFast(cursor: Int, charsRead: Int): String = {
+    // so far unclear results if that is really helpful
+    /*@tailrec def parseOneFast(cursor: Int, charsRead: Int): String = {
       val b = input.byteAt(cursor)
       charBuffer(charsRead) = (b & 0xff).toChar
       //println(s"At $cursor $charsRead read '${charBuffer(charsRead)}'")
@@ -189,7 +190,7 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
         parseOneSlow(cursor, charsRead) // fall back to slower parsing
       else
         parseOneFast(cursor + 1, charsRead + 1)
-    }
+    }*/
 
     /*
      * Do full string parsing. This subsumes the functionality from parseOneFast, however, just using
@@ -291,12 +292,12 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     }
 
     try
-      /*if (input.byteAt(start + 1) == '"') { // really fast path for empty strings
+      if (input.byteAt(start + 1) == '"') { // really fast path for empty strings
         input.setCursor(start + 1)
         advance()
         ""
-      } else */
-      parseOneFast(start + 1, 0)
+      } else
+        parseOneSlow(start + 1, 0)
     catch {
       case NonFatal(e: ArrayIndexOutOfBoundsException) =>
         val newSize = (charBuffer.size * 2).min(settings.maxStringCharacters)
