@@ -42,15 +42,30 @@ sealed trait JsonParserSettings {
    * Returns a copy of this settings object with the `maxNumberCharacters` setting changed to the new value.
    */
   def withMaxNumberCharacters(newValue: Int): JsonParserSettings
+
+  /**
+   * The maximum number of characters the parser should support for a string. This is restricted because using a
+   * fixed size buffer is simpler than using a full-blown StringBuilder.
+   *
+   * The default is 65536 characters.
+   */
+  def maxStringCharacters: Int
+
+  /**
+   * Returns a copy of this settings object with the `maxStringCharacters` setting changed to the new value.
+   */
+  def withMaxStringCharacters(newValue: Int): JsonParserSettings
 }
 object JsonParserSettings {
   val default: JsonParserSettings = SettingsImpl()
 
   private case class SettingsImpl(
     maxDepth:            Int = 1000,
-    maxNumberCharacters: Int = 100
+    maxNumberCharacters: Int = 100,
+    maxStringCharacters: Int = 65536
   ) extends JsonParserSettings {
     override def withMaxDepth(newValue: Int): JsonParserSettings = copy(maxDepth = newValue)
     override def withMaxNumberCharacters(newValue: Int): JsonParserSettings = copy(maxNumberCharacters = newValue)
+    override def withMaxStringCharacters(newValue: Int): JsonParserSettings = copy(maxStringCharacters = newValue)
   }
 }

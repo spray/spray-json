@@ -173,7 +173,7 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     res
   }
 
-  private val charBuffer = new Array[Char](65536)
+  private val charBuffer = new Array[Char](settings.maxStringCharacters)
   private def stringFast(): String = {
     val start = input.cursor
 
