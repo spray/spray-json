@@ -179,9 +179,9 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
     else cursorChar match {
       case '"' | EOI => false
-      case '\\'      =>
+      case '\\' =>
         advance(); `escaped`()
-      case c         => (c >= ' ') && appendSB(c)
+      case c => (c >= ' ') && appendSB(c)
     }
 
   private def `escaped`() = {
@@ -207,9 +207,9 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
       case 'n'              => appendSB('\n')
       case 'r'              => appendSB('\r')
       case 't'              => appendSB('\t')
-      case 'u'              =>
+      case 'u' =>
         advance(); unicode()
-      case _                => fail("JSON escape sequence")
+      case _ => fail("JSON escape sequence")
     }
   }
 
@@ -283,8 +283,8 @@ object ParserInput {
         nextUtf8Char() match {
           case '\n' if index > ix =>
             sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
-          case '\n' | EOI         => Line(lineNr, index - lineStartIx + 1, sb.toString)
-          case c                  => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
+          case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
+          case c          => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
         }
       val savedCursor = _cursor
       _cursor = -1
