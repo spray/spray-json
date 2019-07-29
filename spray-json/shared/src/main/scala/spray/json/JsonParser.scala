@@ -168,15 +168,13 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   // http://tools.ietf.org/html/rfc4627#section-2.5
   private def `string`(): String = {
     if (cursorChar != '"') fail("'\"'")
-    val res = stringFast()
+    val res = stringFast(input.cursor)
     ws()
     res
   }
 
-  private val charBuffer = new Array[Char](settings.maxStringCharacters)
-  private def stringFast(): String = {
-    val start = input.cursor
-
+  private var charBuffer = new Array[Char](settings.initialMaxStringCharacters)
+  private def stringFast(start: Int): String = {
     /* Scan to the end of a simple string as fast as possible, no escapes, no unicode */
     @tailrec def parseOneFast(cursor: Int, charsRead: Int): String = {
       val b = input.byteAt(cursor)
@@ -300,10 +298,13 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
       } else */
       parseOneFast(start + 1, 0)
     catch {
-      case NonFatal(e) =>
-        e.printStackTrace()
-        // FIXME: buffer to small or end of input?
-        throw e
+      case NonFatal(e: ArrayIndexOutOfBoundsException) =>
+        val newSize = (charBuffer.size * 2).min(settings.maxStringCharacters)
+        if (charBuffer.size < newSize) {
+          charBuffer = new Array[Char](newSize)
+          stringFast(start)
+        } else
+          throw e
     }
   }
 
