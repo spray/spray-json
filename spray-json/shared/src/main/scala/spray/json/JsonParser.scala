@@ -17,7 +17,6 @@
 package spray.json
 
 import scala.annotation.{ switch, tailrec }
-import java.lang.{ StringBuilder => JStringBuilder }
 import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.charset.Charset
 
@@ -40,7 +39,6 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
 
   import JsonParser.ParsingException
 
-  private[this] val sb = new JStringBuilder
   private[this] var cursorChar: Char = input.nextChar()
   private[this] var jsValue: JsValue = _
 
@@ -175,83 +173,122 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     res
   }
 
-  private val charBuffer = new Array[Char](1024)
+  private val charBuffer = new Array[Char](65536)
   private def stringFast(): String = {
     val start = input.cursor
-    try {
-      @tailrec
-      def parseOne(cursor: Int, charsRead: Int): String = {
-        val cursorChar = input.byteAt(cursor)
-        charBuffer(charsRead) = (cursorChar & 0xff).toChar
-        //println(s"At $cursor $charsRead read '${charBuffer(charsRead)}'")
 
-        if (cursorChar == '"') {
-          input.setCursor(cursor) // now at end '"'
-          advance()
-          new String(charBuffer, 0, charsRead)
-        } else if (((cursorChar - 32) ^ 60) <= 0) {
-          input.setCursor(start - 1) // reparse everything, FIXME: optimize
-          advance()
-          val result = stringSlow()
-          require('"')
-          result
+    @tailrec
+    def parseOneFast(cursor: Int, charsRead: Int): String = {
+      val cursorChar = input.byteAt(cursor)
+      charBuffer(charsRead) = (cursorChar & 0xff).toChar
+      //println(s"At $cursor $charsRead read '${charBuffer(charsRead)}'")
+
+      if (cursorChar == '"') {
+        input.setCursor(cursor) // now at end '"'
+        advance()
+        new String(charBuffer, 0, charsRead)
+      } else if (((b - 32) ^ 60) <= 0) // trick from jsoniter-scala
+        parseOneSlow(cursor, charsRead) // fall back to slower parsing
+      else
+        parseOneFast(cursor + 1, charsRead + 1)
+    }
+    @tailrec def parseOneSlow(cursor: Int, charsRead: Int): String = {
+      val cursorChar = input.charAt(cursor)
+      charBuffer(charsRead) = cursorChar
+
+      if (cursorChar == '"') {
+        input.setCursor(cursor) // now at end '"'
+        advance()
+        new String(charBuffer, 0, charsRead)
+      } else if (cursorChar == '\\')
+        input.byteAt(cursor + 1) match {
+          case c @ ('"' | '/' | '\\') =>
+            charBuffer(charsRead) = c.toChar
+            parseOneSlow(cursor + 2, charsRead + 1)
+          case 'b' =>
+            charBuffer(charsRead) = '\b'
+            parseOneSlow(cursor + 2, charsRead + 1)
+          case 'f' =>
+            charBuffer(charsRead) = '\f'
+            parseOneSlow(cursor + 2, charsRead + 1)
+          case 'n' =>
+            charBuffer(charsRead) = '\n'
+            parseOneSlow(cursor + 2, charsRead + 1)
+          case 'r' =>
+            charBuffer(charsRead) = '\r'
+            parseOneSlow(cursor + 2, charsRead + 1)
+          case 't' =>
+            charBuffer(charsRead) = '\t'
+            parseOneSlow(cursor + 2, charsRead + 1)
+          case 'u' =>
+            def hexValue(c: Byte): Int =
+              if ('0' <= c && c <= '9') c - '0'
+              else if ('a' <= c && c <= 'f') c - 87
+              else if ('A' <= c && c <= 'F') c - 55
+              else fail("hex digit")
+
+            charBuffer(charsRead) =
+              ((hexValue(input.byteAt(cursor + 2)) << 12) |
+                (hexValue(input.byteAt(cursor + 3)) << 8) |
+                (hexValue(input.byteAt(cursor + 4)) << 4) |
+                hexValue(input.byteAt(cursor + 5))).toChar
+
+            parseOneSlow(cursor + 6, charsRead + 1)
+          case _ => fail("JSON escape sequence")
+        }
+      else if (input.needsDecoding && cursorChar >= 128) {
+        //println(s"read [${x.toHexString}] [${x.toBinaryString}] at $cursor [${input.byteAt(cursor - 1) & 0xff toHexString}]")
+        if ((cursorChar & 0xE0) == 0xC0) { // two byte sequence
+          charBuffer(charsRead) = (((cursorChar & 0x1f) << 6) |
+            (input.byteAt(cursor + 1) & 0x3f)).toChar
+          parseOneSlow(cursor + 2, charsRead + 1)
+        } else if ((cursorChar & 0xF0) == 0xE0) { // 3-byte UTF-8 sequence
+          val codePoint =
+            ((cursorChar & 0x0f) << 12) |
+              ((input.byteAt(cursor + 1) & 0x3f) << 6) |
+              (input.byteAt(cursor + 2) & 0x3f)
+
+          if (codePoint < 0xffff) {
+            charBuffer(charsRead) = codePoint.toChar
+            parseOneSlow(cursor + 3, charsRead + 1)
+          } else {
+            charBuffer(charsRead) = ((0xd7C0 + (codePoint >> 10)).toChar)
+            charBuffer(charsRead + 1) = ((0xdc00 + (codePoint & 0x3ff)).toChar)
+            parseOneSlow(cursor + 3, charsRead + 2)
+          }
+        } else if ((cursorChar & 0xF8) == 0xF0) { // 4-byte UTF-8 sequence
+          val codePoint =
+            ((cursorChar & 0x07) << 18) |
+              ((input.byteAt(cursor + 1) & 0x3f) << 12) |
+              ((input.byteAt(cursor + 2) & 0x3f) << 6) |
+              (input.byteAt(cursor + 3) & 0x3f)
+
+          if (codePoint < 0xffff) {
+            charBuffer(charsRead) = codePoint.toChar
+            parseOneSlow(cursor + 4, charsRead + 1)
+          } else {
+            charBuffer(charsRead) = ((0xd7C0 + (codePoint >> 10)).toChar)
+            charBuffer(charsRead + 1) = ((0xdc00 + (codePoint & 0x3ff)).toChar)
+            parseOneSlow(cursor + 4, charsRead + 2)
+          }
         } else
-          parseOne(cursor + 1, charsRead + 1)
-      }
+          fail("utf-8 sequence")
+      } else
+        parseOneSlow(cursor + 1, charsRead + 1)
+    }
 
-      parseOne(start + 1, 0)
-    } catch {
+    try
+      /*if (input.byteAt(start + 1) == '"') { // really fast path for empty strings
+        input.setCursor(start + 1)
+        advance()
+        ""
+      } else */
+      parseOneFast(start + 1, 0)
+    catch {
       case NonFatal(e) =>
         e.printStackTrace()
-        input.setCursor(start - 1)
-        advance()
-        stringSlow()
-    }
-  }
-  private def stringSlow(): String = {
-    cursorChar = input.nextUtf8Char()
-    sb.setLength(0)
-    while (`char`()) cursorChar = input.nextUtf8Char()
-    if (sb.length() == 0) "" else sb.toString
-  }
-
-  private def `char`() =
-    // simple bloom-filter that quick-matches the most frequent case of characters that are ok to append
-    // (it doesn't match control chars, EOI, '"', '?', '\', 'b' and certain higher, non-ASCII chars)
-    if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
-    else cursorChar match {
-      case '"' | EOI => false
-      case '\\' =>
-        advance(); `escaped`()
-      case c => (c >= ' ') && appendSB(c)
-    }
-
-  private def `escaped`() = {
-    def hexValue(c: Char): Int =
-      if ('0' <= c && c <= '9') c - '0'
-      else if ('a' <= c && c <= 'f') c - 87
-      else if ('A' <= c && c <= 'F') c - 55
-      else fail("hex digit")
-    def unicode() = {
-      var value = hexValue(cursorChar)
-      advance()
-      value = (value << 4) + hexValue(cursorChar)
-      advance()
-      value = (value << 4) + hexValue(cursorChar)
-      advance()
-      value = (value << 4) + hexValue(cursorChar)
-      appendSB(value.toChar)
-    }
-    (cursorChar: @switch) match {
-      case '"' | '/' | '\\' => appendSB(cursorChar)
-      case 'b'              => appendSB('\b')
-      case 'f'              => appendSB('\f')
-      case 'n'              => appendSB('\n')
-      case 'r'              => appendSB('\r')
-      case 't'              => appendSB('\t')
-      case 'u' =>
-        advance(); unicode()
-      case _ => fail("JSON escape sequence")
+        // FIXME: buffer to small or end of input?
+        throw e
     }
   }
 
@@ -264,7 +301,6 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   private def ch(c: Char): Boolean = if (cursorChar == c) { advance(); true } else false
   private def ws(c: Char): Boolean = if (ch(c)) { ws(); true } else false
   private def advance(): Boolean = { cursorChar = input.nextChar(); true }
-  private def appendSB(c: Char): Boolean = { sb.append(c); true }
   private def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
 
   private def fail(target: String, cursor: Int = input.cursor, errorChar: Char = cursorChar): Nothing = {
@@ -306,6 +342,8 @@ trait ParserInput {
   def sliceCharArray(start: Int, end: Int): Array[Char]
   def getLine(index: Int): ParserInput.Line
   def byteAt(offset: Int): Byte
+  def charAt(offset: Int): Char
+  def needsDecoding: Boolean
   def isAtEOI: Boolean = cursor == length
 }
 
@@ -405,6 +443,8 @@ object ParserInput {
   class ByteArrayBasedParserInput(bytes: Array[Byte]) extends IndexedBytesParserInput {
     def byteAt(offset: Int): Byte = bytes(offset)
     def length: Int = bytes.length
+    def charAt(offset: Int): Char = (byteAt(offset) & 0xff).toChar
+    def needsDecoding: Boolean = true
 
     def sliceString(start: Int, end: Int) = new String(bytes, start, end - start, UTF8)
     def sliceCharArray(start: Int, end: Int) =
@@ -412,7 +452,9 @@ object ParserInput {
   }
 
   class StringBasedParserInput(string: String) extends DefaultParserInput {
-    override def byteAt(offset: Int): Byte = string.charAt(offset).toByte
+    def byteAt(offset: Int): Byte = string.charAt(offset).toByte
+    def charAt(offset: Int): Char = string.charAt(offset)
+    def needsDecoding: Boolean = false
 
     def nextChar(): Char = {
       _cursor += 1
@@ -429,7 +471,9 @@ object ParserInput {
   }
 
   class CharArrayBasedParserInput(chars: Array[Char]) extends DefaultParserInput {
-    override def byteAt(offset: Int): Byte = chars(offset).toByte
+    def byteAt(offset: Int): Byte = chars(offset).toByte
+    def charAt(offset: Int): Char = chars(offset)
+    def needsDecoding: Boolean = false
 
     def nextChar(): Char = {
       _cursor += 1
