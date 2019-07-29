@@ -17,7 +17,7 @@
 package spray.json
 
 import scala.annotation.{ switch, tailrec }
-import java.nio.{ ByteBuffer, CharBuffer }
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
 import scala.collection.immutable.TreeMap
@@ -346,12 +346,6 @@ trait ParserInput {
    */
   def nextChar(): Char
 
-  /**
-   * Advance the cursor and get the next char, which could potentially be outside
-   * of the 7-Bit ASCII range. Therefore decoding might be required.
-   */
-  def nextUtf8Char(): Char
-
   def cursor: Int
   def setCursor(newCursor: Int): Unit
   def length: Int
@@ -382,7 +376,7 @@ object ParserInput {
     def getLine(index: Int): Line = {
       val sb = new java.lang.StringBuilder
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
-        nextUtf8Char() match {
+        nextChar() /* FIXME */ match {
           case '\n' if index > ix =>
             sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
           case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
@@ -405,51 +399,9 @@ object ParserInput {
     def length: Int
     def byteAt(offset: Int): Byte
 
-    private val byteBuffer = ByteBuffer.allocate(4)
-    private val charBuffer = CharBuffer.allocate(2)
-    private val decoder = UTF8.newDecoder()
     def nextChar() = {
       _cursor += 1
       if (_cursor < length) (byteAt(_cursor) & 0xFF).toChar else EOI
-    }
-    def nextUtf8Char() = {
-      @tailrec def decode(byte: Byte, remainingBytes: Int): Char = {
-        byteBuffer.put(byte)
-        if (remainingBytes > 0) {
-          _cursor += 1
-          if (_cursor < length) decode(byteAt(_cursor), remainingBytes - 1) else ErrorChar
-        } else {
-          byteBuffer.flip()
-          val coderResult = decoder.decode(byteBuffer, charBuffer, false)
-          charBuffer.flip()
-          val result = if (coderResult.isUnderflow & charBuffer.hasRemaining) charBuffer.get() else ErrorChar
-          byteBuffer.clear()
-          if (!charBuffer.hasRemaining) charBuffer.clear()
-          result
-        }
-      }
-
-      if (charBuffer.position() > 0) {
-        val result = charBuffer.get()
-        charBuffer.clear()
-        result
-      } else {
-        _cursor += 1
-        if (_cursor < length) {
-          val byte = byteAt(_cursor)
-          if (byte >= 0) byte.toChar // 7-Bit ASCII
-          else if ((byte & 0xE0) == 0xC0) decode(byte, 1) // 2-byte UTF-8 sequence
-          else if ((byte & 0xF0) == 0xE0) decode(byte, 2) // 3-byte UTF-8 sequence
-          else if ((byte & 0xF8) == 0xF0) decode(byte, 3) // 4-byte UTF-8 sequence
-          else ErrorChar
-        } else EOI
-      }
-    }
-
-    override def setCursor(cursor: Int): Unit = {
-      _cursor = cursor
-      byteBuffer.clear()
-      charBuffer.clear()
     }
   }
 
@@ -477,7 +429,6 @@ object ParserInput {
       _cursor += 1
       if (_cursor < string.length) string.charAt(_cursor) else EOI
     }
-    def nextUtf8Char() = nextChar()
     def length = string.length
     def sliceString(start: Int, end: Int) = string.substring(start, end)
     def sliceCharArray(start: Int, end: Int) = {
@@ -496,7 +447,6 @@ object ParserInput {
       _cursor += 1
       if (_cursor < chars.length) chars(_cursor) else EOI
     }
-    def nextUtf8Char() = nextChar()
     def length = chars.length
     def sliceString(start: Int, end: Int) = new String(chars, start, end - start)
     def sliceCharArray(start: Int, end: Int) = java.util.Arrays.copyOfRange(chars, start, end)
