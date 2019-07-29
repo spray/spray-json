@@ -1,13 +1,16 @@
 package spray.json
 
 import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.Param
 import org.openjdk.jmh.annotations.Setup
 
 import scala.io.Source
-
 import play.api.libs.json.Json
 
 class GithubIssuesJsonAST extends Common {
+  @Param(Array("github-akka-issues.json", "big-string-array.json"))
+  var res: String = null
+
   var jsonString: String = _
   var jsonBytes: Array[Byte] = _
   var sprayJsonAST: JsValue = _
@@ -17,7 +20,7 @@ class GithubIssuesJsonAST extends Common {
 
   @Setup
   def setup(): Unit = {
-    jsonString = Source.fromResource("github-akka-issues.json").mkString
+    jsonString = Source.fromResource(res).mkString
     jsonBytes = jsonString.getBytes("utf8") // yeah, a useless utf8 roundtrip
     sprayJsonAST = JsonParser(jsonString)
     playJsonAST = Json.parse(jsonString)
@@ -29,7 +32,7 @@ class GithubIssuesJsonAST extends Common {
   def readSprayJsonFromString(): Unit = JsonParser(jsonString)
 
   @Benchmark
-  def readSprayJsonFromBytes(): Unit = JsonParser(jsonString)
+  def readSprayJsonFromBytes(): Unit = JsonParser(jsonBytes)
 
   @Benchmark
   def readPlayJson(): Unit = Json.parse(jsonString)
