@@ -18,7 +18,7 @@ package spray.json
 
 import org.specs2.mutable._
 
-class AdditionalFormatsSpec extends Specification {
+class AdditionalFormatsSpec extends Specification with RoundTripSpecBase {
 
   case class Container[A](inner: Option[A])
 
@@ -68,6 +68,52 @@ class AdditionalFormatsSpec extends Specification {
 
       json mustEqual
         """{"id":1,"name":"a","foos":[{"id":2,"name":"b","foos":[{"id":3,"name":"c"}]},{"id":4,"name":"d"}]}""".parseJson
+    }
+  }
+
+  "AdditionalFormats" should {
+    "provide implicits (with DefaultJsonProtocol import) for" in {
+      "JsValue" in {
+        import DefaultJsonProtocol._ // check that no implicits conflict
+        safeReader[JsValue] // dummy to silence unused warning for above import
+
+        roundTrip[JsValue]("53", JsNumber(53))
+        roundTrip[JsValue]("[]", JsArray())
+        roundTrip[JsValue]("{}", JsObject())
+        roundTrip[JsValue]("\"test\"", JsString("test"))
+        roundTrip[JsValue]("[{}]", JsArray(JsObject()))
+      }
+      "JsObject" in {
+        import DefaultJsonProtocol._ // check that no implicits conflict
+        safeReader[JsObject] // dummy to silence unused warning for above import
+
+        roundTrip[JsObject]("{}", JsObject())
+        roundTrip[JsObject]("""{"a":42}""", JsObject("a" -> JsNumber(42)))
+      }
+      "JsArray" in {
+        import DefaultJsonProtocol._ // check that no implicits conflict
+        safeReader[JsArray] // dummy to silence unused warning for above import
+
+        roundTrip[JsArray]("[]", JsArray())
+        roundTrip[JsArray]("[1,2,3]", JsArray(Seq(1, 2, 3).map(JsNumber(_): JsValue): _*))
+      }
+    }
+    "provide implicits (without any import) for" in {
+      "JsValue" in {
+        roundTrip[JsValue]("53", JsNumber(53))
+        roundTrip[JsValue]("[]", JsArray())
+        roundTrip[JsValue]("{}", JsObject())
+        roundTrip[JsValue]("\"test\"", JsString("test"))
+        roundTrip[JsValue]("[{}]", JsArray(JsObject()))
+      }
+      "JsObject" in {
+        roundTrip[JsObject]("{}", JsObject())
+        roundTrip[JsObject]("""{"a":42}""", JsObject("a" -> JsNumber(42)))
+      }
+      "JsArray" in {
+        roundTrip[JsArray]("[]", JsArray())
+        roundTrip[JsArray]("[1,2,3]", JsArray(Seq(1, 2, 3).map(JsNumber(_): JsValue): _*))
+      }
     }
   }
 }

@@ -17,22 +17,28 @@
 
 package spray.json
 
+trait AdditionalFormatsImplicits {
+  implicit val jsValueFormat: JsonFormat[JsValue] = AdditionalFormats.JsValueFormat
+  implicit val jsObjectFormat: JsonFormat[JsObject] = AdditionalFormats.RootJsObjectFormat
+  implicit val jsArrayFormat: JsonFormat[JsArray] = AdditionalFormats.RootJsArrayFormat
+}
+
 /**
  * Provides additional JsonFormats and helpers
  */
 trait AdditionalFormats {
 
-  implicit object JsValueFormat extends JsonFormat[JsValue] {
+  object JsValueFormat extends JsonFormat[JsValue] {
     def write(value: JsValue) = value
     def read(value: JsValue) = value
   }
 
-  implicit object RootJsObjectFormat extends RootJsonFormat[JsObject] {
+  object RootJsObjectFormat extends RootJsonFormat[JsObject] {
     def write(value: JsObject) = value
     def read(value: JsValue) = value.asJsObject
   }
 
-  implicit object RootJsArrayFormat extends RootJsonFormat[JsArray] {
+  object RootJsArrayFormat extends RootJsonFormat[JsArray] {
     def write(value: JsArray) = value
     def read(value: JsValue) = value match {
       case x: JsArray => x
@@ -115,3 +121,4 @@ trait AdditionalFormats {
   }
 
 }
+object AdditionalFormats extends AdditionalFormats
