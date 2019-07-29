@@ -16,6 +16,8 @@
 
 package spray.json
 
+import java.util.UUID
+
 import org.specs2.mutable._
 
 class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
@@ -162,6 +164,20 @@ class BasicFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert a JsString to a Symbol" in {
       JsString("Hello").convertTo[Symbol] mustEqual Symbol("Hello")
+    }
+  }
+
+  "The UUIDJsonFormat" should {
+    val good = "833a1d98-031e-4deb-b7cd-0f012c1d7e77"
+    val bad = "not_a_UUID"
+    "convert a UUID to a JsString" in {
+      UUID.fromString(good).toJson mustEqual JsString(good)
+    }
+    "convert a JsString to a UUID" in {
+      JsString(good).convertTo[UUID] mustEqual UUID.fromString(good)
+    }
+    "throw an Exception when trying to deserialize an invalid UUID String" in {
+      JsString(bad).convertTo[UUID] must throwA(new DeserializationException("Expected a valid UUID, but got " + bad))
     }
   }
 
