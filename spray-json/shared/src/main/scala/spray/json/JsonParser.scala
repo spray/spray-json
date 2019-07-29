@@ -180,21 +180,12 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
 
     @tailrec
     def parseOne(idx: Int): Int =
-      if (idx >= 1024) -1
-      else {
-        cursorChar match {
-          case '"' | EOI => idx
-          case '\\'      => -1
-          case x if x < 128 =>
-            charBuffer(idx) = x
-            cursorChar = input.nextChar()
-            parseOne(idx + 1)
-          case x => -1
-        }
-      }
+      if (cursorChar == '"' || cursorChar == EOI) idx
+      else if (((cursorChar - 32) ^ 60) <= 0) -1
+      else parseOne(idx + 1)
 
     parseOne(0) match {
-      case -1     =>
+      case -1 =>
         input.setCursor(start); stringSlow()
       case length => new String(charBuffer, 0, length)
     }
