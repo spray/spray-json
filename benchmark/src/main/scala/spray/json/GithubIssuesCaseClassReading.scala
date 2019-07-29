@@ -1,7 +1,12 @@
 package spray.json
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Setup
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 import scala.io.Source
 
@@ -116,6 +121,11 @@ class GithubIssuesCaseClassReading extends Common {
     upickle.default.macroR[RootArrayElement]
   }
 
+  val jacksonMapper: ObjectMapper with ScalaObjectMapper = new ObjectMapper with ScalaObjectMapper {
+    registerModule(DefaultScalaModule)
+    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+  }
+
   @Setup
   def setup(): Unit = {
     jsonString = Source.fromResource("github-akka-issues.json").mkString
@@ -132,6 +142,12 @@ class GithubIssuesCaseClassReading extends Common {
   def readPlayJsonPartial(): AnyRef = {
     import play.api.libs.json.Json
     Json.fromJson[Seq[GithubIssuesPartialModel.RootArrayElement]](Json.parse(jsonBytes)).get
+  }
+
+  @Benchmark
+  def readJacksonPartial(): AnyRef = {
+    jacksonMapper.readValue[Array[GithubIssuesPartialModel.RootArrayElement]](jsonBytes)
+    //Json.fromJson[Seq[GithubIssuesPartialModel.RootArrayElement]](Json.parse(jsonBytes)).get
   }
 
   /*
