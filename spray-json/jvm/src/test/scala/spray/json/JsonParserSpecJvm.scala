@@ -60,7 +60,7 @@ class JsonParserSpecJvm extends Specification {
         queue.peek
       }
 
-      val i = Iterator.iterate(1)(1+).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
+      val i: Int = Iterator.iterate(1)(1+).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
       println(s"Overflowing stack at $i which means we need about ${stackSize / i} bytes per recursive call")
 
       val maxDepth = i / 4 // should give lots of room
