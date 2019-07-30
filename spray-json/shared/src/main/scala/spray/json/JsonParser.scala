@@ -17,11 +17,11 @@
 package spray.json
 
 import scala.annotation.{ switch, tailrec }
-import java.lang.{ StringBuilder => JStringBuilder }
-import java.nio.{ ByteBuffer, CharBuffer }
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
 import scala.collection.immutable.TreeMap
+import scala.util.control.NonFatal
 
 /**
  * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
@@ -32,6 +32,10 @@ object JsonParser {
 
   class ParsingException(val summary: String, val detail: String = "")
     extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
+
+  private[JsonParser] val charBufferCache: ThreadLocal[Array[Char]] = new ThreadLocal[Array[Char]] {
+    override def initialValue(): Array[Char] = new Array[Char](1024)
+  }
 }
 
 class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSettings.default) {
@@ -39,19 +43,20 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
 
   import JsonParser.ParsingException
 
-  private[this] val sb = new JStringBuilder
   private[this] var cursorChar: Char = input.nextChar()
   private[this] var jsValue: JsValue = _
 
   def parseJsValue(): JsValue =
     parseJsValue(false)
 
-  def parseJsValue(allowTrailingInput: Boolean): JsValue = {
+  def parseJsValue(allowTrailingInput: Boolean): JsValue = try {
     ws()
     `value`(settings.maxDepth)
-    if (!allowTrailingInput)
-      require(EOI)
+    if (!allowTrailingInput && !input.isAtEOI)
+      fail("expected end-of-input")
     jsValue
+  } catch {
+    case _: ArrayIndexOutOfBoundsException => fail("unexpected end of input")
   }
 
   ////////////////////// GRAMMAR ////////////////////////
@@ -78,7 +83,8 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
           advance(); `array`(remainingNesting)
         case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
         case '"' =>
-          `string`(); jsValue = if (sb.length == 0) JsString.empty else JsString(sb.toString)
+          val str = `string`()
+          jsValue = if (str.length == 0) JsString.empty else JsString(str)
         case _ => fail("JSON Value")
       }
     }
@@ -92,10 +98,9 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     ws()
     jsValue = if (cursorChar != '}') {
       @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
-        `string`()
+        val key = `string`()
         require(':')
         ws()
-        val key = sb.toString
         `value`(remainingNesting - 1)
         val nextMap = map.updated(key, jsValue)
         if (ws(',')) members(nextMap) else nextMap
@@ -165,51 +170,148 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   private def DIGIT(): Boolean = cursorChar >= '0' && cursorChar <= '9' && advance()
 
   // http://tools.ietf.org/html/rfc4627#section-2.5
-  private def `string`(): Unit = {
-    if (cursorChar == '"') cursorChar = input.nextUtf8Char() else fail("'\"'")
-    sb.setLength(0)
-    while (`char`()) cursorChar = input.nextUtf8Char()
-    require('"')
+  private def `string`(): String = {
+    if (cursorChar != '"') fail("'\"'")
+    val res = stringFast(input.cursor)
     ws()
+    res
   }
 
-  private def `char`() =
-    // simple bloom-filter that quick-matches the most frequent case of characters that are ok to append
-    // (it doesn't match control chars, EOI, '"', '?', '\', 'b' and certain higher, non-ASCII chars)
-    if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
-    else cursorChar match {
-      case '"' | EOI => false
-      case '\\' =>
-        advance(); `escaped`()
-      case c => (c >= ' ') && appendSB(c)
+  var charBuffer: Array[Char] = JsonParser.charBufferCache.get()
+
+  private def stringFast(start: Int): String = {
+    /* Scan to the end of a simple string as fast as possible, no escapes, no unicode */
+    // so far unclear results if that is really helpful
+    /*@tailrec def parseOneFast(cursor: Int, charsRead: Int): String = {
+      val b = input.byteAt(cursor)
+      charBuffer(charsRead) = (b & 0xff).toChar
+      //println(s"At $cursor $charsRead read '${charBuffer(charsRead)}'")
+
+      if (b == '"') {
+        input.setCursor(cursor) // now at end '"'
+        advance()
+        new String(charBuffer, 0, charsRead)
+      } else if (((b - 32) ^ 60) <= 0) // trick from jsoniter-scala
+        parseOneSlow(cursor, charsRead) // fall back to slower parsing
+      else
+        parseOneFast(cursor + 1, charsRead + 1)
+    }*/
+
+    /*
+     * Do full string parsing. This subsumes the functionality from parseOneFast, however, just using
+     * this one for all parsing is significantly slower (> 10 %). A possible reason might be that using
+     * this function for all string parsing has worse branch prediction than the simple and fast variant?
+     */
+    @tailrec def parseOneSlow(cursor: Int, charsRead: Int): String = {
+      val b = input.charAt(cursor)
+      charBuffer(charsRead) = b
+
+      if (b == '"') {
+        input.setCursor(cursor) // now at end '"'
+        advance()
+        new String(charBuffer, 0, charsRead)
+      } else if (b == '\\') {
+        val skip = escaped(cursor, charsRead)
+        parseOneSlow(cursor + skip, charsRead + 1)
+      } else if (input.needsDecoding && b >= 128) {
+        val res = unicodeChar(b, cursor, charsRead)
+        val skip = res & 0x7
+        val read = res >> 4
+        parseOneSlow(cursor + skip, charsRead + read + 1)
+      } else
+        parseOneSlow(cursor + 1, charsRead + 1)
     }
 
-  private def `escaped`() = {
-    def hexValue(c: Char): Int =
-      if ('0' <= c && c <= '9') c - '0'
-      else if ('a' <= c && c <= 'f') c - 87
-      else if ('A' <= c && c <= 'F') c - 55
-      else fail("hex digit")
-    def unicode() = {
-      var value = hexValue(cursorChar)
-      advance()
-      value = (value << 4) + hexValue(cursorChar)
-      advance()
-      value = (value << 4) + hexValue(cursorChar)
-      advance()
-      value = (value << 4) + hexValue(cursorChar)
-      appendSB(value.toChar)
+    def escaped(cursor: Int, charsRead: Int): Int =
+      input.byteAt(cursor + 1) match {
+        case c @ ('"' | '/' | '\\') =>
+          charBuffer(charsRead) = c.toChar
+          2
+        case 'b' =>
+          charBuffer(charsRead) = '\b'
+          2
+        case 'f' =>
+          charBuffer(charsRead) = '\f'
+          2
+        case 'n' =>
+          charBuffer(charsRead) = '\n'
+          2
+        case 'r' =>
+          charBuffer(charsRead) = '\r'
+          2
+        case 't' =>
+          charBuffer(charsRead) = '\t'
+          2
+        case 'u' =>
+          def hexValue(c: Byte): Int =
+            if ('0' <= c && c <= '9') c - '0'
+            else if ('a' <= c && c <= 'f') c - 87
+            else if ('A' <= c && c <= 'F') c - 55
+            else fail("hex digit")
+
+          charBuffer(charsRead) =
+            ((hexValue(input.byteAt(cursor + 2)) << 12) |
+              (hexValue(input.byteAt(cursor + 3)) << 8) |
+              (hexValue(input.byteAt(cursor + 4)) << 4) |
+              hexValue(input.byteAt(cursor + 5))).toChar
+
+          6
+        case _ => fail("JSON escape sequence")
+      }
+    def unicodeChar(b: Char, cursor: Int, charsRead: Int): Int = {
+      if ((b & 0xE0) == 0xC0) { // two byte sequence
+        charBuffer(charsRead) = (((b & 0x1f) << 6) |
+          (input.byteAt(cursor + 1) & 0x3f)).toChar
+        2
+      } else if ((b & 0xF0) == 0xE0) { // 3-byte UTF-8 sequence
+        val codePoint =
+          ((b & 0x0f) << 12) |
+            ((input.byteAt(cursor + 1) & 0x3f) << 6) |
+            (input.byteAt(cursor + 2) & 0x3f)
+
+        if (codePoint < 0xffff) {
+          charBuffer(charsRead) = codePoint.toChar
+          3
+        } else {
+          charBuffer(charsRead) = ((0xd7C0 + (codePoint >> 10)).toChar)
+          charBuffer(charsRead + 1) = ((0xdc00 + (codePoint & 0x3ff)).toChar)
+          3
+        }
+      } else if ((b & 0xF8) == 0xF0) { // 4-byte UTF-8 sequence
+        val codePoint =
+          ((b & 0x07) << 18) |
+            ((input.byteAt(cursor + 1) & 0x3f) << 12) |
+            ((input.byteAt(cursor + 2) & 0x3f) << 6) |
+            (input.byteAt(cursor + 3) & 0x3f)
+
+        if (codePoint < 0xffff) {
+          charBuffer(charsRead) = codePoint.toChar
+          4
+        } else {
+          charBuffer(charsRead) = ((0xd7C0 + (codePoint >> 10)).toChar)
+          charBuffer(charsRead + 1) = ((0xdc00 + (codePoint & 0x3ff)).toChar)
+          0x14
+        }
+      } else
+        fail("utf-8 sequence")
     }
-    (cursorChar: @switch) match {
-      case '"' | '/' | '\\' => appendSB(cursorChar)
-      case 'b'              => appendSB('\b')
-      case 'f'              => appendSB('\f')
-      case 'n'              => appendSB('\n')
-      case 'r'              => appendSB('\r')
-      case 't'              => appendSB('\t')
-      case 'u' =>
-        advance(); unicode()
-      case _ => fail("JSON escape sequence")
+
+    try
+      if (input.byteAt(start + 1) == '"') { // really fast path for empty strings
+        input.setCursor(start + 1)
+        advance()
+        ""
+      } else
+        parseOneSlow(start + 1, 0)
+    catch {
+      case NonFatal(e: ArrayIndexOutOfBoundsException) =>
+        val newSize = (charBuffer.size * 2).min(settings.maxStringCharacters)
+        if (charBuffer.size < newSize) {
+          charBuffer = new Array[Char](newSize)
+          JsonParser.charBufferCache.set(charBuffer)
+          stringFast(start)
+        } else
+          throw e
     }
   }
 
@@ -222,7 +324,6 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   private def ch(c: Char): Boolean = if (cursorChar == c) { advance(); true } else false
   private def ws(c: Char): Boolean = if (ch(c)) { ws(); true } else false
   private def advance(): Boolean = { cursorChar = input.nextChar(); true }
-  private def appendSB(c: Char): Boolean = { sb.append(c); true }
   private def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
 
   private def fail(target: String, cursor: Int = input.cursor, errorChar: Char = cursorChar): Nothing = {
@@ -251,17 +352,16 @@ trait ParserInput {
    */
   def nextChar(): Char
 
-  /**
-   * Advance the cursor and get the next char, which could potentially be outside
-   * of the 7-Bit ASCII range. Therefore decoding might be required.
-   */
-  def nextUtf8Char(): Char
-
   def cursor: Int
+  def setCursor(newCursor: Int): Unit
   def length: Int
   def sliceString(start: Int, end: Int): String
   def sliceCharArray(start: Int, end: Int): Array[Char]
   def getLine(index: Int): ParserInput.Line
+  def byteAt(offset: Int): Byte
+  def charAt(offset: Int): Char
+  def needsDecoding: Boolean
+  def isAtEOI: Boolean = cursor == length
 }
 
 object ParserInput {
@@ -277,10 +377,12 @@ object ParserInput {
   abstract class DefaultParserInput extends ParserInput {
     protected var _cursor: Int = -1
     def cursor = _cursor
+    override def setCursor(newCursor: Int): Unit = _cursor = newCursor
+
     def getLine(index: Int): Line = {
       val sb = new java.lang.StringBuilder
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
-        nextUtf8Char() match {
+        nextChar() /* FIXME */ match {
           case '\n' if index > ix =>
             sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
           case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
@@ -301,47 +403,11 @@ object ParserInput {
    */
   abstract class IndexedBytesParserInput extends DefaultParserInput {
     def length: Int
-    protected def byteAt(offset: Int): Byte
+    def byteAt(offset: Int): Byte
 
-    private val byteBuffer = ByteBuffer.allocate(4)
-    private val charBuffer = CharBuffer.allocate(2)
-    private val decoder = UTF8.newDecoder()
     def nextChar() = {
       _cursor += 1
       if (_cursor < length) (byteAt(_cursor) & 0xFF).toChar else EOI
-    }
-    def nextUtf8Char() = {
-      @tailrec def decode(byte: Byte, remainingBytes: Int): Char = {
-        byteBuffer.put(byte)
-        if (remainingBytes > 0) {
-          _cursor += 1
-          if (_cursor < length) decode(byteAt(_cursor), remainingBytes - 1) else ErrorChar
-        } else {
-          byteBuffer.flip()
-          val coderResult = decoder.decode(byteBuffer, charBuffer, false)
-          charBuffer.flip()
-          val result = if (coderResult.isUnderflow & charBuffer.hasRemaining) charBuffer.get() else ErrorChar
-          byteBuffer.clear()
-          if (!charBuffer.hasRemaining) charBuffer.clear()
-          result
-        }
-      }
-
-      if (charBuffer.position() > 0) {
-        val result = charBuffer.get()
-        charBuffer.clear()
-        result
-      } else {
-        _cursor += 1
-        if (_cursor < length) {
-          val byte = byteAt(_cursor)
-          if (byte >= 0) byte.toChar // 7-Bit ASCII
-          else if ((byte & 0xE0) == 0xC0) decode(byte, 1) // 2-byte UTF-8 sequence
-          else if ((byte & 0xF0) == 0xE0) decode(byte, 2) // 3-byte UTF-8 sequence
-          else if ((byte & 0xF8) == 0xF0) decode(byte, 3) // 4-byte UTF-8 sequence
-          else ErrorChar
-        } else EOI
-      }
     }
   }
 
@@ -350,8 +416,10 @@ object ParserInput {
    * of the JSON input, without requiring a separate decoding step.
    */
   class ByteArrayBasedParserInput(bytes: Array[Byte]) extends IndexedBytesParserInput {
-    protected def byteAt(offset: Int): Byte = bytes(offset)
+    def byteAt(offset: Int): Byte = bytes(offset)
     def length: Int = bytes.length
+    def charAt(offset: Int): Char = (byteAt(offset) & 0xff).toChar
+    def needsDecoding: Boolean = true
 
     def sliceString(start: Int, end: Int) = new String(bytes, start, end - start, UTF8)
     def sliceCharArray(start: Int, end: Int) =
@@ -359,11 +427,14 @@ object ParserInput {
   }
 
   class StringBasedParserInput(string: String) extends DefaultParserInput {
+    def byteAt(offset: Int): Byte = string.charAt(offset).toByte
+    def charAt(offset: Int): Char = string.charAt(offset)
+    def needsDecoding: Boolean = false
+
     def nextChar(): Char = {
       _cursor += 1
       if (_cursor < string.length) string.charAt(_cursor) else EOI
     }
-    def nextUtf8Char() = nextChar()
     def length = string.length
     def sliceString(start: Int, end: Int) = string.substring(start, end)
     def sliceCharArray(start: Int, end: Int) = {
@@ -374,11 +445,14 @@ object ParserInput {
   }
 
   class CharArrayBasedParserInput(chars: Array[Char]) extends DefaultParserInput {
+    def byteAt(offset: Int): Byte = chars(offset).toByte
+    def charAt(offset: Int): Char = chars(offset)
+    def needsDecoding: Boolean = false
+
     def nextChar(): Char = {
       _cursor += 1
       if (_cursor < chars.length) chars(_cursor) else EOI
     }
-    def nextUtf8Char() = nextChar()
     def length = chars.length
     def sliceString(start: Int, end: Int) = new String(chars, start, end - start)
     def sliceCharArray(start: Int, end: Int) = java.util.Arrays.copyOfRange(chars, start, end)

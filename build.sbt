@@ -51,7 +51,7 @@ lazy val sprayJson =
     )
     .configurePlatforms(JVMPlatform)(_.enablePlugins(SbtOsgi))
     .jvmSettings(
-      crossScalaVersions := Seq(scala213, scala212, scala211, scala210),
+      crossScalaVersions := Seq(scala212, scala213, scala211, scala210),
       OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}""""),
       OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value)),
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
@@ -78,17 +78,18 @@ lazy val sprayJsonJS = sprayJson.js
 lazy val sprayJsonNative = sprayJson.native
 
 lazy val benchmark = Project("benchmark", file("benchmark"))
-  .settings(
-    scalaVersion := scala212
-  )
+  .settings(crossScalaVersions := Seq(scala212))
   .settings(noPublishSettings: _*)
   .enablePlugins(JmhPlugin)
   .dependsOn(sprayJsonJVM % "compile->test")
   .settings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "upickle" % "0.6.7",
-      "io.circe" %% "circe-parser" % "0.10.0",
-      "com.typesafe.play" %% "play-json" % "2.7.0-M1"
+      "com.lihaoyi" %% "upickle" % "0.7.5",
+      "io.circe" %% "circe-parser" % "0.11.1",
+      "io.circe" %% "circe-core" % "0.11.1",
+      "io.circe" %% "circe-generic" % "0.11.1",
+      "com.typesafe.play" %% "play-json" % "2.7.4",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.9",
     )
   )
 
