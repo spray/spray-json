@@ -63,8 +63,9 @@ class JsonParserSpecJvm extends Specification {
       val i = Iterator.iterate(1)(1+).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
       println(s"Overflowing stack at $i which means we need about ${stackSize / i} bytes per recursive call")
 
-      probe(1500, maxDepth = 200) === // maxDepth = 300 means we have > 600 bytes per stack frame which should be enough
-        "nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxDepth = 200"
+      val maxDepth = i / 4 // should give lots of room
+      probe(1500, maxDepth) ===
+        s"nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxDepth = $maxDepth"
     }
   }
 
