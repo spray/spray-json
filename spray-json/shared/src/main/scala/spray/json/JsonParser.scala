@@ -32,6 +32,10 @@ object JsonParser {
 
   class ParsingException(val summary: String, val detail: String = "")
     extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
+
+  private[JsonParser] val charBufferCache: ThreadLocal[Array[Char]] = new ThreadLocal[Array[Char]] {
+    override def initialValue(): Array[Char] = new Array[Char](1024)
+  }
 }
 
 class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSettings.default) {
@@ -173,7 +177,8 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
     res
   }
 
-  private var charBuffer = new Array[Char](settings.initialMaxStringCharacters)
+  var charBuffer: Array[Char] = JsonParser.charBufferCache.get()
+
   private def stringFast(start: Int): String = {
     /* Scan to the end of a simple string as fast as possible, no escapes, no unicode */
     // so far unclear results if that is really helpful
@@ -303,6 +308,7 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
         val newSize = (charBuffer.size * 2).min(settings.maxStringCharacters)
         if (charBuffer.size < newSize) {
           charBuffer = new Array[Char](newSize)
+          JsonParser.charBufferCache.set(charBuffer)
           stringFast(start)
         } else
           throw e
