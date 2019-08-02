@@ -74,15 +74,16 @@ lazy val sprayJson =
     )
 
 lazy val sprayJsonJVM = sprayJson.jvm
-lazy val sprayJsonJS = sprayJson.js
-lazy val sprayJsonNative = sprayJson.native
+lazy val sprayJsonJS = sprayJson.js.disablePlugins(MimaPlugin)
+lazy val sprayJsonNative = sprayJson.native.disablePlugins(MimaPlugin)
 
 lazy val benchmark = Project("benchmark", file("benchmark"))
+  .enablePlugins(JmhPlugin)
+  .disablePlugins(MimaPlugin)
   .settings(
     scalaVersion := scala212
   )
   .settings(noPublishSettings: _*)
-  .enablePlugins(JmhPlugin)
   .dependsOn(sprayJsonJVM % "compile->test")
   .settings(
     libraryDependencies ++= Seq(
@@ -97,6 +98,7 @@ lazy val noPublishSettings = Seq(
 )
 
 lazy val root = (project in file("."))
+  .disablePlugins(MimaPlugin)
   .aggregate(sprayJsonJVM, sprayJsonJS, sprayJsonNative)
   .settings(
     publish := {},
