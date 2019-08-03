@@ -134,7 +134,7 @@ class ProductFormatsSpec extends Specification {
     val obj = Test18("a1", "a2", "a3", "a4", 5, "a6", "a7", "a8", "a9",
       "a10", "a11", 12d, "a13", "a14", "a15", "a16", "a17", "a18")
 
-    val json = JsonParser("""{"a1":"a1","a2":"a2","a3":"a3","a4":"a4","a5":5,"a6":"a6","a7":"a7","a8":"a8","a9":"a9","a10":"a10","a11":"a11","a12":12.0,"a13":"a13","a14":"a14","a15":"a15","a16":"a16","a17":"a17","a18":"a18"}""")
+    val json = """{"a1":"a1","a2":"a2","a3":"a3","a4":"a4","a5":5,"a6":"a6","a7":"a7","a8":"a8","a9":"a9","a10":"a10","a11":"a11","a12":12.0,"a13":"a13","a14":"a14","a15":"a15","a16":"a16","a17":"a17","a18":"a18"}""".parseJson
     "convert to a respective JsObject" in {
       obj.toJson mustEqual json
     }

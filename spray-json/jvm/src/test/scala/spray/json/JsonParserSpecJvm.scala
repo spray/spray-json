@@ -29,7 +29,7 @@ class JsonParserSpecJvm extends Specification {
 
       val largeJsonSource = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/test.json")).mkString
       val list = Await.result(
-        Future.traverse(List.fill(20)(largeJsonSource))(src => Future(JsonParser(src))),
+        Future.traverse(List.fill(20)(largeJsonSource))(src => Future(src.parseJson)),
         5.seconds
       )
       list.map(_.asInstanceOf[JsObject].fields("questions").asInstanceOf[JsArray].elements.size) === List.fill(20)(100)
@@ -45,7 +45,7 @@ class JsonParserSpecJvm extends Specification {
             try {
               val nested = "[{\"key\":" * (depth / 2)
               val settings = JsonParserSettings.default.withMaxDepth(maxDepth)
-              JsonParser(nested, settings)
+              nested.parseJson(settings)
               queue.push("didn't fail")
             } catch {
               case s: StackOverflowError => queue.push("stackoverflow")

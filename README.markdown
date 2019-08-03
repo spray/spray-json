@@ -49,26 +49,33 @@ import DefaultJsonProtocol._ // if you don't supply your own Protocol (see below
 
 and do one or more of the following:
 
-1. Parse a JSON string into its Abstract Syntax Tree (AST) representation
+1. Directly parse a JSON document to a Scala object with the `parseJsonAs` method
 
     ```scala
     val source = """{ "some": "JSON source" }"""
-    val jsonAst = source.parseJson // or JsonParser(source)
+    val myObject = source.parseJsonAs[MyObjectType]
     ```
 
-2. Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
+2. Parse a JSON string into its Abstract Syntax Tree (AST) representation
+
+    ```scala
+    val source = """{ "some": "JSON source" }"""
+    val jsonAst = source.parseJson
+    ```
+
+3. Print a JSON AST back to a String using either the `CompactPrinter` or the `PrettyPrinter`
 
     ```scala
     val json = jsonAst.prettyPrint // or .compactPrint
     ```
 
-3. Convert any Scala object to a JSON AST using the `toJson` extension method
+4. Convert any Scala object to a JSON AST using the `toJson` extension method
 
     ```scala
     val jsonAst = List(1, 2, 3).toJson
     ```
 
-4. Convert a JSON AST to a Scala object with the `convertTo` method
+5. Convert a JSON AST to a Scala object with the `convertTo` method
 
     ```scala
     val myObject = jsonAst.convertTo[MyObjectType]
@@ -291,16 +298,14 @@ call to `rootFormat`.
 
 ### Customizing Parser Settings
 
-The parser can be customized by providing a custom instance of `JsonParserSettings` to `JsonParser.apply` or
-`String.parseJson`:
+The parser can be customized by providing a custom instance of `JsonParserSettings` to `parseJson` or
+`parseJsonAs`:
 
 ```scala
 val customSettings =
   JsonParserSettings.default
      .withMaxDepth(100)
      .withMaxNumberCharacters(20)
-val jsValue = JsonParser(jsonString, customSettings)
-// or
 val jsValue = jsonString.parseJson(customSettings)
 ```
 

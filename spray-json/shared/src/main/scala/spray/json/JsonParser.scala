@@ -27,13 +27,16 @@ import scala.collection.immutable.TreeMap
  * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
  */
 object JsonParser {
+  @deprecated("JsonParser APIs are now deprecated to allow for better evolution of the parser structure. Use spray.json.parseJsonAs or spray.json.parseJson, instead.", since = "1.4.0")
   def apply(input: ParserInput): JsValue = new JsonParser(input).parseJsValue()
+  @deprecated("JsonParser APIs are now deprecated to allow for better evolution of the parser structure. Use spray.json.parseJsonAs or spray.json.parseJson, instead.", since = "1.4.0")
   def apply(input: ParserInput, settings: JsonParserSettings): JsValue = new JsonParser(input, settings).parseJsValue()
 
   class ParsingException(val summary: String, val detail: String = "")
     extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
 }
 
+@deprecated("Parser APIs and internals are now deprecated to allow for better evolution of the parser structure.", since = "1.4.0")
 class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSettings.default) {
   def this(input: ParserInput) = this(input, JsonParserSettings.default)
 
@@ -244,6 +247,9 @@ class JsonParser(input: ParserInput, settings: JsonParserSettings = JsonParserSe
   }
 }
 
+@deprecated(
+  "JsonParser internals are now deprecated to allow for better evolution of the parser structure." +
+    "Implement Input, instead, to support custom input data types", since = "1.4.0")
 trait ParserInput {
   /**
    * Advance the cursor and get the next char.
@@ -263,7 +269,7 @@ trait ParserInput {
   def sliceCharArray(start: Int, end: Int): Array[Char]
   def getLine(index: Int): ParserInput.Line
 }
-
+@deprecated("Parser APIs and internals are now deprecated to allow for better evolution of the parser structure.", since = "1.4.0")
 object ParserInput {
   private final val EOI = '\uFFFF' // compile-time constant
   private final val ErrorChar = '\uFFFD' // compile-time constant, universal UTF-8 replacement character '�'
@@ -299,6 +305,9 @@ object ParserInput {
   /**
    * ParserInput that allows to create a ParserInput from any randomly accessible indexed byte storage.
    */
+  @deprecated(
+    "JsonParser internals are now deprecated to allow for better evolution of the parser structure." +
+      "Implement Input, instead, to support custom input data types", since = "1.4.0")
   abstract class IndexedBytesParserInput extends DefaultParserInput {
     def length: Int
     protected def byteAt(offset: Int): Byte

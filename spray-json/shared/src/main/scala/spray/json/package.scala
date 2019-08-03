@@ -27,12 +27,24 @@ package object json {
   def jsonWriter[T](implicit writer: JsonWriter[T]) = writer
 
   implicit def enrichAny[T](any: T) = new RichAny(any)
-  implicit def enrichString(string: String) = new RichString(string)
+  def enrichString(string: String) = new RichString(string)
+  implicit class RichWithInput[I](any: I)(implicit i: Input[I]) {
+    def parseJson: JsValue = json.parseJson(any)
+    def parseJson(settings: JsonParserSettings): JsValue = json.parseJson(any, settings)
+    def parseJsonAs[T: JsonReader]: T = json.parseJsonAs(any)
+    def parseJsonAs[T: JsonReader](settings: JsonParserSettings): T = json.parseJsonAs(any, settings)
+  }
 
   @deprecated("use enrichAny", "1.3.4")
   def pimpAny[T](any: T) = new PimpedAny(any)
   @deprecated("use enrichString", "1.3.4")
   def pimpString(string: String) = new PimpedString(string)
+
+  def parseJson[I](i: I, settings: JsonParserSettings = JsonParserSettings.default)(implicit input: Input[I]): JsValue =
+    JsonParser(input.parserInput(i), settings)
+
+  def parseJsonAs[I: Input, T: JsonReader](i: I, settings: JsonParserSettings = JsonParserSettings.default): T =
+    parseJson(i, settings).convertTo[T]
 }
 
 package json {
@@ -47,8 +59,8 @@ package json {
   private[json] class RichString(string: String) {
     @deprecated("deprecated in favor of parseJson", "1.2.6")
     def asJson: JsValue = parseJson
-    def parseJson: JsValue = JsonParser(string)
-    def parseJson(settings: JsonParserSettings): JsValue = JsonParser(string, settings)
+    def parseJson: JsValue = json.parseJson(string)
+    def parseJson(settings: JsonParserSettings): JsValue = json.parseJson(string, settings)
   }
 
   @deprecated("use RichAny", "1.3.4")
@@ -60,7 +72,6 @@ package json {
   private[json] class PimpedString(string: String) {
     @deprecated("deprecated in favor of parseJson", "1.2.6")
     def asJson: JsValue = parseJson
-    def parseJson: JsValue = JsonParser(string)
+    def parseJson: JsValue = string.parseJson
   }
-
 }
