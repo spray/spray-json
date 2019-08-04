@@ -1,0 +1,9 @@
+# Mima >= 0.5.0 found this existing issue (but only on Scala 2.12.8)
+# method apply(java.lang.Object,java.lang.Object,java.lang.Object)java.lang.Object in class spray.json.DeserializationException's
+# type is different in current version, where it is (java.lang.String,java.lang.Throwable,scala.collection.immutable.List)spray.json.DeserializationException
+# instead of (java.lang.Object,java.lang.Object,java.lang.Object)java.lang.Object
+#
+# This method is a static forwarder for one of the apply overloads in the companion method.
+#
+# In any case, this forwarder would only matter to Java users of spray-json.
+ProblemFilters.exclude[IncompatibleMethTypeProblem]("spray.json.DeserializationException.apply")
