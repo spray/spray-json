@@ -21,13 +21,6 @@ lazy val sprayJson =
         else Nil
       },
       (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value),
-      scalaBinaryVersion := {
-        val sV = scalaVersion.value
-        if (CrossVersion.isScalaApiCompatible(sV))
-          CrossVersion.binaryScalaVersion(sV)
-        else
-          sV
-      },
       // Workaround for "Shared resource directory is ignored"
       // https://github.com/portable-scala/sbt-crossproject/issues/74
       unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "spray-json/shared/src/test/resources"
