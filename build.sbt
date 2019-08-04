@@ -17,7 +17,7 @@ lazy val sprayJson =
       scalaVersion := crossScalaVersions.value.head,
       scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8", "-target:jvm-1.8"),
       scalacOptions ++= {
-        if (scalaMinorVersion.value >= 12) Seq("-release", "8")
+        if (scalaMinorVersion.value >= 12 && !sys.props("java.version").startsWith("1.") /* i.e. Java version >= 9 */) Seq("-release", "8")
         else Nil
       },
       (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value),
