@@ -120,7 +120,7 @@ If your custom type `T` is a case class then augmenting the `DefaultJsonProtocol
 case class Color(name: String, red: Int, green: Int, blue: Int)
 
 object MyJsonProtocol extends DefaultJsonProtocol {
-  implicit val colorFormat = jsonFormat4(Color)
+  implicit val colorFormat = jsonFormatN(Color.apply)
 }
 
 import MyJsonProtocol._
@@ -130,28 +130,14 @@ val json = Color("CadetBlue", 95, 158, 160).toJson
 val color = json.convertTo[Color]
 ```
 
-The `jsonFormatX` methods reduce the boilerplate to a minimum, just pass the right one the companion object of your
-case class and it will return a ready-to-use `JsonFormat` for your type (the right one is the one matching the number
-of arguments to your case class constructor, e.g. if your case class has 13 fields you need to use the `jsonFormat13`
-method). The `jsonFormatX` methods try to extract the field names of your case class before calling the more general
+The `jsonFormatN` method reduces the boilerplate to a minimum, just pass the apply method and it will return a ready-to-use
+`JsonFormat` for your type. The `jsonFormatN` method tries to extract the field names of your case class before calling the more general
 `jsonFormat` overloads, which let you specify the field name manually. So, if spray-json has trouble determining the
 field names or if your JSON objects use member names that differ from the case class fields you can also use
 `jsonFormat` directly.
 
-*Note that spray-json for ScalaJS or Scala Native does not support the `jsonFormatX` methods, and hence using
+*Note that spray-json for ScalaJS or Scala Native does not support the `jsonFormatN` methods, and hence using
 the `jsonFormat` overloads is required on these platforms.*
-
-There is one additional quirk: If you explicitly declare the companion object for your case class the notation above will
-stop working. You'll have to explicitly refer to the companion objects `apply` method to fix this:
-
-```scala
-case class Color(name: String, red: Int, green: Int, blue: Int)
-object Color
-
-object MyJsonProtocol extends DefaultJsonProtocol {
-  implicit val colorFormat = jsonFormat4(Color.apply)
-}
-```
 
 If your case class is generic in that it takes type parameters itself the `jsonFormat` methods can also help you.
 However, there is a little more boilerplate required as you need to add context bounds for all type parameters
@@ -161,7 +147,7 @@ and explicitly refer to the case classes `apply` method as in this example:
 case class NamedList[A](name: String, items: List[A])
 
 object MyJsonProtocol extends DefaultJsonProtocol {
-  implicit def namedListFormat[A :JsonFormat] = jsonFormat2(NamedList.apply[A])
+  implicit def namedListFormat[A :JsonFormat] = jsonFormatN(NamedList.apply[A])
 }
 ```
 
