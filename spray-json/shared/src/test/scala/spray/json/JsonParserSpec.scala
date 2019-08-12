@@ -22,9 +22,9 @@ class JsonParserFromStringSpec extends JsonParserSpec(identity)
 class JsonParserFromCharArraySpec extends JsonParserSpec(_.toCharArray)
 class JsonParserFromBytesSpec extends JsonParserSpec(_.getBytes("utf8"))
 
-abstract class JsonParserSpec(inputFromString: String => ParserInput) extends Specification {
+abstract class JsonParserSpec[T: Input](inputFromString: String => T) extends Specification {
   def parseString(json: String, settings: JsonParserSettings = JsonParserSettings.default): JsValue =
-    JsonParser(inputFromString(json), settings)
+    inputFromString(json).parseJson(settings)
 
   "The JsonParser" should {
     "parse 'null' to JsNull" in {
@@ -146,16 +146,15 @@ abstract class JsonParserSpec(inputFromString: String => ParserInput) extends Sp
     }
 
     "parse multiple values when allowTrailingInput" in {
-      val parser = new JsonParser(inputFromString("""{"key":1}{"key":2}"""))
+      val parser = new JsonParser(implicitly[Input[T]].parserInput(inputFromString("""{"key":1}{"key":2}""")))
       parser.parseJsValue(true) === JsObject("key" -> JsNumber(1))
       parser.parseJsValue(true) === JsObject("key" -> JsNumber(2))
     }
     "reject trailing input when !allowTrailingInput" in {
-      def parser = new JsonParser(inputFromString("""{"key":1}x"""))
+      def parser = new JsonParser(implicitly[Input[T]].parserInput(inputFromString("""{"key":1}x""")))
       parser.parseJsValue(false) must throwA[JsonParser.ParsingException].like {
         case e: JsonParser.ParsingException => e.getMessage must contain("expected end-of-input")
       }
     }
-
   }
 }
