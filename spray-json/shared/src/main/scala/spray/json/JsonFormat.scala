@@ -58,6 +58,7 @@ object JsonFormat
   extends AdditionalFormatsImplicits
   with BasicFormatsImplicits
   with CollectionFormatsImplicits
+  with StandardFormatsImplicits
 
 /**
  * A special JsonReader capable of reading a legal JSON root object, i.e. either a JSON array or a JSON object.

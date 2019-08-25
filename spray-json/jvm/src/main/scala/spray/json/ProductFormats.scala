@@ -45,8 +45,8 @@ trait ProductFormats extends ProductFormatsInstances {
   protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField] = Nil)(implicit writer: JsonWriter[T]): List[JsField] = {
     val value = p.productElement(ix).asInstanceOf[T]
     writer match {
-      case _: OptionFormat[_] if (value == None) => rest
-      case _                                     => (fieldName, writer.write(value)) :: rest
+      case _: StandardFormats#OptionFormat[_] if (value == None) => rest
+      case _ => (fieldName, writer.write(value)) :: rest
     }
   }
 
