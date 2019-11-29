@@ -4,8 +4,8 @@ import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProble
 
 lazy val scala210 = "2.10.7"
 lazy val scala211 = "2.11.12"
-lazy val scala212 = "2.12.8"
-lazy val scala213 = "2.13.0"
+lazy val scala212 = "2.12.10"
+lazy val scala213 = "2.13.1"
 
 lazy val sprayJson =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -14,6 +14,7 @@ lazy val sprayJson =
     .settings(
       name := "spray-json",
       version := "1.3.6-SNAPSHOT",
+      // needed to prevent the default scala version of 2.12 which would make native eligible for running with `++2.12.10 xyz`
       scalaVersion := crossScalaVersions.value.head,
       scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8", "-target:jvm-1.8"),
       scalacOptions ++= {
