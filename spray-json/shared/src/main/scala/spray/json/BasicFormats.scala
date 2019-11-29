@@ -17,6 +17,10 @@
 
 package spray.json
 
+import java.util.UUID
+
+import scala.util.Try
+
 /**
  * Provides the JsonFormats for the most important Scala types.
  */
@@ -134,6 +138,22 @@ trait BasicFormats {
     def read(value: JsValue) = value match {
       case JsString(x) => Symbol(x)
       case x           => deserializationError("Expected Symbol as JsString, but got " + x)
+    }
+  }
+
+  implicit object UUIDJsonFormat extends JsonFormat[UUID] {
+    def write(x: UUID) = {
+      require(x ne null)
+      JsString(x.toString)
+    }
+    def read(value: JsValue) = {
+      def stringToUUID(s: String): UUID = Try(UUID.fromString(s))
+        .recover { case t => deserializationError("Expected a valid UUID, but got " + s) }
+        .get
+      value match {
+        case JsString(x) => stringToUUID(x)
+        case x           => deserializationError("Expected UUID as JsString, but got " + x)
+      }
     }
   }
 }
