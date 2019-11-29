@@ -6,8 +6,8 @@ language: scala
 scala:
   - 2.10.7
   - 2.11.12
-  - 2.12.8
-  - 2.13.0
+  - 2.12.10
+  - 2.13.1
 
 before_install:
   - sudo rm -r /usr/local/clang-7.0.0
@@ -18,7 +18,7 @@ env:
   -JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 script:
-  - sbt -java-home /usr/lib/jvm/java-8-openjdk-amd64 ++$TRAVIS_SCALA_VERSION test mimaReportBinaryIssues
+  - sbt -java-home /usr/lib/jvm/java-8-openjdk-amd64 "++$TRAVIS_SCALA_VERSION test" "++$TRAVIS_SCALA_VERSION mimaReportBinaryIssues"
 
 before_cache:
   - find $HOME/.sbt -name "*.lock" | xargs rm
@@ -28,4 +28,5 @@ before_cache:
 cache:
   directories:
     - $HOME/.ivy2/cache
+    - $HOME/.coursier/
     - $HOME/.sbt/boot/
