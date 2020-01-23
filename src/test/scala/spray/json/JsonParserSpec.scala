@@ -154,27 +154,37 @@ class JsonParserSpec extends Specification {
     }
 
     "fail gracefully for deeply nested structures" in {
-      val queue = new java.util.ArrayDeque[String]()
+      val stackSize = 128000
 
-      // testing revealed that each recursion will need approx. 280 bytes of stack space
-      val depth = 1500
-      val runnable = new Runnable {
-        override def run(): Unit =
-          try {
-            val nested = "[{\"key\":" * (depth / 2)
-            JsonParser(nested)
-            queue.push("didn't fail")
-          } catch {
-            case s: StackOverflowError => queue.push("stackoverflow")
-            case NonFatal(e) =>
-              queue.push(s"nonfatal: ${e.getMessage}")
-          }
+      def probe(depth: Int, maxDepth: Int): String = {
+        val queue = new java.util.ArrayDeque[String]()
+
+        val runnable = new Runnable {
+          override def run(): Unit =
+            try {
+              val nested = "[{\"key\":" * (depth / 2)
+              val settings = JsonParserSettings.default.withMaxDepth(maxDepth)
+              nested.parseJson(settings)
+              queue.push("didn't fail")
+            } catch {
+              case s: StackOverflowError => queue.push("stackoverflow")
+              case NonFatal(e) =>
+                queue.push(s"nonfatal: ${e.getMessage}")
+            }
+        }
+
+        val thread = new Thread(null, runnable, "parser-test", stackSize)
+        thread.start()
+        thread.join()
+        queue.peek
       }
 
-      val thread = new Thread(null, runnable, "parser-test", 655360)
-      thread.start()
-      thread.join()
-      queue.peek() === "nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxNesting = 1000"
+      val i: Int = Iterator.iterate(1)(1+).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
+      println(s"Overflowing stack at $i which means we need about ${stackSize / i} bytes per recursive call")
+
+      val maxDepth = i / 4 // should give lots of room
+      probe(1500, maxDepth) ===
+      s"nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxDepth = $maxDepth"
     }
 
     "parse multiple values when allowTrailingInput" in {
