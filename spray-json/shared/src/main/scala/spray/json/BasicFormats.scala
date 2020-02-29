@@ -17,12 +17,28 @@
 
 package spray.json
 
+trait BasicFormatsImplicits {
+  implicit val intFormat: JsonFormat[Int] = BasicFormats.IntJsonFormat
+  implicit val longFormat: JsonFormat[Long] = BasicFormats.LongJsonFormat
+  implicit val floatFormat: JsonFormat[Float] = BasicFormats.FloatJsonFormat
+  implicit val doubleFormat: JsonFormat[Double] = BasicFormats.DoubleJsonFormat
+  implicit val byteFormat: JsonFormat[Byte] = BasicFormats.ByteJsonFormat
+  implicit val shortFormat: JsonFormat[Short] = BasicFormats.ShortJsonFormat
+  implicit val bigDecimalFormat: JsonFormat[BigDecimal] = BasicFormats.BigDecimalJsonFormat
+  implicit val bigIntFormat: JsonFormat[BigInt] = BasicFormats.BigIntJsonFormat
+  implicit val unitFormat: JsonFormat[Unit] = BasicFormats.UnitJsonFormat
+  implicit val booleanFormat: JsonFormat[Boolean] = BasicFormats.BooleanJsonFormat
+  implicit val charFormat: JsonFormat[Char] = BasicFormats.CharJsonFormat
+  implicit val stringFormat: JsonFormat[String] = BasicFormats.StringJsonFormat
+  implicit val symbolFormat: JsonFormat[Symbol] = BasicFormats.SymbolJsonFormat
+}
+
 /**
  * Provides the JsonFormats for the most important Scala types.
  */
 trait BasicFormats {
 
-  implicit object IntJsonFormat extends JsonFormat[Int] {
+  object IntJsonFormat extends JsonFormat[Int] {
     def write(x: Int) = JsNumber(x)
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.intValue
@@ -30,7 +46,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object LongJsonFormat extends JsonFormat[Long] {
+  object LongJsonFormat extends JsonFormat[Long] {
     def write(x: Long) = JsNumber(x)
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.longValue
@@ -38,7 +54,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object FloatJsonFormat extends JsonFormat[Float] {
+  object FloatJsonFormat extends JsonFormat[Float] {
     def write(x: Float) = JsNumber(x)
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.floatValue
@@ -47,7 +63,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object DoubleJsonFormat extends JsonFormat[Double] {
+  object DoubleJsonFormat extends JsonFormat[Double] {
     def write(x: Double) = JsNumber(x)
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.doubleValue
@@ -56,7 +72,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object ByteJsonFormat extends JsonFormat[Byte] {
+  object ByteJsonFormat extends JsonFormat[Byte] {
     def write(x: Byte) = JsNumber(x)
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.byteValue
@@ -64,7 +80,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object ShortJsonFormat extends JsonFormat[Short] {
+  object ShortJsonFormat extends JsonFormat[Short] {
     def write(x: Short) = JsNumber(x)
     def read(value: JsValue) = value match {
       case JsNumber(x) => x.shortValue
@@ -72,7 +88,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object BigDecimalJsonFormat extends JsonFormat[BigDecimal] {
+  object BigDecimalJsonFormat extends JsonFormat[BigDecimal] {
     def write(x: BigDecimal) = {
       require(x ne null)
       JsNumber(x)
@@ -84,7 +100,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object BigIntJsonFormat extends JsonFormat[BigInt] {
+  object BigIntJsonFormat extends JsonFormat[BigInt] {
     def write(x: BigInt) = {
       require(x ne null)
       JsNumber(x)
@@ -96,12 +112,12 @@ trait BasicFormats {
     }
   }
 
-  implicit object UnitJsonFormat extends JsonFormat[Unit] {
+  object UnitJsonFormat extends JsonFormat[Unit] {
     def write(x: Unit) = JsNumber(1)
     def read(value: JsValue): Unit = {}
   }
 
-  implicit object BooleanJsonFormat extends JsonFormat[Boolean] {
+  object BooleanJsonFormat extends JsonFormat[Boolean] {
     def write(x: Boolean) = JsBoolean(x)
     def read(value: JsValue) = value match {
       case JsTrue  => true
@@ -110,7 +126,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object CharJsonFormat extends JsonFormat[Char] {
+  object CharJsonFormat extends JsonFormat[Char] {
     def write(x: Char) = JsString(String.valueOf(x))
     def read(value: JsValue) = value match {
       case JsString(x) if x.length == 1 => x.charAt(0)
@@ -118,7 +134,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object StringJsonFormat extends JsonFormat[String] {
+  object StringJsonFormat extends JsonFormat[String] {
     def write(x: String) = {
       require(x ne null)
       JsString(x)
@@ -129,7 +145,7 @@ trait BasicFormats {
     }
   }
 
-  implicit object SymbolJsonFormat extends JsonFormat[Symbol] {
+  object SymbolJsonFormat extends JsonFormat[Symbol] {
     def write(x: Symbol) = JsString(x.name)
     def read(value: JsValue) = value match {
       case JsString(x) => Symbol(x)
@@ -137,3 +153,4 @@ trait BasicFormats {
     }
   }
 }
+object BasicFormats extends BasicFormats

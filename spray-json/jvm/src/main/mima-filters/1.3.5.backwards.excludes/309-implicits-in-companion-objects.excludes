@@ -1,0 +1,6 @@
+# Adding an explicit return type also made the generic signature more accurate with Scala 2.10, 2.11
+# The descriptor itself didn't change. The semantics didn't change so it shouldn't have any impact on Scala programs.
+ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.rootJsonFormat")
+ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.lazyFormat")
+ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.rootFormat")
+ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.safeReader")
