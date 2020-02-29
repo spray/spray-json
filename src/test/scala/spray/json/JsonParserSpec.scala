@@ -184,7 +184,7 @@ class JsonParserSpec extends Specification {
 
       val maxDepth = i / 4 // should give lots of room
       probe(1500, maxDepth) ===
-      s"nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxDepth = $maxDepth"
+      s"nonfatal: JSON input nested too deeply:JSON input was nested more deeply than the configured limit of maxNesting = $maxDepth"
     }
 
     "parse multiple values when allowTrailingInput" in {
