@@ -6,25 +6,27 @@ scala:
   - 2.12.7
   - 2.13.0-M5
 
-jdk:
-  - oraclejdk8
-
-matrix:
-  include:
-  - jdk: openjdk11
-    scala: 2.12.7
-
-script:
-  - sbt "++ ${TRAVIS_SCALA_VERSION}!" test mimaReportBinaryIssues
+before_install:
+  # make comparing to origin/master work
+  - git remote set-branches --add origin master && git fetch
+  # using jabba for custom jdk management
+  - curl -sL https://raw.githubusercontent.com/shyiko/jabba/0.11.1/install.sh | bash && . ~/.jabba/jabba.sh
+  - jabba install adopt@1.8-0
 
 before_cache:
   - find $HOME/.ivy2 -name "ivydata-*.properties" -print -delete
   - find $HOME/.sbt  -name "*.lock"               -print -delete
 
+script:
+  - jabba use "adopt@1.8-0"
+  - java -version
+  - sbt "++ ${TRAVIS_SCALA_VERSION}!" test mimaReportBinaryIssues
+
 cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.sbt/boot
+    - $HOME/.jabba/jdk
 
 notifications:
   email:
