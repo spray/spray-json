@@ -213,7 +213,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
       value.asJsObject.getFields("name", "red", "green", "blue") match {
         case Seq(JsString(name), JsNumber(red), JsNumber(green), JsNumber(blue)) =>
           new Color(name, red.toInt, green.toInt, blue.toInt)
-        case _ => throw new DeserializationException("Color expected")
+        case _ => deserializationError("Color expected")
       }
     }
   }
