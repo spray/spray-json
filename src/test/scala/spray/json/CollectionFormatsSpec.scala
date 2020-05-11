@@ -19,7 +19,11 @@ package spray.json
 import org.specs2.mutable._
 import java.util.Arrays
 
-class CollectionFormatsSpec extends Specification with DefaultJsonProtocol {
+import org.specs2.ScalaCheck
+
+import scala.collection.immutable.TreeSet
+
+class CollectionFormatsSpec extends Specification with DefaultJsonProtocol with ScalaCheck {
 
   "The listFormat" should {
     val list = List(1, 2, 3)
@@ -78,5 +82,10 @@ class CollectionFormatsSpec extends Specification with DefaultJsonProtocol {
       json.convertTo[collection.IndexedSeq[Int]] mustEqual seq
     }
   }
-  
+
+  "viaSeq" should {
+    "maintain order" in prop { s: TreeSet[Long] =>
+      viaSeq[TreeSet[Long], Long](TreeSet(_: _*)).write(s) must_== s.toList.toJson
+    }
+  }
 }
