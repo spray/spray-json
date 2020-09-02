@@ -17,8 +17,6 @@
 
 package spray.json
 
-import scala.{Left, Right}
-
 /**
   * Provides the JsonFormats for the non-collection standard types.
  */
@@ -36,10 +34,10 @@ trait StandardFormats {
     }
     def read(value: JsValue) = value match {
       case JsNull => None
-      case x => Some(x.convertTo[T])
+      case x => Option(x.convertTo[T])
     }
     // allows reading the JSON as a Some (useful in container formats)
-    def readSome(value: JsValue) = Some(value.convertTo[T])
+    def readSome(value: JsValue) = Option(value.convertTo[T])
   }
 
   implicit def eitherFormat[A :JF, B :JF] = new JF[Either[A, B]] {

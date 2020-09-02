@@ -17,7 +17,6 @@
 package spray.json
 
 import org.specs2.mutable._
-import scala.Right
 
 class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
 
@@ -33,7 +32,28 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     }
     "convert JsString(Hello) to Some(Hello)" in {
       JsString("Hello").convertTo[Option[String]] mustEqual Some("Hello")
-    } 
+    }
+
+    "use a custom JsonFormat" should {
+      case class CustomFormat(s: String)
+      implicit object CustomFormatter extends JsonFormat[CustomFormat] {
+        override def read(json: JsValue): CustomFormat = json match {
+          case JsString("") => null
+          case JsString(s) => CustomFormat(s)
+          case other => throw DeserializationException(s"Expected CustomFormat, found ${other}")
+        }
+
+        override def write(obj: CustomFormat): JsValue = JsNull
+      }
+
+      "convert a null answer to None" in {
+        JsString("").convertTo[Option[CustomFormat]] must beNone
+      }
+
+      "convert a Some-able answer to Some(CustomFormat(...))" in {
+        JsString("Hello").convertTo[Option[CustomFormat]] must beSome(CustomFormat("Hello"))
+      }
+    }
   }
 
   "The eitherFormat" should {
