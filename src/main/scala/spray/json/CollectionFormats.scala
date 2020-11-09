@@ -86,7 +86,7 @@ trait CollectionFormats {
     * List => I.
    */
   def viaSeq[I <: Iterable[T], T :JsonFormat](f: imm.Seq[T] => I): RootJsonFormat[I] = new RootJsonFormat[I] {
-    def write(iterable: I) = JsArray(iterable.map(_.toJson).toVector)
+    def write(iterable: I) = JsArray(iterable.iterator.map(_.toJson).toVector)
     def read(value: JsValue) = value match {
       case JsArray(elements) => f(elements.map(_.convertTo[T]))
       case x => deserializationError("Expected Collection as JsArray, but got " + x)
