@@ -3,8 +3,8 @@ language: scala
 scala:
   - 2.10.7
   - 2.11.12
-  - 2.12.7
-  - 2.13.0-M5
+  - 2.12.12
+  - 2.13.3
 
 before_install:
   # make comparing to origin/master work
