@@ -26,7 +26,7 @@ Latest release: [![Maven Central](https://maven-badges.herokuapp.com/maven-centr
 If you use SBT you can include _spray-json_ in your project with
 
 ```scala
-libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5"
+libraryDependencies += "io.spray" %%  "spray-json" % "1.3.6"
 ```
 
 ### Usage
