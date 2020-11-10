@@ -25,7 +25,7 @@ trait BasicFormats {
   implicit object IntJsonFormat extends JsonFormat[Int] {
     def write(x: Int) = JsNumber(x)
     def read(value: JsValue) = value match {
-      case JsNumber(x) => x.intValue
+      case JsNumber(x) if x.isValidInt => x.intValue
       case x => deserializationError("Expected Int as JsNumber, but got " + x)
     }
   }
@@ -33,7 +33,7 @@ trait BasicFormats {
   implicit object LongJsonFormat extends JsonFormat[Long] {
     def write(x: Long) = JsNumber(x)
     def read(value: JsValue) = value match {
-      case JsNumber(x) => x.longValue
+      case JsNumber(x) if x.isValidLong => x.longValue
       case x => deserializationError("Expected Long as JsNumber, but got " + x)
     }
   }
@@ -59,7 +59,7 @@ trait BasicFormats {
   implicit object ByteJsonFormat extends JsonFormat[Byte] {
     def write(x: Byte) = JsNumber(x)
     def read(value: JsValue) = value match {
-      case JsNumber(x) => x.byteValue
+      case JsNumber(x) if x.isValidByte => x.byteValue
       case x => deserializationError("Expected Byte as JsNumber, but got " + x)
     }
   }
@@ -67,7 +67,7 @@ trait BasicFormats {
   implicit object ShortJsonFormat extends JsonFormat[Short] {
     def write(x: Short) = JsNumber(x)
     def read(value: JsValue) = value match {
-      case JsNumber(x) => x.shortValue
+      case JsNumber(x) if x.isValidShort => x.shortValue
       case x => deserializationError("Expected Short as JsNumber, but got " + x)
     }
   }
