@@ -1,3 +1,11 @@
+Version 1.3.6 (2020-11-10)
+--------------------------
+
+ - Preserve order of iterable in viaSeq in Scala 2.13 (#330)
+ - Throw instead of overflowing silently when numeric values are out of range for the target type (#208)
+ - Convert Float to JsNumber directly without going through Double (#241)
+ - Build with latest Scala versions (#334)
+
 Version 1.3.5 (2017-10-24)
 --------------------------
 
