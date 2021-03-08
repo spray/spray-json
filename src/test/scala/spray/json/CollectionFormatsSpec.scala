@@ -56,8 +56,27 @@ class CollectionFormatsSpec extends Specification with DefaultJsonProtocol with 
     "be able to convert a JsObject to a Map[String, Long]" in {
       json.convertTo[Map[String, Long]] mustEqual map
     }
-    "throw an Exception when trying to serialize a map whose key are not serialized to JsStrings" in {
-      Map(1 -> "a").toJson must throwA(new SerializationException("Map key must be formatted as JsString, not '1'"))
+    "convert a Map[Int, String] to a JsObject given a KeyableFormat" in {
+      implicit val keyableFormat: KeyableFormat[Int] = new KeyableFormat[Int] {
+        override def read(jsString: JsString) = jsString.value.toInt
+        override def write(obj: Int) = obj.toString
+      }
+
+      val map = Map(1 -> "a", 2 -> "b", 3 -> "c")
+      val json = JsObject("1" -> JsString("a"), "2" -> JsString("b"), "3" -> JsString("c"))
+
+      map.toJson mustEqual json
+    }
+    "be able to convert a JsObject to a Map[Int, String] given a KeyableFormat" in {
+      implicit val keyableFormat: KeyableFormat[Int] = new KeyableFormat[Int] {
+        override def read(jsString: JsString) = jsString.value.toInt
+        override def write(obj: Int) = obj.toString
+      }
+
+      val map = Map(1 -> "a", 2 -> "b", 3 -> "c")
+      val json = JsObject("1" -> JsString("a"), "2" -> JsString("b"), "3" -> JsString("c"))
+
+      json.convertTo[Map[Int, String]] mustEqual map
     }
   }
   

@@ -26,5 +26,6 @@ trait DefaultJsonProtocol
         with CollectionFormats
         with ProductFormats
         with AdditionalFormats
+        with KeyableFormats
 
 object DefaultJsonProtocol extends DefaultJsonProtocol
