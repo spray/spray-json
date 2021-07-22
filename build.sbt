@@ -32,8 +32,8 @@ lazy val sprayJson =
       libraryDependencies ++= {
         if (scalaMajorVersion.value >= 3)
           Seq(
-            "org.specs2" %%% "specs2-core" % "5.0.0-ALPHA-03" % "test",
-            "org.specs2" %%% "specs2-scalacheck" % "5.0.0-ALPHA-03" % "test",
+            ("org.specs2" %%% "specs2-core" % "4.5.1" % "test").cross(CrossVersion.for3Use2_13),
+            ("org.specs2" %%% "specs2-scalacheck" % "4.5.1" % "test").cross(CrossVersion.for3Use2_13),
             "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test"
           )
         else if (scalaMinorVersion.value >= 11)
