@@ -33,13 +33,13 @@ class ProductFormatsSpec extends Specification {
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
-    implicit val test0Format = jsonFormatN(Test0)
-    implicit val test2Format = jsonFormatN(Test2.apply _)
-    implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormatN(Test3[A, B] _)
-    implicit def test4Format = jsonFormatN(Test4.apply _)
-    implicit def testTransientFormat = jsonFormatN(TestTransient)
-    implicit def testStaticFormat = jsonFormatN(TestStatic)
-    implicit def testMangledFormat = jsonFormatN(TestMangled)
+    implicit val test0Format: JsonFormat[Test0] = jsonFormatN(Test0.apply _)
+    implicit val test2Format: JsonFormat[Test2] = jsonFormatN(Test2.apply _)
+    implicit def test3Format[A: JsonFormat, B: JsonFormat]: JsonFormat[Test3[A, B]] = jsonFormatN(Test3.apply[A, B] _)
+    implicit def test4Format: JsonFormat[Test4] = jsonFormatN(Test4.apply _)
+    implicit def testTransientFormat: JsonFormat[TestTransient] = jsonFormatN(TestTransient.apply _)
+    implicit def testStaticFormat: JsonFormat[TestStatic] = jsonFormatN(TestStatic.apply _)
+    implicit def testMangledFormat: JsonFormat[TestMangled] = jsonFormatN(TestMangled.apply _)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
