@@ -26,8 +26,8 @@ package object json {
   def jsonReader[T](implicit reader: JsonReader[T]) = reader
   def jsonWriter[T](implicit writer: JsonWriter[T]) = writer
 
-  implicit def enrichAny[T](any: T) = new RichAny(any)
-  implicit def enrichString(string: String) = new RichString(string)
+  implicit def enrichAny[T](any: T): RichAny[T] = new RichAny(any)
+  implicit def enrichString(string: String): RichString = new RichString(string)
 
   @deprecated("use enrichAny", "1.3.4")
   def pimpAny[T](any: T) = new PimpedAny(any)

@@ -22,7 +22,7 @@ class CustomFormatSpec extends Specification with DefaultJsonProtocol {
 
   case class MyType(name: String, value: Int)
 
-  implicit val MyTypeProtocol = new RootJsonFormat[MyType] {
+  implicit val MyTypeProtocol: JsonFormat[MyType] = new JsonFormat[MyType] {
     def read(json: JsValue) = {
       json.asJsObject.getFields("name", "value") match {
         case Seq(JsString(name), JsNumber(value)) => MyType(name, value.toInt)

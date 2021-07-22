@@ -97,7 +97,7 @@ class JsonParserSpec extends Specification {
 
       def nanoBench(block: => Unit): Long = {
         // great microbenchmark (the comment must be kept, otherwise it's not true)
-        val f = block _
+        val f = () => block
 
         // warmup
         (1 to 10).foreach(_ => f())
