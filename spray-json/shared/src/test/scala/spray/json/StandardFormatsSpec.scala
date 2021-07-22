@@ -57,7 +57,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     "be automatically provided from JsonFormat" in {
       trait X
       implicit def format: JsonFormat[X] = ???
-      implicit def reader = implicitly[JsonReader[X]]
+      implicit def reader: JsonReader[X] = implicitly[JsonReader[X]]
       success
     }
   }
@@ -65,7 +65,7 @@ class StandardFormatsSpec extends Specification with DefaultJsonProtocol {
     "be automatically provided from JsonFormat" in {
       trait X
       implicit def format: JsonFormat[X] = ???
-      implicit def reader = implicitly[JsonWriter[X]]
+      implicit def reader: JsonWriter[X] = implicitly[JsonWriter[X]]
       success
     }
   }

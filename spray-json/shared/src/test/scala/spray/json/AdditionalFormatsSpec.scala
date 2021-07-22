@@ -23,7 +23,7 @@ class AdditionalFormatsSpec extends Specification with RoundTripSpecBase {
   case class Container[A](inner: Option[A])
 
   object ReaderProtocol extends DefaultJsonProtocol {
-    implicit def containerReader[T: JsonFormat] = lift {
+    implicit def containerReader[T: JsonFormat]: JsonFormat[Container[T]] = lift {
       new JsonReader[Container[T]] {
         def read(value: JsValue) = value match {
           case JsObject(fields) if fields.contains("content") => Container(Some(jsonReader[T].read(fields("content"))))
@@ -34,7 +34,7 @@ class AdditionalFormatsSpec extends Specification with RoundTripSpecBase {
   }
 
   object WriterProtocol extends DefaultJsonProtocol {
-    implicit def containerWriter[T: JsonFormat] = lift {
+    implicit def containerWriter[T: JsonFormat]: JsonFormat[Container[T]] = lift {
       new JsonWriter[Container[T]] {
         def write(obj: Container[T]) = JsObject("content" -> obj.inner.toJson)
       }
@@ -58,7 +58,7 @@ class AdditionalFormatsSpec extends Specification with RoundTripSpecBase {
   case class Foo(id: Long, name: String, foos: Option[List[Foo]] = None)
 
   object FooProtocol extends DefaultJsonProtocol {
-    implicit val fooProtocol: JsonFormat[Foo] = lazyFormat(jsonFormat(Foo, "id", "name", "foos"))
+    implicit val fooProtocol: JsonFormat[Foo] = lazyFormat(jsonFormat(Foo.apply, "id", "name", "foos"))
   }
 
   "The lazyFormat wrapper" should {

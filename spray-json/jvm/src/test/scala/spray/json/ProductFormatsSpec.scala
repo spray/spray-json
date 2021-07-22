@@ -108,7 +108,7 @@ class ProductFormatsSpec extends Specification {
   }
   "A JsonFormat for a case class with 18 parameters and created with `jsonFormat`" should {
     object Test18Protocol extends DefaultJsonProtocol {
-      implicit val test18Format = jsonFormatN(Test18.apply _)
+      implicit val test18Format: JsonFormat[Test18] = jsonFormatN(Test18.apply _)
     }
     case class Test18(
       a1:  String,
@@ -147,7 +147,7 @@ class ProductFormatsSpec extends Specification {
     "support the jsonFormatN syntax" in {
       case class Box[A](a: A)
       object BoxProtocol extends DefaultJsonProtocol {
-        implicit val boxFormat = jsonFormatN(Box[Int] _)
+        implicit val boxFormat: JsonFormat[Box[Int]] = jsonFormatN(Box[Int] _)
       }
       import BoxProtocol._
       Box(42).toJson === JsObject(Map("a" -> JsNumber(42)))
