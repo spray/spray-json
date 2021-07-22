@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * (especially case classes)
  */
 trait ProductFormats extends ProductFormatsInstances {
-  this: StandardFormats =>
+  this: StandardFormats with AdditionalFormats =>
 
   def jsonFormatN[T](construct: () => T): RootJsonFormat[T] =
     new RootJsonFormat[T] {
@@ -145,7 +145,7 @@ object ProductFormats {
  * optional members as `None`.)
  */
 trait NullOptions extends ProductFormats {
-  this: StandardFormats =>
+  this: StandardFormats with AdditionalFormats =>
 
   override protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField])(implicit writer: JsonWriter[T]) = {
     val value = p.productElement(ix).asInstanceOf[T]
