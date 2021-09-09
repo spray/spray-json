@@ -74,7 +74,7 @@ trait ProductFormats extends ProductFormatsInstances {
         _.getName.drop("copy$default$".length).takeWhile(_ != '(').toInt)
       val fields = clazz.getDeclaredFields.filterNot { f =>
         import Modifier._
-        (f.getModifiers & (TRANSIENT | STATIC | 0x1000 /* SYNTHETIC*/ )) > 0
+        (f.getModifiers & (TRANSIENT | STATIC | 0x1000 /* SYNTHETIC*/ )) > 0 || f.getName.endsWith("$outer")
       }
       if (copyDefaultMethods.length != fields.length)
         sys.error("Case class " + clazz.getName + " declares additional fields")
