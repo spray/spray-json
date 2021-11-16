@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * (especially case classes)
  */
 trait ProductFormats extends ProductFormatsInstances {
-  this: StandardFormats =>
+  this: StandardFormats with AdditionalFormats =>
 
   def jsonFormatN[T](construct: () => T): RootJsonFormat[T] =
     new RootJsonFormat[T] {
@@ -74,7 +74,7 @@ trait ProductFormats extends ProductFormatsInstances {
         _.getName.drop("copy$default$".length).takeWhile(_ != '(').toInt)
       val fields = clazz.getDeclaredFields.filterNot { f =>
         import Modifier._
-        (f.getModifiers & (TRANSIENT | STATIC | 0x1000 /* SYNTHETIC*/ )) > 0
+        (f.getModifiers & (TRANSIENT | STATIC | 0x1000 /* SYNTHETIC*/ )) > 0 || f.getName.endsWith("$outer")
       }
       if (copyDefaultMethods.length != fields.length)
         sys.error("Case class " + clazz.getName + " declares additional fields")
@@ -145,7 +145,7 @@ object ProductFormats {
  * optional members as `None`.)
  */
 trait NullOptions extends ProductFormats {
-  this: StandardFormats =>
+  this: StandardFormats with AdditionalFormats =>
 
   override protected def productElement2Field[T](fieldName: String, p: Product, ix: Int, rest: List[JsField])(implicit writer: JsonWriter[T]) = {
     val value = p.productElement(ix).asInstanceOf[T]

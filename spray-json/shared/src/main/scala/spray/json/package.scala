@@ -26,7 +26,7 @@ package object json {
   def jsonReader[T](implicit reader: JsonReader[T]) = reader
   def jsonWriter[T](implicit writer: JsonWriter[T]) = writer
 
-  implicit def enrichAny[T](any: T) = new RichAny(any)
+  implicit def enrichAny[T](any: T): RichAny[T] = new RichAny(any)
   def enrichString(string: String) = new RichString(string)
   implicit class RichWithInput[I](any: I)(implicit i: Input[I]) {
     def parseJson: JsValue = json.parseJson(any)

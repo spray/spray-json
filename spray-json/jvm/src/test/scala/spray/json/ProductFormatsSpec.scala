@@ -33,13 +33,13 @@ class ProductFormatsSpec extends Specification {
 
   trait TestProtocol {
     this: DefaultJsonProtocol =>
-    implicit val test0Format = jsonFormatN(Test0)
-    implicit val test2Format = jsonFormatN(Test2.apply _)
-    implicit def test3Format[A: JsonFormat, B: JsonFormat] = jsonFormatN(Test3[A, B] _)
-    implicit def test4Format = jsonFormatN(Test4.apply _)
-    implicit def testTransientFormat = jsonFormatN(TestTransient)
-    implicit def testStaticFormat = jsonFormatN(TestStatic)
-    implicit def testMangledFormat = jsonFormatN(TestMangled)
+    implicit val test0Format: JsonFormat[Test0] = jsonFormatN(Test0.apply _)
+    implicit val test2Format: JsonFormat[Test2] = jsonFormatN(Test2.apply _)
+    implicit def test3Format[A: JsonFormat, B: JsonFormat]: JsonFormat[Test3[A, B]] = jsonFormatN(Test3.apply[A, B] _)
+    implicit def test4Format: JsonFormat[Test4] = jsonFormatN(Test4.apply _)
+    implicit def testTransientFormat: JsonFormat[TestTransient] = jsonFormatN(TestTransient.apply _)
+    implicit def testStaticFormat: JsonFormat[TestStatic] = jsonFormatN(TestStatic.apply _)
+    implicit def testMangledFormat: JsonFormat[TestMangled] = jsonFormatN(TestMangled.apply _)
   }
   object TestProtocol1 extends DefaultJsonProtocol with TestProtocol
   object TestProtocol2 extends DefaultJsonProtocol with TestProtocol with NullOptions
@@ -108,7 +108,7 @@ class ProductFormatsSpec extends Specification {
   }
   "A JsonFormat for a case class with 18 parameters and created with `jsonFormat`" should {
     object Test18Protocol extends DefaultJsonProtocol {
-      implicit val test18Format = jsonFormatN(Test18.apply _)
+      implicit val test18Format: JsonFormat[Test18] = jsonFormatN(Test18.apply _)
     }
     case class Test18(
       a1:  String,
@@ -147,7 +147,7 @@ class ProductFormatsSpec extends Specification {
     "support the jsonFormatN syntax" in {
       case class Box[A](a: A)
       object BoxProtocol extends DefaultJsonProtocol {
-        implicit val boxFormat = jsonFormatN(Box[Int] _)
+        implicit val boxFormat: JsonFormat[Box[Int]] = jsonFormatN(Box[Int] _)
       }
       import BoxProtocol._
       Box(42).toJson === JsObject(Map("a" -> JsNumber(42)))

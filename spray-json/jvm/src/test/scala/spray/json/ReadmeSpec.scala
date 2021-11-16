@@ -45,7 +45,7 @@ class ReadmeSpec extends Specification {
   "The case class example" should {
     "behave as expected" in {
       object MyJsonProtocol extends DefaultJsonProtocol {
-        implicit val colorFormat = jsonFormatN(Color.apply _)
+        implicit val colorFormat: JsonFormat[Color] = jsonFormatN(Color.apply _)
       }
       import MyJsonProtocol._
       color.toJson.convertTo[Color] mustEqual color
