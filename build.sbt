@@ -57,8 +57,10 @@ lazy val sprayJson =
       OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(scalaVersion.value)),
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
       OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package"),
+      ThisBuild / mimaReportSignatureProblems := true,
       mimaPreviousArtifacts := {
-        if (scalaMinorVersion.value == 13) Set("io.spray" %% "spray-json" % "1.3.5")
+        if (scalaMajorVersion.value == 3) Set.empty
+        else if (scalaMinorVersion.value == 13) Set("io.spray" %% "spray-json" % "1.3.5")
         else Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v => "io.spray" %% "spray-json" % v }
       },
       mimaBinaryIssueFilters := Seq(
