@@ -61,6 +61,7 @@ lazy val sprayJson =
       mimaPreviousArtifacts := {
         if (scalaMajorVersion.value == 3) Set.empty
         else if (scalaMinorVersion.value == 13) Set("io.spray" %% "spray-json" % "1.3.5")
+        else if (scalaMinorVersion.value == 10) Set.empty
         else Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v => "io.spray" %% "spray-json" % v }
       },
       mimaBinaryIssueFilters := Seq(
