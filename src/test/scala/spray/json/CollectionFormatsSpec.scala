@@ -84,7 +84,7 @@ class CollectionFormatsSpec extends Specification with DefaultJsonProtocol with 
   }
 
   "viaSeq" should {
-    "maintain order" in prop { s: TreeSet[Long] =>
+    "maintain order" in prop { (s: TreeSet[Long]) =>
       viaSeq[TreeSet[Long], Long](TreeSet(_: _*)).write(s) must_== s.toList.toJson
     }
   }

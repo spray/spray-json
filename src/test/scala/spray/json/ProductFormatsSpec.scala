@@ -65,7 +65,7 @@ class ProductFormatsSpec extends Specification {
       Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42))
     }
     "ignore additional members during deserialization" in {
-      JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2), "c" -> JsString('no)).convertTo[Test2] mustEqual obj
+      JsObject("a" -> JsNumber(42), "b" -> JsNumber(4.2), "c" -> JsString(Symbol("no"))).convertTo[Test2] mustEqual obj
     }
     "not depend on any specific member order for deserialization" in {
       JsObject("b" -> JsNumber(4.2), "a" -> JsNumber(42)).convertTo[Test2] mustEqual obj

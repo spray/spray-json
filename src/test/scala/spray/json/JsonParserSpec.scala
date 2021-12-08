@@ -179,7 +179,9 @@ class JsonParserSpec extends Specification {
         queue.peek
       }
 
-      val i: Int = Iterator.iterate(1)(1+).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
+      // Explicit type needed to compile on Scala 2.10, can be inlined later
+      def inc(i: Int): Int = 1 + i
+      val i: Int = Iterator.iterate(1)(inc).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
       println(s"Overflowing stack at $i which means we need about ${stackSize / i} bytes per recursive call")
 
       val maxDepth = i / 4 // should give lots of room
