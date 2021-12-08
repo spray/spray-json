@@ -68,7 +68,9 @@ mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match 
 })
 
 mimaBinaryIssueFilters := Seq(
-  ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
+  ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers"),
+  // Some signatures have become more specific, which is harmless/good:
+  ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.*Format")
 )
 
 ///////////////
