@@ -1,4 +1,4 @@
-import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem}
+import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem, IncompatibleSignatureProblem}
 
 name := "spray-json"
 
