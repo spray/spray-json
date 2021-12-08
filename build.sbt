@@ -1,4 +1,4 @@
-import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem, IncompatibleSignatureProblem}
+import com.typesafe.tools.mima.core.{ProblemFilters, DirectMissingMethodProblem, ReversedMissingMethodProblem, IncompatibleSignatureProblem}
 
 name := "spray-json"
 
@@ -70,7 +70,9 @@ mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match 
 mimaBinaryIssueFilters := Seq(
   ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers"),
   // Some signatures have become more specific, which is harmless/good:
-  ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.*Format")
+  ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.*Format"),
+  // Scala 2.12 used to create a strange static forwarder that is now gone
+  ProblemFilters.exclude[DirectMissingMethodProblem]("spray.json.DeserializationException.apply")
 )
 
 ///////////////
