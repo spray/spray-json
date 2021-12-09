@@ -1,4 +1,4 @@
-import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem}
+import com.typesafe.tools.mima.core.{ProblemFilters, DirectMissingMethodProblem, ReversedMissingMethodProblem, IncompatibleSignatureProblem}
 
 name := "spray-json"
 
@@ -21,6 +21,11 @@ scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "
 resolvers += Opts.resolver.sonatypeReleases
 
 libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+  case Some((3, n)) => Seq(
+    ("org.specs2" %% "specs2-core" % "4.5.1" % "test").cross(CrossVersion.for3Use2_13),
+    ("org.specs2" %% "specs2-scalacheck" % "4.5.1" % "test").cross(CrossVersion.for3Use2_13),
+    ("org.scalacheck" %% "scalacheck" % "1.15.4" % "test").cross(CrossVersion.for3Use2_13)
+  )
   case Some((2, 10)) => Seq(
     "org.specs2" %% "specs2-core" % "3.8.9" % "test",
     "org.specs2" %% "specs2-scalacheck" % "3.8.9" % "test",
@@ -51,23 +56,30 @@ OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"
 OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
 
 // Migration Manager
+ThisBuild / mimaReportSignatureProblems := true
 mimaPreviousArtifacts := (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 13)) => Set.empty
+  case Some((3, _)) => Set.empty
+  case Some((2, 13)) => Set("io.spray" %% "spray-json" % "1.3.5")
+  case Some((2, 10)) => Set.empty
   case _ =>
-    Set("1.3.2", "1.3.3", "1.3.4").map { v =>
+    Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v =>
       "io.spray" %% "spray-json" % v
     }
 })
 
 mimaBinaryIssueFilters := Seq(
-  ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
+  ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers"),
+  // Some signatures have become more specific, which is harmless/good:
+  ProblemFilters.exclude[IncompatibleSignatureProblem]("spray.json.DefaultJsonProtocol.*Format"),
+  // Scala 2.12 used to create a strange static forwarder that is now gone
+  ProblemFilters.exclude[DirectMissingMethodProblem]("spray.json.DeserializationException.apply")
 )
 
 ///////////////
 // publishing
 ///////////////
 
-crossScalaVersions := Seq("2.12.12", "2.10.7", "2.11.12", "2.13.3")
+crossScalaVersions := Seq("2.12.12", "2.10.7", "2.11.12", "2.13.3", "3.1.0")
 
 publishMavenStyle := true
 
@@ -92,3 +104,4 @@ pomExtra :=
     <developer><id>sirthias</id><name>Mathias Doenitz</name></developer>
     <developer><id>jrudolph</id><name>Johannes Rudolph</name></developer>
   </developers>
+

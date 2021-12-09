@@ -24,7 +24,7 @@ class SortedPrinterSpec extends Specification {
     "print a more complicated JsObject nicely aligned with fields sorted" in {
       val obj = JsonParser {
         """{
-          |  "Unic\u00f8de" :  "Long string with newline\nescape",
+          |  "Unicøde" :  "Long string with newline\nescape",
           |  "Boolean no": false,
           |  "number": -1.2323424E-5,
           |  "key with \"quotes\"" : "string",
@@ -43,7 +43,7 @@ class SortedPrinterSpec extends Specification {
         """{
           |  "Boolean no": false,
           |  "Boolean yes": true,
-          |  "Unic\u00f8de": "Long string with newline\nescape",
+          |  "Unicøde": "Long string with newline\nescape",
           |  "key with \"quotes\"": "string",
           |  "key with spaces": null,
           |  "number": -0.000012323424,

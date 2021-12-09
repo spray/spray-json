@@ -18,7 +18,7 @@ package spray.json
 
 import scala.reflect.{ classTag, ClassTag }
 
-trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
+trait ProductFormatsInstances { self: ProductFormats with StandardFormats with AdditionalFormats =>
 [#  // Case classes with 1 parameters
 
   def jsonFormat1[[#P1 :JF#], T <: Product :ClassTag](construct: ([#P1#]) => T): RootJsonFormat[T] = {

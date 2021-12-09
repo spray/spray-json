@@ -97,7 +97,7 @@ class JsonParserSpec extends Specification {
 
       def nanoBench(block: => Unit): Long = {
         // great microbenchmark (the comment must be kept, otherwise it's not true)
-        val f = block _
+        val f = () => block
 
         // warmup
         (1 to 10).foreach(_ => f())
@@ -179,7 +179,9 @@ class JsonParserSpec extends Specification {
         queue.peek
       }
 
-      val i: Int = Iterator.iterate(1)(1+).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
+      // Explicit type needed to compile on Scala 2.10, can be inlined later
+      def inc(i: Int): Int = 1 + i
+      val i: Int = Iterator.iterate(1)(inc).indexWhere(depth => probe(depth, maxDepth = 1000) contains "stackoverflow")
       println(s"Overflowing stack at $i which means we need about ${stackSize / i} bytes per recursive call")
 
       val maxDepth = i / 4 // should give lots of room
