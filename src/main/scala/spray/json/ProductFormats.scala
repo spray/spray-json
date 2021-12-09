@@ -74,6 +74,8 @@ trait ProductFormats extends ProductFormatsInstances {
         _.getName.drop("copy$default$".length).takeWhile(_ != '(').toInt)
       val fields = clazz.getDeclaredFields.filterNot { f =>
         import Modifier._
+        // We're considering any generated $outer methods as synthetic as well
+        // https://github.com/lampepfl/dotty/issues/14083
         (f.getModifiers & (TRANSIENT | STATIC | 0x1000 /* SYNTHETIC*/)) > 0 || f.getName.endsWith("$outer")
       }
       if (copyDefaultMethods.length != fields.length)
