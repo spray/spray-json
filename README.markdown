@@ -163,6 +163,86 @@ can enforce the rendering of undefined members as `null`.
 (Note that this only affect JSON writing, spray-json will always read missing optional members as well as `null`
 optional members as `None`.)
 
+### Providing JsonFormats for enumeration
+
+There isn't an official support for enumeration types, but here a possible implementation example:
+
+```scala
+import spray.json._
+
+class EnumJsonFormat[T <: scala.Enumeration](enu: T) extends RootJsonFormat[T#Value] {
+  override def write(obj: T#Value): JsValue = JsString(obj.toString)
+
+  override def read(json: JsValue): T#Value = {
+    json match {
+      case JsString(txt) => enu.withName(txt)
+      case somethingElse => throw DeserializationException(s"Expected a value from enum $enu instead of $somethingElse")
+    }
+  }
+}
+```
+
+Usage:
+
+```scala
+object Fruits extends Enumeration {
+  type Fruit = Value
+  val APPLE, BANANA, MANGO = Value
+}
+
+import spray.json._
+
+it("should be possible to serialize/deserialize enum") {
+  implicit val fruitFormat: EnumJsonFormat[Fruits.type] = new EnumJsonFormat(Fruits)
+
+  Fruits.APPLE.toJson should be(JsString("APPLE"))
+  JsString("BANANA").convertTo[Fruits.Fruit] should be(Fruits.BANANA)
+}
+```
+
+### Providing JsonFormats for sealed trait of case objects
+
+There isn't an official support for sealed trait of case objects, but here a possible implementation example:
+
+```scala
+import spray.json._
+
+import scala.reflect.ClassTag
+
+class CaseObjectJsonFormat[T: ClassTag](values: Seq[T])(implicit tag: ClassTag[T]) extends RootJsonFormat[T] {
+  /** A mapping from object names to the objects */
+  private val mapping = values.map(obj => key(obj) -> obj).toMap
+
+  override def read(json: JsValue): T = (json match {
+    case JsString(value) => mapping.get(value)
+    case _               => None
+  }).getOrElse(deserializationError(s"Unknown json value found when converting to $tag: $json"))
+
+  override def write(value: T): JsValue = JsString(key(value))
+
+  private def key(input: T): String = input.getClass.getSimpleName.stripSuffix("$")
+}
+```
+
+Usage:
+
+```scala
+sealed trait Car
+object Cars {
+  val values = Seq(Ferrari, Fiat)
+  case object Ferrari extends Car
+  case object Fiat extends Car
+}
+
+import spray.json._
+
+it("should be possible to serialize/deserialize case objects") {
+  implicit val carFormat: CaseObjectJsonFormat[Car] = new CaseObjectJsonFormat(Cars.values)
+
+  Cars.Ferrari.asInstanceOf[Car].toJson should be(JsString("Ferrari"))
+  JsString("Fiat").convertTo[Car] should be(Cars.Fiat)
+}
+```
 
 ### Providing JsonFormats for other Types
 
