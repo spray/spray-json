@@ -29,19 +29,6 @@ trait StandardFormats {
 
   implicit def optionFormat[T :JF]: JF[Option[T]] = new OptionFormat[T]
 
-  class OptionFormat[T :JF] extends JF[Option[T]] {
-    def write(option: Option[T]) = option match {
-      case Some(x) => x.toJson
-      case None => JsNull
-    }
-    def read(value: JsValue) = value match {
-      case JsNull => None
-      case x => Some(x.convertTo[T])
-    }
-    // allows reading the JSON as a Some (useful in container formats)
-    def readSome(value: JsValue) = Some(value.convertTo[T])
-  }
-
   implicit def eitherFormat[A :JF, B :JF]: JF[Either[A, B]] = new JF[Either[A, B]] {
     def write(either: Either[A, B]) = either match {
       case Right(a) => a.toJson
@@ -117,4 +104,17 @@ trait StandardFormats {
     }
   }
   
+}
+
+class OptionFormat[T :JsonFormat] extends JsonFormat[Option[T]] {
+  def write(option: Option[T]) = option match {
+    case Some(x) => x.toJson
+    case None => JsNull
+  }
+  def read(value: JsValue) = value match {
+    case JsNull => None
+    case x => Some(x.convertTo[T])
+  }
+  // allows reading the JSON as a Some (useful in container formats)
+  def readSome(value: JsValue) = Some(value.convertTo[T])
 }
