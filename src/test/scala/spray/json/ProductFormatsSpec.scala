@@ -51,6 +51,13 @@ class ProductFormatsSpec extends Specification {
     "convert to a respective JsObject" in {
       obj.toJson mustEqual json
     }
+    "support another instances module" in {
+      object MyImplicits extends DefaultJsonProtocol
+      import MyImplicits.optionFormat
+      implicit val test2Format: JsonFormat[Test2] = jsonFormat2(Test2)
+
+      Test2(42, None).toJson mustEqual JsObject("a" -> JsNumber(42))
+    }
     "convert a JsObject to the respective case class instance" in {
       json.convertTo[Test2] mustEqual obj
     }
