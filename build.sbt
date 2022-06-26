@@ -1,10 +1,8 @@
-// shadow sbt-scalajs' crossProject and CrossType until Scala.js 1.0.0 is released
-import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import com.typesafe.tools.mima.core.{ProblemFilters, ReversedMissingMethodProblem}
 
 lazy val scala210 = "2.10.7"
 lazy val scala211 = "2.11.12"
-lazy val scala212 = "2.12.10"
+lazy val scala212 = "2.12.16"
 lazy val scala213 = "2.13.1"
 
 lazy val sprayJson =
@@ -13,7 +11,7 @@ lazy val sprayJson =
     .in(file("spray-json"))
     .settings(
       name := "spray-json",
-      version := "1.3.6-SNAPSHOT",
+      version := "1.4.0",
       // needed to prevent the default scala version of 2.12 which would make native eligible for running with `++2.12.10 xyz`
       scalaVersion := crossScalaVersions.value.head,
       scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-Xlint", "-encoding", "utf8", "-target:jvm-1.8"),
@@ -21,19 +19,19 @@ lazy val sprayJson =
         if (scalaMinorVersion.value >= 12 && !sys.props("java.version").startsWith("1.") /* i.e. Java version >= 9 */) Seq("-release", "8")
         else Nil
       },
-      (scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value),
+      (doc / scalacOptions) ++= Seq("-doc-title", name.value + " " + version.value),
       // Workaround for "Shared resource directory is ignored"
       // https://github.com/portable-scala/sbt-crossproject/issues/74
-      unmanagedResourceDirectories in Test += (baseDirectory in ThisBuild).value / "spray-json/shared/src/test/resources"
+      Test / unmanagedResourceDirectories += (ThisBuild / baseDirectory).value / "spray-json/shared/src/test/resources"
     )
     .enablePlugins(spray.boilerplate.BoilerplatePlugin)
     .platformsSettings(JVMPlatform, JSPlatform)(
       libraryDependencies ++= {
-        if (scalaMinorVersion.value >= 11)
+        if (scalaMinorVersion.value >= 12)
           Seq(
-            "org.specs2" %%% "specs2-core" % "4.5.1" % "test",
-            "org.specs2" %%% "specs2-scalacheck" % "4.5.1" % "test",
-            "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test"
+            "org.specs2" %%% "specs2-core" % "4.16.0" % "test",
+            "org.specs2" %%% "specs2-scalacheck" % "4.16.0" % "test",
+            "org.scalacheck" %%% "scalacheck" % "1.16.0" % "test"
           )
         else // 2.10
           Seq(
@@ -51,8 +49,8 @@ lazy val sprayJson =
       OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*"),
       OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package"),
       mimaPreviousArtifacts := {
-        if (scalaMinorVersion.value == 13) Set("io.spray" %% "spray-json" % "1.3.5")
-        else Set("1.3.2", "1.3.3", "1.3.4", "1.3.5").map { v => "io.spray" %% "spray-json" % v }
+        if (scalaMinorVersion.value == 13) Set("io.spray" %% "spray-json" % "1.4.0")
+        else Set("1.3.2", "1.3.3", "1.3.4", "1.3.5", "1.3.6").map { v => "io.spray" %% "spray-json" % v }
       },
       mimaBinaryIssueFilters := Seq(
         ProblemFilters.exclude[ReversedMissingMethodProblem]("spray.json.PrettyPrinter.organiseMembers")
@@ -64,7 +62,7 @@ lazy val sprayJson =
     .nativeSettings(
       crossScalaVersions := Seq(scala211),
       // Disable tests in Scala Native until testing frameworks for it become available
-      unmanagedSourceDirectories in Test := Seq.empty
+      Test / unmanagedSourceDirectories := Seq.empty
     )
 
 lazy val sprayJsonJVM = sprayJson.jvm
@@ -81,14 +79,14 @@ lazy val benchmark = Project("benchmark", file("benchmark"))
   .dependsOn(sprayJsonJVM % "compile->test")
   .settings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "upickle" % "0.6.7",
-      "io.circe" %% "circe-parser" % "0.10.0",
-      "com.typesafe.play" %% "play-json" % "2.7.0-M1"
+      "com.lihaoyi" %% "upickle" % "2.0.0",
+      "io.circe" %% "circe-parser" % "0.14.2",
+      "com.typesafe.play" %% "play-json" % "2.9.2"
     )
   )
 
 lazy val noPublishSettings = Seq(
-  skip in publish := true
+  publish / skip := true
 )
 
 lazy val root = (project in file("."))
