@@ -27,7 +27,7 @@ lazy val sprayJson =
     .enablePlugins(spray.boilerplate.BoilerplatePlugin)
     .platformsSettings(JVMPlatform, JSPlatform)(
       libraryDependencies ++= {
-        if (scalaMinorVersion.value >= 11)
+        if (scalaMinorVersion.value >= 12)
           Seq(
             "org.specs2" %%% "specs2-core" % "4.16.0" % "test",
             "org.specs2" %%% "specs2-scalacheck" % "4.16.0" % "test",
