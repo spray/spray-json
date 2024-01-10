@@ -70,4 +70,21 @@ class AdditionalFormatsSpec extends Specification {
         """{"id":1,"name":"a","foos":[{"id":2,"name":"b","foos":[{"id":3,"name":"c"}]},{"id":4,"name":"d"}]}""".parseJson
     }
   }
+
+  "JsValueFormat" should {
+    import DefaultJsonProtocol._
+
+    class Box[-T]
+    implicit def box[T : JsonFormat]: Box[T] = new Box
+
+    "not cause ambiguity when summoning Box[JsObject]" in {
+      implicitly[Box[JsObject]]
+      true mustEqual true // just checking that it compiles
+    }
+
+    "not cause ambiguity when summoning Box[JsArray]" in {
+      implicitly[Box[JsArray]]
+      true mustEqual true // just checking that it compiles
+    }
+  }
 }

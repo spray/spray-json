@@ -20,12 +20,7 @@ package spray.json
 /**
   * Provides additional JsonFormats and helpers
  */
-trait AdditionalFormats {
-
-  implicit object JsValueFormat extends JsonFormat[JsValue] {
-    def write(value: JsValue) = value
-    def read(value: JsValue) = value
-  }
+trait AdditionalFormats extends AdditionalFormats.LowPriorityImplicits {
 
   implicit object RootJsObjectFormat extends RootJsonFormat[JsObject] {
     def write(value: JsObject) = value
@@ -112,6 +107,19 @@ trait AdditionalFormats {
         case e: Exception => Left(e)
       }
     }
+  }
+
+}
+
+object AdditionalFormats {
+
+  trait LowPriorityImplicits {
+
+    implicit object JsValueFormat extends JsonFormat[JsValue] {
+      def write(value: JsValue) = value
+      def read(value: JsValue) = value
+    }
+
   }
 
 }
